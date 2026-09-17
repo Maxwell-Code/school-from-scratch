@@ -194,17 +194,28 @@
     text-decoration: none;
     font-size: 18px;
     text-transform: uppercase;
+    /* The script widens the sides to cover the spread-out letters, so the
+       clickable area never changes size (otherwise it would slip out from
+       under the pointer and flicker). */
     padding: 4px 8px;
     cursor: pointer;
-    /* Letters start spread out, then draw together under the pointer. */
-    letter-spacing: var(--menu-spacing-start);
-    transition: letter-spacing var(--menu-spacing-ms) cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  #menu a:hover,
-  #menu a:focus-visible {
     letter-spacing: var(--menu-spacing-hover);
-    outline: none;
+    white-space: nowrap;
   }
+  #menu a:focus-visible { outline: none; }
+  /* Letters sit spread apart and nudged up or down, then settle on hover. */
+  .menu-letter {
+    display: inline-block;
+    transform: translate(var(--dx, 0px), var(--dy, 0px));
+    transition: transform var(--menu-spacing-ms) cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--delay, 0ms);
+  }
+  #menu a:hover .menu-letter,
+  #menu a:focus-visible .menu-letter,
+  #menu.measuring .menu-letter {
+    transform: translate(var(--dx, 0px), 0);
+  }
+  #menu.measuring .menu-letter { transition: none; }
 
   /* Return-to-center button */
   #home {
@@ -394,6 +405,60 @@ function startGallery() {
   const menuEl = document.getElementById('menu');
   const title = String(setting('MENU_TITLE', '')).trim();
   if (title) menuEl.querySelector('h1').textContent = title;
+  const LETTER_SPREAD = Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06));
+  const LETTER_OFFSET = Math.max(0, setting('MENU_LETTER_OFFSET', 0.12));
+
+  // Split an option into letters that each sit a little out of place, then
+  // slide home on hover. Moving them this way (rather than by changing the
+  // spacing) keeps the option exactly the same size at all times, so it stays
+  // centered and can't flicker under the pointer.
+  function layOutLetters(link) {
+    const label = link.dataset.label || link.textContent;
+    link.dataset.label = label;
+    const chars = [...label];
+    const size = parseFloat(getComputedStyle(link).fontSize) || 18;
+    const spread = LETTER_SPREAD * size;   // extra gap per letter, at rest
+    const jitter = LETTER_OFFSET * size;   // how far up or down each letter starts
+
+    // Deterministic per letter, so a page never redraws differently.
+    const wobble = (i) => {
+      let h = Math.imul(label.length + i * 2654435761, 2246822519) ^ label.charCodeAt(i % label.length);
+      h = Math.imul(h ^ (h >>> 13), 1274126177);
+      return (((h ^ (h >>> 16)) >>> 0) / 4294967296) * 2 - 1;
+    };
+
+    const shifts = chars.map((ch, i) => (i - (chars.length - 1) / 2) * spread);
+    const middle = shifts.reduce((a, b) => a + b, 0) / (shifts.length || 1);
+    link.replaceChildren(...chars.map((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'menu-letter';
+      span.textContent = ch === ' ' ? '\u00a0' : ch;
+      span.style.setProperty('--dx', (shifts[i] - middle).toFixed(2) + 'px');
+      span.style.setProperty('--dy', (wobble(i) * jitter).toFixed(2) + 'px');
+      span.style.setProperty('--delay', Math.round(Math.abs(wobble(i)) * 70) + 'ms');
+      return span;
+    }));
+    // Room for the spread-out letters, so the option's size never changes.
+    const room = Math.max(...shifts.map((v) => Math.abs(v - middle)));
+    link.style.paddingLeft = link.style.paddingRight = (8 + room).toFixed(1) + 'px';
+  }
+
+  // Line each option up with the middle of the menu. Letter spacing leaves a
+  // gap after the last letter, so the text alone would sit slightly off.
+  function centerLetters(links) {
+    const middle = menuEl.getBoundingClientRect();
+    const mid = middle.left + middle.width / 2;
+    menuEl.classList.add('measuring'); // measure the settled positions
+    for (const link of links) {
+      link.style.transform = 'none';
+      const boxes = [...link.querySelectorAll('.menu-letter')].map((el) => el.getBoundingClientRect());
+      if (!boxes.length) continue;
+      const left = Math.min(...boxes.map((b) => b.left)), right = Math.max(...boxes.map((b) => b.right));
+      link.style.transform = `translateX(${(mid - (left + right) / 2).toFixed(2)}px)`;
+    }
+    menuEl.classList.remove('measuring');
+  }
+
   const items = setting('MENU_ITEMS', []).map((item) => String(item).trim()).filter(Boolean);
   if (items.length) {
     menuEl.querySelector('nav').replaceChildren(...items.map((label) => {
@@ -403,6 +468,14 @@ function startGallery() {
       return link;
     }));
   }
+  const menuLinks = [...menuEl.querySelectorAll('a')];
+  const layOutMenu = () => {
+    menuLinks.forEach(layOutLetters);
+    centerLetters(menuLinks);
+  };
+  layOutMenu();
+  // Letter widths change once the real font arrives.
+  if (document.fonts) document.fonts.ready.then(layOutMenu);
   const FRAME_COLOR = setting('FRAME_BORDER_COLOR', 'rgba(255, 255, 255, 0.35)');
   const FRAME_FILL = setting('FRAME_FILL_COLOR', '#0b0b0b');
   rootStyle.setProperty('--frame', FRAME_COLOR);

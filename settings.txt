@@ -31,15 +31,23 @@ GALLERY_ENABLED = true
 //  PHOTOS
 // -----------------------------------------------------------------------------
 
-// Folder the gallery photos live in (relative to index.html).
-PHOTO_FOLDER = "photos/infinite_gallery/"
+// Folder holding every image the site uses: the gallery photos and the
+// Venmo logo (relative to index.html).
+PHOTO_FOLDER = "images/"
 
 // Every photo to show. Browsers can't look inside a folder on their own,
 // so add each new photo's filename here, in quotes, followed by a comma.
 PHOTOS = [
   "children_on_an_oak_tree.jpg",
   "children_playing_in_the_mud.jpg",
-  "sfs_tent_progress.jpg",
+  "Collaborating on building a school model.jpg",
+  "forest_camp_comfort.jpeg",
+  "libby_bowl_writing.jpg",
+  "sfs_kids_at_work.jpeg",
+  "sfs_tent_with_kids.jpeg",
+  "tent_kids.jpg",
+  "wood_sawing.jpg",
+  "wooden_airplane.jpg",
 ]
 
 // Size range for photos, measured along each photo's longest side.
@@ -193,6 +201,10 @@ BODY_FONT_WEIGHT = 500
 // (0 = normal spacing, 0.3 = noticeably spread out).
 MENU_LETTER_SPACING = 0.75
 MENU_LETTER_SPACING_HOVER = 0.25
+
+// How far each letter starts nudged up or down before it drops into place
+// when the pointer moves over the option (0 = perfectly lined up).
+MENU_LETTER_OFFSET = 0.12
 
 // How long the letters take to draw together, in milliseconds.
 MENU_HOVER_SPEED_MS = 450
