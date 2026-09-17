@@ -1,0 +1,97 @@
+// Shared by every menu page (operations.html, cost.html, ...) and 404.html.
+// Each page file names itself in <body data-page="...">; 404.html works it out
+// from the address instead, so an option added in settings.txt still gets a
+// working page on a web server before its own file exists.
+
+function loadSettings() {
+  const viaScriptTag = () => new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'settings.txt';
+    s.onload = s.onerror = resolve;
+    document.head.appendChild(s);
+  });
+  if (location.protocol === 'file:') return viaScriptTag();
+  return fetch('settings.txt', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.text() : Promise.reject()))
+    .then((text) => {
+      const s = document.createElement('script');
+      s.textContent = text;
+      document.head.appendChild(s);
+    })
+    .catch(viaScriptTag);
+}
+
+function setting(name, fallback) {
+  const value = window[name];
+  if (value === undefined || typeof value !== typeof fallback) return fallback;
+  return value;
+}
+
+// "Teaching-Learning" -> "teaching-learning", "FAQs" -> "faqs". Must match
+// pageSlug() in index.html.
+function pageSlug(name) {
+  return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+loadSettings().then(() => {
+  const root = document.documentElement.style;
+  root.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
+  root.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
+
+  const HEADING_FONT = setting('HEADING_FONT', 'Lora');
+  const HEADING_WEIGHT = setting('HEADING_FONT_WEIGHT', 600);
+  const BODY_FONT = setting('BODY_FONT', 'Quicksand');
+  const BODY_WEIGHT = setting('BODY_FONT_WEIGHT', 500);
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=' +
+    encodeURIComponent(HEADING_FONT) + ':wght@' + HEADING_WEIGHT +
+    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + BODY_WEIGHT + '&display=swap';
+  document.head.appendChild(fontLink);
+  root.setProperty('--heading-font', `'${HEADING_FONT}', Georgia, serif`);
+  root.setProperty('--heading-weight', HEADING_WEIGHT);
+  root.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);
+  root.setProperty('--body-weight', BODY_WEIGHT);
+
+  // Which page is this? The file's own name, or (on 404.html) the address.
+  const own = document.body.dataset.page;
+  const slug = own ? pageSlug(own) : pageSlug(decodeURIComponent(location.pathname.split('/').pop().replace(/\.html$/i, '')));
+  const menuName = setting('MENU_ITEMS', []).find((item) => pageSlug(item) === slug);
+  const name = menuName || own;
+
+  const titleEl = document.getElementById('title');
+  const statusEl = document.getElementById('status');
+  if (!name) {
+    titleEl.textContent = 'Page not found';
+    statusEl.textContent = '';
+    document.title = 'Page not found · ' + setting('MENU_TITLE', 'The School From Scratch');
+    return;
+  }
+  titleEl.textContent = name;
+  document.title = name + ' · ' + setting('MENU_TITLE', 'The School From Scratch');
+
+  // Contact details (phone number and Venmo logo) on the pages named in
+  // CONTACT_PAGES.
+  const contactPages = setting('CONTACT_PAGES', ['Cost']).map(pageSlug);
+  if (!contactPages.includes(slug)) return;
+  const phone = setting('PHONE_NUMBER', '+1 (805) 798-5098').trim();
+  const showVenmo = setting('SHOW_VENMO_LOGO', true);
+  const venmoLink = setting('VENMO_LINK', '').trim();
+
+  const phoneEl = document.getElementById('phone');
+  if (phone) {
+    phoneEl.textContent = phone;
+    phoneEl.href = 'tel:' + phone.replace(/[^\d+]/g, '');
+  } else {
+    phoneEl.remove();
+  }
+  const venmoEl = document.getElementById('venmo-link');
+  if (!showVenmo) {
+    venmoEl.remove();
+  } else if (/^https:\/\//i.test(venmoLink)) {
+    venmoEl.href = venmoLink;
+    venmoEl.target = '_blank';
+    venmoEl.rel = 'noopener';
+  }
+  if (phone || showVenmo) document.getElementById('contact').hidden = false;
+});

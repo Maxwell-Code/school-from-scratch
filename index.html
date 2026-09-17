@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>The School From Scratch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<style>
+  :root {
+    --bg: #000;
+    --fg: #fff;
+    --muted: #aaa;
+    --frame: rgba(255, 255, 255, 0.35);
+    --heading-font: 'Lora', Georgia, serif;
+    --heading-weight: 600;
+    --body-font: 'Quicksand', 'Segoe UI', sans-serif;
+    --body-weight: 500;
+    --menu-spacing-start: 0.3em;
+    --menu-spacing-hover: 0.06em;
+    --menu-spacing-ms: 450ms;
+  }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    overflow: hidden;
+    font-family: var(--body-font);
+    font-weight: var(--body-weight);
+  }
+
+  /* The pannable / zoomable landscape */
+  #viewport {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  #viewport.dragging { cursor: grabbing; }
+
+  /* Faint background grid (drawn by the script), optionally fading out
+     toward the screen edges. */
+  #grid,
+  #photos {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .gallery-off #photos { display: none; }
+  .grid-edge-fade #grid {
+    -webkit-mask-image: radial-gradient(ellipse at center, #000 25%, transparent 90%);
+    mask-image: radial-gradient(ellipse at center, #000 25%, transparent 90%);
+  }
+  .grid-off #grid,
+  .grid-merged #grid { display: none; }
+
+  /* Optional performance panel (SHOW_PERFORMANCE_INFO in settings.txt) */
+  #perf {
+    --perf-blue: #3b64a8;
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    width: 256px;
+    height: 600px;
+    max-height: calc(100vh - 24px);
+    box-sizing: border-box;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #e5e7eb;
+    font: 11px/1.45 Consolas, Menlo, monospace;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    font-variant-numeric: tabular-nums;
+  }
+  #perf[hidden] { display: none; }
+  /* Title bar: drag it to move the window. */
+  .perf-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    padding: 5px 6px 5px 12px;
+    background: var(--perf-blue);
+    color: #fff;
+    cursor: move;
+    letter-spacing: 0.12em;
+    font-size: 10px;
+  }
+  .perf-hint { margin-left: auto; letter-spacing: 0; opacity: 0.75; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .perf-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 8px 12px 12px;
+    /* Still scrolls with the mouse wheel or a finger, just without a visible bar. */
+    scrollbar-width: none;
+  }
+  .perf-body::-webkit-scrollbar { display: none; }
+  /* Invisible edges and corners for resizing the window. */
+  .perf-rs { position: absolute; z-index: 1; }
+  .perf-rs[data-dir="n"], .perf-rs[data-dir="s"] { left: 6px; right: 6px; height: 6px; cursor: ns-resize; }
+  .perf-rs[data-dir="e"], .perf-rs[data-dir="w"] { top: 6px; bottom: 6px; width: 6px; cursor: ew-resize; }
+  .perf-rs[data-dir="n"] { top: -3px; }
+  .perf-rs[data-dir="s"] { bottom: -3px; }
+  .perf-rs[data-dir="e"] { right: -3px; }
+  .perf-rs[data-dir="w"] { left: -3px; }
+  .perf-rs[data-dir="ne"], .perf-rs[data-dir="nw"], .perf-rs[data-dir="se"], .perf-rs[data-dir="sw"] { width: 12px; height: 12px; }
+  .perf-rs[data-dir="ne"] { top: -3px; right: -3px; cursor: nesw-resize; }
+  .perf-rs[data-dir="sw"] { bottom: -3px; left: -3px; cursor: nesw-resize; }
+  .perf-rs[data-dir="nw"] { top: -3px; left: -3px; cursor: nwse-resize; }
+  .perf-rs[data-dir="se"] { bottom: -3px; right: -3px; cursor: nwse-resize; }
+  .perf-fps {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 4px 0 6px;
+  }
+  .perf-fps [data-k="fps"] { font-size: 34px; font-weight: bold; line-height: 1; }
+  .perf-fps small { color: #9ca3af; font-size: 12px; }
+  .perf-rating { margin-left: auto; font-size: 11px; font-weight: bold; letter-spacing: 0.12em; }
+  .perf-graph { display: block; width: 100%; height: 56px; border-radius: 4px; }
+  .perf-legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    color: #6b7280;
+    font-size: 9px;
+  }
+  .perf-section {
+    margin: 10px -12px 4px;
+    padding: 2px 12px;
+    background: var(--perf-blue);
+    color: #fff;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 0.14em;
+  }
+  .perf-row { display: flex; justify-content: space-between; gap: 8px; }
+  .perf-row span { color: #9ca3af; white-space: nowrap; }
+  .perf-row b { font-weight: normal; color: #f3f4f6; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #world {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-origin: 0 0;
+    /* Centers the menu before settings load; the script takes over after. */
+    transform: translate(50vw, 50vh);
+  }
+  /* Only while moving: keeps motion smooth, but the browser snapshots the
+     layer at one size, so it's switched off at rest to redraw sharply. */
+  #world.moving { will-change: transform; }
+
+  /* Centered menu, anchored at world (0,0) */
+  #menu {
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    width: 600px;
+    transform: translate(-50%, -50%);
+    text-align: center;
+  }
+  @media (max-width: 640px) {
+    #menu { width: 340px; }
+    #menu h1 { font-size: 38px; }
+  }
+  #menu h1 {
+    font-family: var(--heading-font);
+    font-weight: var(--heading-weight);
+    font-size: 44px;
+    line-height: 1.15;
+    margin: 0 0 28px;
+    letter-spacing: 0.02em;
+  }
+  #menu nav {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  #menu a {
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 18px;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    cursor: pointer;
+    /* Letters start spread out, then draw together under the pointer. */
+    letter-spacing: var(--menu-spacing-start);
+    transition: letter-spacing var(--menu-spacing-ms) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #menu a:hover,
+  #menu a:focus-visible {
+    letter-spacing: var(--menu-spacing-hover);
+    outline: none;
+  }
+
+  /* Return-to-center button */
+  #home {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--bg);
+    color: var(--fg);
+    border: 1px solid var(--frame);
+    font: inherit;
+    font-size: 13px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  #home:hover,
+  #home:focus-visible {
+    border-color: var(--fg);
+    outline: none;
+  }
+  #home svg { width: 16px; height: 16px; }
+
+  /* Gallery switched off in settings.txt: a plain, normal webpage. */
+  html.gallery-off,
+  html.gallery-off body {
+    height: auto;
+    overflow: auto;
+  }
+  .gallery-off #viewport {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 48px 16px;
+    box-sizing: border-box;
+    cursor: auto;
+    touch-action: auto;
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+  .gallery-off #world {
+    position: relative; /* keeps the menu above the grid */
+    transform: none;
+  }
+  .gallery-off #menu {
+    position: static;
+    transform: none;
+    width: auto;
+    max-width: 600px;
+  }
+  .gallery-off #home { display: none; }
+</style>
+</head>
+<body>
+  <div id="viewport">
+    <canvas id="grid" aria-hidden="true"></canvas>
+    <canvas id="photos" aria-hidden="true"></canvas>
+    <div id="world">
+      <div id="menu">
+        <h1>The School From Scratch</h1>
+        <nav>
+          <a href="people.html">People</a>
+          <a href="curriculum.html">Curriculum</a>
+          <a href="teaching-learning.html">Teaching-Learning</a>
+          <a href="campus-location.html">Campus Location</a>
+          <a href="teaching-learning.html">Teaching-Learning</a>
+          <a href="cost.html">Cost</a>
+          <a href="faqs.html">FAQs</a>
+        </nav>
+      </div>
+    </div>
+  </div>
+
+  <button id="home" type="button" aria-label="Return to center">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+      <circle cx="8" cy="8" r="5"/>
+      <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
+      <path d="M8 0v3M8 13v3M0 8h3M13 8h3"/>
+    </svg>
+    Center
+  </button>
+
+<script>
+// ---- Settings ---------------------------------------------------------------
+// All tunable values live in settings.txt, written as `NAME = value` lines.
+// On a web server it's fetched as text; opened straight from a folder,
+// browsers block fetch, so it's loaded through a <script> tag instead (the
+// format is valid JavaScript either way). Anything missing or invalid falls
+// back to the defaults below.
+function loadSettings() {
+  const viaScriptTag = () => new Promise((resolve) => {
+    const s = document.createElement('script');
+    s.src = 'settings.txt';
+    s.onload = s.onerror = resolve;
+    document.head.appendChild(s);
+  });
+  if (location.protocol === 'file:') return viaScriptTag();
+  return fetch('settings.txt', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.text() : Promise.reject()))
+    .then((text) => {
+      const s = document.createElement('script');
+      s.textContent = text;
+      document.head.appendChild(s);
+    })
+    .catch(viaScriptTag);
+}
+
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+// Menu option name -> its page file name: "Teaching-Learning" ->
+// "teaching-learning". Must match pageSlug() in page.js.
+function pageSlug(name) {
+  return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+function setting(name, fallback) {
+  const value = window[name];
+  if (value === undefined) return fallback;
+  const ok = typeof fallback === 'number' ? Number.isFinite(value)
+    : Array.isArray(fallback) ? Array.isArray(value)
+    : typeof value === typeof fallback;
+  if (!ok) {
+    console.warn(`settings.txt: ${name} has an invalid value; using ${JSON.stringify(fallback)}.`);
+    return fallback;
+  }
+  return value;
+}
+
+function startGallery() {
+  const IMAGE_DIR = setting('PHOTO_FOLDER', 'photos/infinite_gallery/');
+  const IMAGES = setting('PHOTOS', []);
+  const SIZE_MIN = setting('PHOTO_SIZE_SMALLEST', 110);
+  const SIZE_MAX = Math.max(SIZE_MIN, setting('PHOTO_SIZE_LARGEST', 270));
+  const FADE_IN_MS = setting('PHOTO_FADE_IN_MS', 500);
+  const GAP_MIN = setting('SPACING_NEAR_MENU_MIN', 15);
+  const GAP_MAX = Math.max(GAP_MIN, setting('SPACING_NEAR_MENU_MAX', 60));
+  const EDGE_MULTIPLIER = Math.max(1, setting('SPACING_AT_EDGE_MULTIPLIER', 3));
+  const CROWDED_RADIUS = Math.max(0, setting('CROWDED_AREA_RADIUS', 1500));
+  const END_DISTANCE = Math.max(CROWDED_RADIUS + 1, setting('PHOTOS_END_DISTANCE', 12000));
+  const FADE_CURVE = Math.max(0.1, setting('FADE_CURVE', 1));
+  const CENTER_DENSITY = clamp(setting('CROWDED_AREA_DENSITY', 100), 0, 100) / 100;
+  const TRIES_PER_AREA = setting('PLACEMENT_TRIES', 250);
+  const MENU_GAP = setting('MENU_CLEARANCE', 40);
+  const SEED = setting('LAYOUT_SEED', 1) | 0;
+  const FRAME_PADDING = setting('FRAME_PADDING', 6);
+  const FRAME_BORDER = setting('FRAME_BORDER_WIDTH', 1);
+  const MIN_SCALE = 1 / Math.max(1, setting('ZOOM_OUT_LIMIT', 3));
+  const MAX_SCALE = Math.max(1, setting('ZOOM_IN_LIMIT', 3));
+  const WHEEL_SPEED = setting('WHEEL_ZOOM_SPEED', 0.0015);
+  const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
+  const GLIDE = clamp(setting('GLIDE_AFTER_DRAG', 0.94), 0, 0.99);
+  const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
+  const CENTER_MS = Math.max(1, setting('CENTER_BUTTON_TRAVEL_MS', 800));
+
+  const rootStyle = document.documentElement.style;
+  rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
+  rootStyle.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
+
+  // Fonts come from Google Fonts by name, so any family listed there works.
+  const HEADING_FONT = setting('HEADING_FONT', 'Lora');
+  const HEADING_WEIGHT = setting('HEADING_FONT_WEIGHT', 600);
+  const BODY_FONT = setting('BODY_FONT', 'Quicksand');
+  const BODY_WEIGHT = setting('BODY_FONT_WEIGHT', 500);
+  const fontLink = document.createElement('link');
+  fontLink.rel = 'stylesheet';
+  fontLink.href = 'https://fonts.googleapis.com/css2?family=' +
+    encodeURIComponent(HEADING_FONT) + ':wght@' + HEADING_WEIGHT +
+    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + BODY_WEIGHT + '&display=swap';
+  document.head.appendChild(fontLink);
+  rootStyle.setProperty('--heading-font', `'${HEADING_FONT}', Georgia, serif`);
+  rootStyle.setProperty('--heading-weight', HEADING_WEIGHT);
+  rootStyle.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);
+  rootStyle.setProperty('--body-weight', BODY_WEIGHT);
+  rootStyle.setProperty('--menu-spacing-start', setting('MENU_LETTER_SPACING', 0.3) + 'em');
+  rootStyle.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
+  rootStyle.setProperty('--menu-spacing-ms', Math.max(0, setting('MENU_HOVER_SPEED_MS', 450)) + 'ms');
+
+  // Title and menu options come from settings.txt (the text written in the
+  // page itself is only a fallback). Blank entries are skipped.
+  const menuEl = document.getElementById('menu');
+  const title = String(setting('MENU_TITLE', '')).trim();
+  if (title) menuEl.querySelector('h1').textContent = title;
+  const items = setting('MENU_ITEMS', []).map((item) => String(item).trim()).filter(Boolean);
+  if (items.length) {
+    menuEl.querySelector('nav').replaceChildren(...items.map((label) => {
+      const link = document.createElement('a');
+      link.href = pageSlug(label) + '.html';
+      link.textContent = label;
+      return link;
+    }));
+  }
+  const FRAME_COLOR = setting('FRAME_BORDER_COLOR', 'rgba(255, 255, 255, 0.35)');
+  const FRAME_FILL = setting('FRAME_FILL_COLOR', '#0b0b0b');
+  rootStyle.setProperty('--frame', FRAME_COLOR);
+
+  // Match a canvas's pixel buffer to its on-screen size at the given pixel
+  // density, and reset it for drawing in CSS pixels.
+  function prepareCanvas(canvas, ctx, dpr) {
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const bw = Math.max(1, Math.round(w * dpr)), bh = Math.max(1, Math.round(h * dpr));
+    if (canvas.width !== bw || canvas.height !== bh) {
+      canvas.width = bw;
+      canvas.height = bh;
+    }
+    ctx.setTransform(bw / Math.max(1, w), 0, 0, bh / Math.max(1, h), 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    return { w, h };
+  }
+
+  // ---- Background grid ----------------------------------------------------
+  // Filled as one shape per redraw, so crossings aren't painted twice
+  // (semi-transparent CSS stripes made them brighter). The grid scales with
+  // zoom like everything else, lines included.
+  const GRID_ON = setting('GRID_ENABLED', true);
+  const GRID_SIZE = Math.max(4, setting('GRID_SQUARE_SIZE', 80));
+  const GRID_LINE = Math.max(0, setting('GRID_LINE_THICKNESS', 1));
+  const GRID_COLOR = setting('GRID_LINE_COLOR', 'rgba(255, 255, 255, 0.07)');
+  const GRID_EDGE_FADE = setting('GRID_FADES_AT_EDGES', true);
+  const gridCanvas = document.getElementById('grid');
+  const gridCtx = gridCanvas.getContext('2d');
+  document.documentElement.classList.toggle('grid-off', !GRID_ON);
+  document.documentElement.classList.toggle('grid-edge-fade', GRID_EDGE_FADE);
+
+  // (originX, originY) is where a grid crossing lands on screen; scale is the zoom.
+  function paintGrid(ctx, w, h, originX, originY, scale) {
+    const step = GRID_SIZE * scale;
+    const width = GRID_LINE * scale;
+    if (width <= 0) return;
+    ctx.fillStyle = GRID_COLOR;
+    if (step < 6) {
+      // Lines this close together read as an even haze: one fill with the
+      // same average brightness looks the same and is far cheaper.
+      const r = Math.min(1, GRID_LINE / GRID_SIZE);
+      ctx.globalAlpha = 1 - (1 - r) * (1 - r);
+      ctx.fillRect(0, 0, w, h);
+      ctx.globalAlpha = 1;
+      return;
+    }
+    ctx.beginPath();
+    for (let x = ((originX % step) + step) % step; x < w + step; x += step) {
+      ctx.rect(x - width / 2, 0, width, h);
+    }
+    for (let y = ((originY % step) + step) % step; y < h + step; y += step) {
+      ctx.rect(0, y - width / 2, w, width);
+    }
+    ctx.fill();
+  }
+
+  if (!setting('GALLERY_ENABLED', true)) {
+    document.documentElement.classList.add('gallery-off');
+    const drawStill = () => {
+      if (!GRID_ON) return;
+      const { w, h } = prepareCanvas(gridCanvas, gridCtx, window.devicePixelRatio || 1);
+      paintGrid(gridCtx, w, h, w / 2, h / 2, 1);
+    };
+    drawStill();
+    window.addEventListener('resize', drawStill);
+    return;
+  }
+
+  // With the gallery on, the grid is drawn into the photo canvas (one layer
+  // for the browser to update instead of two), unless the edge fade needs it
+  // on a layer of its own.
+  const GRID_SEPARATE = GRID_EDGE_FADE;
+  document.documentElement.classList.toggle('grid-merged', GRID_ON && !GRID_SEPARATE);
+
+  let perfOn = setting('SHOW_PERFORMANCE_INFO', false); // Ctrl+P can switch it on later
+  const PERF_RATING = setting('SHOW_PERFORMANCE_RATING', false);
+  const TILES_ON = setting('SPEED_UP_ZOOMED_OUT_VIEW', true);
+  const LOW_RES_MOVING = setting('LOWER_RESOLUTION_WHILE_MOVING', true);
+
+  // ---- Layout -------------------------------------------------------------
+  // The landscape is split into square chunks. Each chunk scatters photos at
+  // random spots, keeping any that don't crowd the photos already placed.
+  // Every photo wants its own random amount of space around it.
+  //
+  // Density by distance from the menu: fully crowded out to CROWDED_RADIUS,
+  // then thinning out until nothing remains at END_DISTANCE. Two things do
+  // the thinning: spacing widens, and a growing share of the placed photos
+  // is removed (spacing alone barely shows, since placement fills any room).
+  const FRAME = FRAME_PADDING + FRAME_BORDER;
+  // Farthest apart (center to center, along one axis) two photos can be and
+  // still affect each other. Chunks must be at least this big.
+  const REACH = SIZE_MAX + 2 * FRAME + GAP_MAX * EDGE_MULTIPLIER;
+  const CHUNK = Math.max(1000, Math.ceil(REACH * 1.05));
+  const ATTEMPTS = Math.round(TRIES_PER_AREA * (CHUNK / 1000) ** 2);
+
+  // 0 inside the crowded area, rising to 1 at the end distance.
+  const fadeProgress = (x, y) =>
+    clamp((Math.hypot(x, y) - CROWDED_RADIUS) / (END_DISTANCE - CROWDED_RADIUS), 0, 1);
+  const spacingScale = (x, y) => 1 + (EDGE_MULTIPLIER - 1) * fadeProgress(x, y);
+  const keepChance = (x, y) => CENTER_DENSITY * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
+
+  const viewport = document.getElementById('viewport');
+  const world = document.getElementById('world');
+  const menu = document.getElementById('menu');
+  const homeBtn = document.getElementById('home');
+  const photoCanvas = document.getElementById('photos');
+  const photoCtx = photoCanvas.getContext('2d');
+
+  const cam = { x: 0, y: 0, s: 1 };
+  const layouts = new Map(); // "cx,cy" -> photo placements for that chunk
+  let photos = [];           // { file, aspect, levels, color } for each image that loaded
+  let menuHalfW = 0, menuHalfH = 0;
+
+  // Small seeded random generator, so every visit builds the same landscape.
+  function seededRandom(a, b) {
+    let s = (Math.imul(a, 374761393) ^ Math.imul(b, 668265263) ^ Math.imul(SEED, 1442695041) ^ 0x9e3779b9) >>> 0;
+    return () => {
+      s = (s + 0x6d2b79f5) >>> 0;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Chunks are built in four passes (by the parity of their coordinates).
+  // Chunks in the same pass never touch, and each chunk only has to avoid
+  // photos from touching chunks built in an earlier pass.
+  const phase = (cx, cy) => (cx & 1) + 2 * (cy & 1);
+
+  function chunkLayout(cx, cy) {
+    const key = cx + ',' + cy;
+    if (layouts.has(key)) return layouts.get(key);
+
+    // Chunks entirely past the end distance (plus a margin) stay empty.
+    const nearX = clamp(0, cx * CHUNK, (cx + 1) * CHUNK), nearY = clamp(0, cy * CHUNK, (cy + 1) * CHUNK);
+    if (Math.hypot(nearX, nearY) > END_DISTANCE + REACH) {
+      layouts.set(key, []);
+      return [];
+    }
+
+    const neighbors = [];
+    const p = phase(cx, cy);
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        if ((dx || dy) && phase(cx + dx, cy + dy) < p) neighbors.push(...chunkLayout(cx + dx, cy + dy));
+      }
+    }
+
+    const rnd = seededRandom(cx, cy);
+    const placed = [];
+    for (let i = 0; i < ATTEMPTS; i++) {
+      const size = SIZE_MIN + rnd() * (SIZE_MAX - SIZE_MIN);
+      const x = (cx + rnd()) * CHUNK;
+      const y = (cy + rnd()) * CHUNK;
+      const gap = (GAP_MIN + rnd() * (GAP_MAX - GAP_MIN)) * spacingScale(x, y);
+      const pickRoll = rnd();
+      const keepRoll = rnd();
+
+      // Skip spots where even the smallest photo would crowd the menu.
+      const minHalf = SIZE_MIN / 2 + FRAME + MENU_GAP;
+      if (Math.abs(x) < menuHalfW + minHalf && Math.abs(y) < menuHalfH + minHalf) continue;
+
+      // Prefer a photo that none of the nearby photos are already showing.
+      const nearby = [...neighbors, ...placed].filter((o) => Math.hypot(o.x - x, o.y - y) < REACH * Math.SQRT2);
+      const used = new Set(nearby.map((o) => o.index));
+      const options = photos.map((_, j) => j).filter((j) => !used.has(j));
+      const pool = options.length ? options : photos.map((_, j) => j);
+      const index = pool[Math.floor(pickRoll * pool.length)];
+
+      const aspect = photos[index].aspect;
+      const w0 = aspect >= 1 ? size : size * aspect;
+      const h0 = aspect >= 1 ? size / aspect : size;
+
+      // Shrink the photo as much as needed to keep its spacing from every
+      // neighbor (clearing a neighbor on either axis is enough). Spots that
+      // would need it smaller than the smallest size are skipped.
+      let fit = Math.max(
+        (Math.abs(x) - menuHalfW - MENU_GAP - FRAME) / (w0 / 2),
+        (Math.abs(y) - menuHalfH - MENU_GAP - FRAME) / (h0 / 2));
+      fit = Math.min(1, fit);
+      for (const o of nearby) {
+        const need = (gap + o.gap) / 2 + FRAME;
+        const fitX = (Math.abs(x - o.x) - o.hw - need) / (w0 / 2);
+        const fitY = (Math.abs(y - o.y) - o.hh - need) / (h0 / 2);
+        fit = Math.min(fit, Math.max(fitX, fitY));
+      }
+      if (fit * size < SIZE_MIN) continue;
+
+      const w = w0 * fit, h = h0 * fit;
+      // Removed photos still reserve their space, which also spreads out the rest.
+      const kept = keepRoll < keepChance(x, y);
+      placed.push({ x, y, w, h, hw: w / 2 + FRAME, hh: h / 2 + FRAME, gap, index, kept });
+    }
+
+    layouts.set(key, placed);
+    stats.layoutsBuilt++;
+    return placed;
+  }
+
+  // Load each photo once up front: its shape makes spacing exact, and a set
+  // of pre-shrunk copies (each half the size of the last) lets far-away
+  // photos be drawn from a small copy instead of the full-size image.
+  function loadPhotos() {
+    return Promise.all(IMAGES.map((file) => new Promise((resolve) => {
+      const img = new Image();
+      img.onload = async () => {
+        const sizes = [img]; // largest first
+        let src = img, w = img.naturalWidth, h = img.naturalHeight;
+        while (Math.max(w, h) > 48) {
+          w = Math.max(1, Math.round(w / 2));
+          h = Math.max(1, Math.round(h / 2));
+          const c = document.createElement('canvas');
+          c.width = w;
+          c.height = h;
+          const cx = c.getContext('2d');
+          cx.imageSmoothingQuality = 'high';
+          cx.drawImage(src, 0, 0, w, h);
+          sizes.push(c);
+          src = c;
+        }
+        // Average color, for photos too small on screen to show any detail.
+        // (Browsers refuse to read pixels when the page is opened straight
+        // from a folder, so fall back to a neutral grey there.)
+        let color = 'rgb(128, 128, 128)';
+        try {
+          const dot = document.createElement('canvas').getContext('2d');
+          dot.canvas.width = dot.canvas.height = 1;
+          dot.drawImage(src, 0, 0, 1, 1);
+          const [r, g, b] = dot.getImageData(0, 0, 1, 1).data;
+          color = `rgb(${r}, ${g}, ${b})`;
+        } catch {}
+        // Hand every copy to the graphics card once, up front. Small canvases
+        // drawn directly can get re-uploaded every time they're used.
+        let levels = sizes;
+        try { levels = await Promise.all(sizes.map((s) => createImageBitmap(s))); } catch {}
+        resolve({ file, aspect: img.naturalWidth / img.naturalHeight, levels, color });
+      };
+      img.onerror = () => resolve(null);
+      img.src = IMAGE_DIR + file;
+    }))).then((list) => list.filter(Boolean));
+  }
+
+  // Smallest pre-shrunk copy that still has enough pixels for the size drawn.
+  function pickLevel(photo, pixelsNeeded) {
+    const levels = photo.levels;
+    for (let i = levels.length - 1; i > 0; i--) {
+      const c = levels[i];
+      if (Math.max(c.width, c.height) >= pixelsNeeded) return c;
+    }
+    return levels[0];
+  }
+
+  // ---- Rendering ----------------------------------------------------------
+  // Zoomed in, photos are drawn one by one. Zoomed out (hundreds of photos on
+  // screen), whole areas are drawn once into cached images ("tiles", like an
+  // online map) and each frame just places a handful of tiles.
+  const TILE_PX = 512;                    // tile image size, before padding
+  const TILES_BELOW = 0.5;                // use tiles at or below this zoom
+  const PAD = SIZE_MAX / 2 + FRAME + 2;   // how far photos can overhang their chunk
+  const tiles = new Map();                // "level:tx:ty" -> { canvas, fadeFrom }
+  const revealed = new Map();             // chunk key -> when its photos first appeared
+  const stats = { photos: 0, tiles: 0, log: [], totalFrames: 0, lastFrameAt: 0, mode: '—', tilesBuiltLog: [], layoutsBuilt: 0 };
+  const tileKey = (k, tx, ty) => k + ':' + tx + ':' + ty;
+  const fadeAlpha = (from, now) => (FADE_IN_MS > 0 ? clamp((now - from) / FADE_IN_MS, 0, 1) : 1);
+
+  // Paint photos (in world coordinates) with as few drawing calls as
+  // possible: all frames in one fill, all borders in one, then the images.
+  // pxPerUnit = device pixels per world pixel, for picking detail levels.
+  function paintItems(ctx, items, pxPerUnit) {
+    const tinyByPhoto = new Map(), framed = [];
+    for (const it of items) {
+      if (Math.max(it.w, it.h) * pxPerUnit < 6) {
+        if (!tinyByPhoto.has(it.index)) tinyByPhoto.set(it.index, []);
+        tinyByPhoto.get(it.index).push(it);
+      } else {
+        framed.push(it);
+      }
+    }
+    // Too small for detail: one block of each photo's average color.
+    for (const [index, list] of tinyByPhoto) {
+      ctx.beginPath();
+      for (const it of list) ctx.rect(it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2);
+      ctx.fillStyle = photos[index].color;
+      ctx.fill();
+    }
+    if (!framed.length) return;
+
+    ctx.beginPath();
+    for (const it of framed) ctx.rect(it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2);
+    ctx.fillStyle = FRAME_FILL;
+    ctx.fill();
+    if (FRAME_BORDER * pxPerUnit >= 0.5) {
+      // Border: tint the whole frame, then cover its inside back up.
+      ctx.fillStyle = FRAME_COLOR;
+      ctx.fill();
+      const b = FRAME_BORDER;
+      ctx.beginPath();
+      for (const it of framed) ctx.rect(it.x - it.hw + b, it.y - it.hh + b, it.hw * 2 - 2 * b, it.hh * 2 - 2 * b);
+      ctx.fillStyle = FRAME_FILL;
+      ctx.fill();
+    }
+    for (const it of framed) {
+      const level = pickLevel(photos[it.index], Math.max(it.w, it.h) * pxPerUnit);
+      ctx.drawImage(level, it.x - it.w / 2, it.y - it.h / 2, it.w, it.h);
+    }
+  }
+
+  // Draw one chunk's visible photos straight onto the screen canvas.
+  // Returns true while they're still fading in.
+  function paintChunk(ctx, cx, cy, view, pxPerUnit, now) {
+    const key = cx + ',' + cy;
+    const items = layouts.get(key);
+    if (!items) return false;
+    const visible = items.filter((it) => it.kept &&
+      it.x + it.hw > view.l && it.x - it.hw < view.r && it.y + it.hh > view.t && it.y - it.hh < view.b);
+    if (!visible.length) return false;
+    if (!revealed.has(key)) revealed.set(key, now);
+    const alpha = fadeAlpha(revealed.get(key), now);
+    ctx.globalAlpha = alpha;
+    paintItems(ctx, visible, pxPerUnit);
+    ctx.globalAlpha = 1;
+    stats.photos += visible.length;
+    return alpha < 1;
+  }
+
+  // Draw an n-by-n square of chunks directly (only the parts on screen).
+  function paintChunksDirect(ctx, cx0, cy0, n, view, pxPerUnit, now) {
+    let fading = false;
+    const xa = Math.max(cx0, Math.floor((view.l - PAD) / CHUNK)), xb = Math.min(cx0 + n - 1, Math.floor((view.r + PAD) / CHUNK));
+    const ya = Math.max(cy0, Math.floor((view.t - PAD) / CHUNK)), yb = Math.min(cy0 + n - 1, Math.floor((view.b + PAD) / CHUNK));
+    for (let cy = ya; cy <= yb; cy++) {
+      for (let cx = xa; cx <= xb; cx++) {
+        if (paintChunk(ctx, cx, cy, view, pxPerUnit, now)) fading = true;
+      }
+    }
+    return fading;
+  }
+
+  // Work out any missing layouts in an n-by-n square of chunks.
+  // Returns false if it ran out of time.
+  function ensureLayouts(cx0, cy0, n, deadline) {
+    for (let cy = cy0; cy < cy0 + n; cy++) {
+      for (let cx = cx0; cx < cx0 + n; cx++) {
+        if (layouts.has(cx + ',' + cy)) continue;
+        if (performance.now() > deadline) return false;
+        chunkLayout(cx, cy);
+      }
+    }
+    return true;
+  }
+
+  // Draw all photos belonging to a tile's chunks into a new cached image.
+  // d = image pixels per world pixel.
+  function rasterTile(k, tx, ty, d, now) {
+    const n = 1 << k, T = CHUNK * n;
+    const items = [];
+    let fadeFrom = Infinity;
+    for (let cy = ty * n; cy < (ty + 1) * n; cy++) {
+      for (let cx = tx * n; cx < (tx + 1) * n; cx++) {
+        const key = cx + ',' + cy;
+        const kept = layouts.get(key).filter((it) => it.kept);
+        if (!kept.length) continue;
+        if (!revealed.has(key)) revealed.set(key, now);
+        // A tile only fades in if everything in it is new.
+        fadeFrom = Math.min(fadeFrom, revealed.get(key));
+        for (const it of kept) items.push(it);
+      }
+    }
+    if (!items.length) return { canvas: null };
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = Math.ceil((T + 2 * PAD) * d);
+    const c = canvas.getContext('2d');
+    c.setTransform(d, 0, 0, d, -(tx * T - PAD) * d, -(ty * T - PAD) * d);
+    c.imageSmoothingQuality = 'medium';
+    paintItems(c, items, d);
+    return { canvas, fadeFrom };
+  }
+
+  function drawTile(ctx, tile, x0, y0, T, now) {
+    if (!tile.canvas) return false;
+    const alpha = fadeAlpha(tile.fadeFrom, now);
+    ctx.globalAlpha = alpha;
+    // Plain smoothing: tiles are at most 2x larger than drawn, and higher
+    // quality would recompute a shrunk copy of the tile every frame.
+    ctx.imageSmoothingQuality = 'low';
+    ctx.drawImage(tile.canvas, x0 - PAD, y0 - PAD, T + 2 * PAD, T + 2 * PAD);
+    ctx.imageSmoothingQuality = 'medium';
+    ctx.globalAlpha = 1;
+    stats.tiles++;
+    return alpha < 1;
+  }
+
+  // A tile that isn't built yet: borrow the next level up (cropped) or the
+  // four below, and draw photos directly for anything still missing.
+  function drawStandIn(ctx, k, tx, ty, view, pxPerUnit, now) {
+    const n = 1 << k, T = CHUNK * n;
+    const px = Math.floor(tx / 2), py = Math.floor(ty / 2);
+    const parent = tiles.get(tileKey(k + 1, px, py));
+    if (parent) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(tx * T, ty * T, T, T);
+      ctx.clip();
+      const fading = drawTile(ctx, parent, px * 2 * T, py * 2 * T, 2 * T, now);
+      ctx.restore();
+      return fading;
+    }
+    if (k === 0) return paintChunksDirect(ctx, tx, ty, 1, view, pxPerUnit, now);
+    let fading = false;
+    for (let dy = 0; dy < 2; dy++) {
+      for (let dx = 0; dx < 2; dx++) {
+        const sx = tx * 2 + dx, sy = ty * 2 + dy;
+        const child = tiles.get(tileKey(k - 1, sx, sy));
+        const f = child
+          ? drawTile(ctx, child, sx * (T / 2), sy * (T / 2), T / 2, now)
+          : paintChunksDirect(ctx, sx * (n / 2), sy * (n / 2), n / 2, view, pxPerUnit, now);
+        if (f) fading = true;
+      }
+    }
+    return fading;
+  }
+
+  let renderQueued = false;
+  function requestRender() {
+    if (renderQueued) return;
+    renderQueued = true;
+    requestAnimationFrame(() => { renderQueued = false; render(); });
+  }
+
+  let lastCam = {}, moving = false, settleTimer = 0;
+  function render() {
+    if (!perfOn) return drawFrame();
+    const t0 = performance.now();
+    drawFrame();
+    const t1 = performance.now();
+    stats.log.push({ t: t1, js: t1 - t0, gap: stats.lastFrameAt && t0 - stats.lastFrameAt < 250 ? t0 - stats.lastFrameAt : 0 }); // longer gaps = standing still, not a slow frame
+    stats.lastFrameAt = t0;
+    stats.totalFrames++;
+  }
+
+  function drawFrame() {
+    const W = window.innerWidth, H = window.innerHeight;
+    const originX = W / 2 - cam.x * cam.s, originY = H / 2 - cam.y * cam.s;
+    world.style.transform = `translate(${originX}px, ${originY}px) scale(${cam.s})`;
+
+    // "Moving" lasts until the view has been still for 150ms.
+    if (cam.x !== lastCam.x || cam.y !== lastCam.y || cam.s !== lastCam.s) {
+      lastCam = { x: cam.x, y: cam.y, s: cam.s };
+      moving = true;
+      world.classList.add('moving');
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(() => {
+        moving = false;
+        world.classList.remove('moving');
+        requestRender(); // redraw at full sharpness
+      }, 150);
+    }
+
+    const fullDpr = window.devicePixelRatio || 1;
+    const tileDensity = cam.s * Math.min(fullDpr, 1); // tiles hold at most 1 pixel per CSS pixel
+    const useTiles = TILES_ON && tileDensity <= TILES_BELOW;
+    const dpr = LOW_RES_MOVING && moving && useTiles ? Math.min(fullDpr, 1) : fullDpr;
+
+    if (GRID_ON && GRID_SEPARATE) {
+      const g = prepareCanvas(gridCanvas, gridCtx, dpr);
+      paintGrid(gridCtx, g.w, g.h, originX, originY, cam.s);
+    }
+    const { w, h } = prepareCanvas(photoCanvas, photoCtx, dpr);
+    if (GRID_ON && !GRID_SEPARATE) paintGrid(photoCtx, w, h, originX, originY, cam.s);
+
+    stats.photos = 0;
+    stats.tiles = 0;
+    if (!photos.length) return;
+
+    const ctx = photoCtx;
+    ctx.translate(originX, originY);
+    ctx.scale(cam.s, cam.s);
+    ctx.imageSmoothingQuality = 'medium';
+    const now = performance.now();
+    // Time allowed per frame for working out layouts and building tiles.
+    const deadline = now + (moving ? 4 : 10);
+    const pxPerUnit = cam.s * fullDpr;
+    const halfW = W / 2 / cam.s, halfH = H / 2 / cam.s;
+    const view = { l: cam.x - halfW, r: cam.x + halfW, t: cam.y - halfH, b: cam.y + halfH };
+    let needsAnotherFrame = false;
+    let cx0, cx1, cy0, cy1; // chunks worth keeping layouts for
+
+    if (useTiles) {
+      // Tile level: each tile covers 2^k chunks per side, about TILE_PX pixels across.
+      const k = Math.max(0, Math.floor(Math.log2(TILE_PX / (CHUNK * tileDensity))));
+      const n = 1 << k, T = CHUNK * n, d = TILE_PX / T;
+      if (perfOn) stats.mode = `tiles · level ${k} (${n}×${n} areas each)`;
+      const tx0 = Math.floor((view.l - PAD) / T), tx1 = Math.floor((view.r + PAD) / T);
+      const ty0 = Math.floor((view.t - PAD) / T), ty1 = Math.floor((view.b + PAD) / T);
+
+      // Build missing tiles, nearest the middle of the screen first.
+      const missing = [];
+      for (let ty = ty0; ty <= ty1; ty++) {
+        for (let tx = tx0; tx <= tx1; tx++) {
+          if (!tiles.has(tileKey(k, tx, ty))) missing.push([tx, ty]);
+        }
+      }
+      const midX = cam.x / T - 0.5, midY = cam.y / T - 0.5;
+      missing.sort((a, b) => Math.hypot(a[0] - midX, a[1] - midY) - Math.hypot(b[0] - midX, b[1] - midY));
+      let built = 0;
+      for (const [tx, ty] of missing) {
+        if (performance.now() > deadline || !ensureLayouts(tx * n, ty * n, n, deadline)) break;
+        tiles.set(tileKey(k, tx, ty), rasterTile(k, tx, ty, d, now));
+        built++;
+        if (perfOn) stats.tilesBuiltLog.push(performance.now());
+      }
+      const allReady = built === missing.length;
+      if (!allReady) needsAnotherFrame = true;
+
+      for (let ty = ty0; ty <= ty1; ty++) {
+        for (let tx = tx0; tx <= tx1; tx++) {
+          const tile = tiles.get(tileKey(k, tx, ty));
+          const fading = tile
+            ? drawTile(ctx, tile, tx * T, ty * T, T, now)
+            : drawStandIn(ctx, k, tx, ty, view, pxPerUnit, now);
+          if (fading) needsAnotherFrame = true;
+        }
+      }
+
+      // Keep this level's tiles near the screen. Neighboring levels are only
+      // kept as stand-ins until this level is complete.
+      for (const key of tiles.keys()) {
+        const [lk, x, y] = key.split(':').map(Number);
+        let keep = false;
+        if (lk === k) {
+          keep = x >= tx0 - 1 && x <= tx1 + 1 && y >= ty0 - 1 && y <= ty1 + 1;
+        } else if (!allReady && lk === k + 1) {
+          keep = x >= Math.floor(tx0 / 2) && x <= Math.floor(tx1 / 2) && y >= Math.floor(ty0 / 2) && y <= Math.floor(ty1 / 2);
+        } else if (!allReady && lk === k - 1) {
+          keep = x >= tx0 * 2 && x <= tx1 * 2 + 1 && y >= ty0 * 2 && y <= ty1 * 2 + 1;
+        }
+        if (!keep) tiles.delete(key);
+      }
+      cx0 = tx0 * n; cx1 = (tx1 + 1) * n - 1;
+      cy0 = ty0 * n; cy1 = (ty1 + 1) * n - 1;
+    } else {
+      if (tiles.size) tiles.clear();
+      if (perfOn) stats.mode = 'single photos';
+      cx0 = Math.floor((view.l - PAD) / CHUNK); cx1 = Math.floor((view.r + PAD) / CHUNK);
+      cy0 = Math.floor((view.t - PAD) / CHUNK); cy1 = Math.floor((view.b + PAD) / CHUNK);
+
+      const missing = [];
+      for (let cy = cy0; cy <= cy1; cy++) {
+        for (let cx = cx0; cx <= cx1; cx++) {
+          if (!layouts.has(cx + ',' + cy)) missing.push([cx, cy]);
+        }
+      }
+      const midX = cam.x / CHUNK - 0.5, midY = cam.y / CHUNK - 0.5;
+      missing.sort((a, b) => Math.hypot(a[0] - midX, a[1] - midY) - Math.hypot(b[0] - midX, b[1] - midY));
+      for (const [cx, cy] of missing) {
+        if (performance.now() > deadline) { needsAnotherFrame = true; break; }
+        chunkLayout(cx, cy);
+      }
+      for (let cy = cy0; cy <= cy1; cy++) {
+        for (let cx = cx0; cx <= cx1; cx++) {
+          if (paintChunk(ctx, cx, cy, view, pxPerUnit, now)) needsAnotherFrame = true;
+        }
+      }
+    }
+    if (needsAnotherFrame) requestRender();
+
+    // Forget layouts far off screen once there are a lot of them (they're
+    // rebuilt identically if the visitor comes back).
+    const visibleChunks = (cx1 - cx0 + 1) * (cy1 - cy0 + 1);
+    if (layouts.size > Math.max(600, visibleChunks * 4)) {
+      const spare = 4;
+      for (const key of layouts.keys()) {
+        const [cx, cy] = key.split(',').map(Number);
+        if (cx < cx0 - spare || cx > cx1 + spare || cy < cy0 - spare || cy > cy1 + spare) {
+          layouts.delete(key);
+          revealed.delete(key);
+        }
+      }
+    }
+  }
+
+  // Optional on-screen performance panel: on at start with SHOW_PERFORMANCE_INFO,
+  // or opened any time with Ctrl+P. Press P to hide or show it.
+  let perfPanel = null;
+  function openPerfPanel() {
+    const panel = document.createElement('div');
+    panel.id = 'perf';
+    perfPanel = panel;
+    panel.innerHTML = `
+      <div class="perf-head">PERFORMANCE <span class="perf-hint">drag to move · [P] hide</span>
+      </div>
+      <div class="perf-body">
+      <div class="perf-fps"><span data-k="fps">--</span><small>fps</small><span class="perf-rating" data-k="rating"></span></div>
+      <canvas class="perf-graph" width="240" height="56"></canvas>
+      <div class="perf-legend"><span>frame times · last 4s</span><span>— 60fps  - - 30fps</span></div>
+      <div class="perf-section">FRAMES</div>
+      <div class="perf-row"><span>frame time avg / worst</span><b data-k="frame"></b></div>
+      <div class="perf-row"><span>script time per frame</span><b data-k="script"></b></div>
+      <div class="perf-row"><span>slow frames (last 10 s)</span><b data-k="slow"></b></div>
+      <div class="perf-row"><span>frames drawn total</span><b data-k="total"></b></div>
+      <div class="perf-section">DRAWING</div>
+      <div class="perf-row"><span>mode</span><b data-k="mode"></b></div>
+      <div class="perf-row"><span>on screen</span><b data-k="drawn"></b></div>
+      <div class="perf-row"><span>tiles in memory</span><b data-k="tiles"></b></div>
+      <div class="perf-row"><span>tiles built / sec</span><b data-k="built"></b></div>
+      <div class="perf-row"><span>areas laid out</span><b data-k="layouts"></b></div>
+      <div class="perf-row"><span>canvas size</span><b data-k="canvas"></b></div>
+      <div class="perf-section">VIEW</div>
+      <div class="perf-row"><span>zoom</span><b data-k="zoom"></b></div>
+      <div class="perf-row"><span>position</span><b data-k="pos"></b></div>
+      <div class="perf-row"><span>distance from menu</span><b data-k="dist"></b></div>
+      <div class="perf-row"><span>state</span><b data-k="state"></b></div>
+      <div class="perf-section">SYSTEM</div>
+      <div class="perf-row"><span>screen</span><b data-k="screen"></b></div>
+      <div class="perf-row"><span>photos loaded</span><b data-k="photos"></b></div>
+      <div class="perf-row"><span>JS memory</span><b data-k="heap"></b></div>
+      <div class="perf-row"><span>uptime</span><b data-k="uptime"></b></div>
+      </div>
+      <div class="perf-rs" data-dir="n"></div><div class="perf-rs" data-dir="s"></div>
+      <div class="perf-rs" data-dir="e"></div><div class="perf-rs" data-dir="w"></div>
+      <div class="perf-rs" data-dir="ne"></div><div class="perf-rs" data-dir="nw"></div>
+      <div class="perf-rs" data-dir="se"></div><div class="perf-rs" data-dir="sw"></div>`;
+    document.body.appendChild(panel);
+    const field = {};
+    panel.querySelectorAll('[data-k]').forEach((el) => { field[el.dataset.k] = el; });
+    const graph = panel.querySelector('.perf-graph');
+    const g = graph.getContext('2d');
+    const started = performance.now();
+
+    // A small window: drag the title bar to move it, drag any edge or corner
+    // to resize it. Press P to hide it. Its place and size are remembered in
+    // this browser (when storage is available).
+    const head = panel.querySelector('.perf-head');
+    const MIN_W = 200, MIN_H = 120;
+    let rect = { left: innerWidth - 256 - 12, top: 12, width: 256, height: Math.min(600, innerHeight - 24) };
+    try {
+      const saved = JSON.parse(localStorage.getItem('sfs-perf-panel') || 'null');
+      if (saved) rect = { ...rect, ...saved };
+    } catch {}
+
+    function applyRect() {
+      rect.width = clamp(rect.width, MIN_W, innerWidth);
+      rect.height = clamp(rect.height, MIN_H, innerHeight);
+      rect.left = clamp(rect.left, 0, Math.max(0, innerWidth - rect.width));
+      rect.top = clamp(rect.top, 0, Math.max(0, innerHeight - head.offsetHeight));
+      Object.assign(panel.style, {
+        left: rect.left + 'px', top: rect.top + 'px', right: 'auto',
+        width: rect.width + 'px', height: rect.height + 'px', maxHeight: 'none',
+      });
+    }
+    function saveRect() {
+      try {
+        localStorage.setItem('sfs-perf-panel', JSON.stringify(rect));
+      } catch {}
+    }
+    applyRect();
+
+    // Moving and resizing share one handler: dir says which edges follow the pointer.
+    let action = null;
+    function startAction(e, dir) {
+      if (e.button !== 0) return;
+      action = { dir, x: e.clientX, y: e.clientY, start: { ...rect } };
+      e.currentTarget.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    function moveAction(e) {
+      if (!action) return;
+      const dx = e.clientX - action.x, dy = e.clientY - action.y, st = action.start, dir = action.dir;
+      if (dir === 'move') {
+        rect.left = st.left + dx;
+        rect.top = st.top + dy;
+      } else {
+        if (dir.includes('e')) rect.width = st.width + dx;
+        if (dir.includes('s')) rect.height = st.height + dy;
+        if (dir.includes('w')) {
+          rect.width = Math.max(MIN_W, st.width - dx);
+          rect.left = st.left + st.width - rect.width;
+        }
+        if (dir.includes('n')) {
+          rect.height = Math.max(MIN_H, st.height - dy);
+          rect.top = st.top + st.height - rect.height;
+        }
+      }
+      applyRect();
+    }
+    function endAction() {
+      if (!action) return;
+      action = null;
+      saveRect();
+    }
+    const wire = (el, dir) => {
+      el.addEventListener('pointerdown', (e) => startAction(e, dir));
+      el.addEventListener('pointermove', moveAction);
+      el.addEventListener('pointerup', endAction);
+      el.addEventListener('pointercancel', endAction);
+    };
+    wire(head, 'move');
+    panel.querySelectorAll('.perf-rs').forEach((el) => wire(el, el.dataset.dir));
+
+    window.addEventListener('resize', applyRect);
+
+    window.addEventListener('keydown', (e) => {
+      if ((e.key === 'p' || e.key === 'P') && !e.ctrlKey && !e.metaKey) panel.hidden = !panel.hidden;
+    });
+
+    const fmtNum = (n) => Math.round(n).toLocaleString();
+    const fmtBytes = (b) => (b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1024).toFixed(0) + ' KB');
+    const fpsColor = (fps) => (fps >= 55 ? '#4ade80' : fps >= 30 ? '#facc15' : '#f87171');
+
+    setInterval(() => {
+      if (panel.hidden) return;
+      const now = performance.now();
+      stats.log = stats.log.filter((f) => now - f.t < 10000);
+      const lastSec = stats.log.filter((f) => now - f.t < 1000);
+      const gaps = lastSec.map((f) => f.gap).filter((x) => x > 0);
+      const fps = lastSec.length;
+      const idle = !stats.log.length || now - stats.log[stats.log.length - 1].t > 500;
+
+      field.fps.textContent = idle ? '0' : fps;
+      field.fps.style.color = idle ? '#9ca3af' : fpsColor(fps);
+      field.rating.textContent = !PERF_RATING ? '' : idle ? 'IDLE' : fps >= 110 ? 'BUTTERY' : fps >= 55 ? 'SMOOTH' : fps >= 30 ? 'OK' : 'CHOPPY';
+      field.rating.style.color = field.fps.style.color;
+
+      const avg = (a) => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
+      field.frame.textContent = gaps.length ? `${avg(gaps).toFixed(1)} / ${Math.max(...gaps).toFixed(1)} ms` : '—';
+      field.script.textContent = lastSec.length ? `${avg(lastSec.map((f) => f.js)).toFixed(2)} ms` : '—';
+      const slow = stats.log.filter((f) => f.gap > 33.4).length;
+      field.slow.textContent = slow;
+      field.slow.style.color = slow ? '#f87171' : '#4ade80';
+      field.total.textContent = fmtNum(stats.totalFrames);
+
+      field.mode.textContent = stats.mode;
+      field.drawn.textContent = `${stats.tiles} tiles + ${stats.photos} photos`;
+      let tileBytes = 0;
+      for (const t of tiles.values()) if (t.canvas) tileBytes += t.canvas.width * t.canvas.height * 4;
+      field.tiles.textContent = `${tiles.size} (${fmtBytes(tileBytes)})`;
+      field.built.textContent = stats.tilesBuiltLog.filter((t) => now - t < 1000).length;
+      stats.tilesBuiltLog = stats.tilesBuiltLog.filter((t) => now - t < 1000);
+      field.layouts.textContent = `${fmtNum(layouts.size)} cached · ${fmtNum(stats.layoutsBuilt)} built`;
+      field.canvas.textContent = `${photoCanvas.width} × ${photoCanvas.height} px`;
+
+      field.zoom.textContent = cam.s < 1 ? `${(1 / cam.s).toFixed(2)}x out` : `${cam.s.toFixed(2)}x in`;
+      field.pos.textContent = `${fmtNum(cam.x)}, ${fmtNum(cam.y)}`;
+      const dist = Math.hypot(cam.x, cam.y);
+      field.dist.textContent = `${fmtNum(dist)} px (${dist < CROWDED_RADIUS ? 'crowded' : dist < END_DISTANCE ? 'thinning' : 'empty'})`;
+      field.state.textContent = moving ? '● moving' : '○ still';
+      field.state.style.color = moving ? '#60a5fa' : '#9ca3af';
+
+      field.screen.textContent = `${innerWidth} × ${innerHeight} @ ${devicePixelRatio}x`;
+      field.photos.textContent = `${photos.length} of ${IMAGES.length}`;
+      field.heap.textContent = performance.memory
+        ? `${fmtBytes(performance.memory.usedJSHeapSize)} / ${fmtBytes(performance.memory.jsHeapSizeLimit)}`
+        : 'not available in this browser';
+      const up = Math.floor((now - started) / 1000);
+      field.uptime.textContent = `${Math.floor(up / 60)}m ${String(up % 60).padStart(2, '0')}s`;
+
+      // Frame-time graph: one bar per frame over the last 4 seconds.
+      if (graph.width !== graph.clientWidth && graph.clientWidth > 0) graph.width = graph.clientWidth;
+      const W = graph.width, H = graph.height, maxMs = 50;
+      g.clearRect(0, 0, W, H);
+      const recent = stats.log.filter((f) => now - f.t < 4000 && f.gap > 0);
+      for (const f of recent) {
+        const x = W - ((now - f.t) / 4000) * W;
+        const bh = Math.min(H, (f.gap / maxMs) * H);
+        g.fillStyle = f.gap > 33.4 ? '#f87171' : f.gap > 16.8 ? '#facc15' : '#4ade80';
+        g.fillRect(x, H - bh, 1.5, bh);
+      }
+      g.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      g.lineWidth = 1;
+      g.beginPath();
+      const y60 = Math.round(H - (16.7 / maxMs) * H) + 0.5;
+      g.moveTo(0, y60); g.lineTo(W, y60);
+      g.stroke();
+      g.setLineDash([3, 3]);
+      g.beginPath();
+      const y30 = Math.round(H - (33.3 / maxMs) * H) + 0.5;
+      g.moveTo(0, y30); g.lineTo(W, y30);
+      g.stroke();
+      g.setLineDash([]);
+    }, 250);
+  }
+  if (perfOn) openPerfPanel();
+
+  // Ctrl+P opens the panel even when SHOW_PERFORMANCE_INFO is false (and
+  // shows or hides it once open), instead of the browser's print dialog.
+  window.addEventListener('keydown', (e) => {
+    if (!(e.ctrlKey || e.metaKey) || (e.key !== 'p' && e.key !== 'P')) return;
+    e.preventDefault();
+    if (!perfPanel) {
+      perfOn = true;
+      openPerfPanel();
+    } else {
+      perfPanel.hidden = !perfPanel.hidden;
+    }
+  });
+
+  function zoomAt(screenX, screenY, newScale) {
+    const W = window.innerWidth, H = window.innerHeight;
+    newScale = clamp(newScale, MIN_SCALE, MAX_SCALE);
+    const wx = cam.x + (screenX - W / 2) / cam.s;
+    const wy = cam.y + (screenY - H / 2) / cam.s;
+    cam.s = newScale;
+    cam.x = wx - (screenX - W / 2) / cam.s;
+    cam.y = wy - (screenY - H / 2) / cam.s;
+    requestRender();
+  }
+
+  // ---- Animation (inertia & return to center) -----------------------------
+  let animFrame = 0;
+  function stopAnim() {
+    cancelAnimationFrame(animFrame);
+    animFrame = 0;
+  }
+
+  function startInertia(vx, vy) {
+    let last = performance.now();
+    const step = (now) => {
+      const dt = Math.min(now - last, 50);
+      last = now;
+      cam.x -= (vx * dt) / cam.s;
+      cam.y -= (vy * dt) / cam.s;
+      const decay = Math.pow(GLIDE, dt / 16.7);
+      vx *= decay;
+      vy *= decay;
+      render();
+      animFrame = Math.hypot(vx, vy) > 0.02 ? requestAnimationFrame(step) : 0;
+    };
+    animFrame = requestAnimationFrame(step);
+  }
+
+  function homeScale() {
+    const W = window.innerWidth, H = window.innerHeight;
+    const fit = Math.min(1, (W - 32) / menu.offsetWidth, (H - 120) / menu.offsetHeight);
+    return clamp(fit, MIN_SCALE, 1);
+  }
+
+  function goHome() {
+    stopAnim();
+    const from = { ...cam };
+    const to = { x: 0, y: 0, s: homeScale() };
+    const start = performance.now();
+    const duration = CENTER_MS;
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / duration);
+      const e = ease(t);
+      cam.x = from.x + (to.x - from.x) * e;
+      cam.y = from.y + (to.y - from.y) * e;
+      cam.s = from.s + (to.s - from.s) * e;
+      render();
+      animFrame = t < 1 ? requestAnimationFrame(step) : 0;
+    };
+    animFrame = requestAnimationFrame(step);
+  }
+
+  // ---- Input: drag, pinch, wheel, keys ------------------------------------
+  const pointers = new Map();
+  let samples = [];
+  let dragDistance = 0;
+
+  viewport.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    stopAnim();
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    samples = [];
+    if (pointers.size === 1) dragDistance = 0;
+  });
+
+  viewport.addEventListener('pointermove', (e) => {
+    const p = pointers.get(e.pointerId);
+    if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+
+    if (pointers.size === 1) {
+      dragDistance += Math.hypot(dx, dy);
+      if (dragDistance > 4 && !viewport.hasPointerCapture(e.pointerId)) {
+        viewport.setPointerCapture(e.pointerId);
+        viewport.classList.add('dragging');
+      }
+      cam.x -= dx / cam.s;
+      cam.y -= dy / cam.s;
+      samples.push({ t: e.timeStamp, dx, dy });
+      if (samples.length > 8) samples.shift();
+      requestRender();
+    } else if (pointers.size === 2) {
+      dragDistance = Infinity;
+      const other = [...pointers.entries()].find(([id]) => id !== e.pointerId)[1];
+      const oldMidX = (p.x + other.x) / 2, oldMidY = (p.y + other.y) / 2;
+      const oldDist = Math.hypot(p.x - other.x, p.y - other.y);
+      const newMidX = (e.clientX + other.x) / 2, newMidY = (e.clientY + other.y) / 2;
+      const newDist = Math.hypot(e.clientX - other.x, e.clientY - other.y);
+      if (oldDist > 0) zoomAt(oldMidX, oldMidY, cam.s * (newDist / oldDist));
+      cam.x -= (newMidX - oldMidX) / cam.s;
+      cam.y -= (newMidY - oldMidY) / cam.s;
+      requestRender();
+    }
+    p.x = e.clientX;
+    p.y = e.clientY;
+  });
+
+  function endPointer(e) {
+    if (!pointers.delete(e.pointerId)) return;
+    if (pointers.size > 0) { samples = []; return; }
+    viewport.classList.remove('dragging');
+    const recent = samples.filter((s) => e.timeStamp - s.t < 80);
+    if (recent.length >= 2) {
+      const span = Math.max(16, e.timeStamp - recent[0].t);
+      const vx = recent.reduce((a, s) => a + s.dx, 0) / span;
+      const vy = recent.reduce((a, s) => a + s.dy, 0) / span;
+      if (Math.hypot(vx, vy) > 0.1) startInertia(vx, vy);
+    }
+    samples = [];
+  }
+  viewport.addEventListener('pointerup', endPointer);
+  viewport.addEventListener('pointercancel', endPointer);
+
+  viewport.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    stopAnim();
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    const sensitivity = e.ctrlKey ? PINCH_SPEED : WHEEL_SPEED; // ctrlKey = trackpad pinch
+    zoomAt(e.clientX, e.clientY, cam.s * Math.exp(-dy * sensitivity));
+  }, { passive: false });
+
+  // Safari trackpad gestures would otherwise zoom the whole page.
+  document.addEventListener('gesturestart', (e) => e.preventDefault());
+
+  window.addEventListener('keydown', (e) => {
+    const step = KEY_STEP / cam.s;
+    const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
+    if (moves[e.key]) {
+      e.preventDefault();
+      stopAnim();
+      cam.x += moves[e.key][0];
+      cam.y += moves[e.key][1];
+      requestRender();
+    } else if (e.key === '+' || e.key === '=') {
+      zoomAt(window.innerWidth / 2, window.innerHeight / 2, cam.s * 1.2);
+    } else if (e.key === '-' || e.key === '_') {
+      zoomAt(window.innerWidth / 2, window.innerHeight / 2, cam.s / 1.2);
+    }
+  });
+
+  // Menu links open their page, except when the click was really the end of
+  // a drag that happened to start on a link.
+  menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => {
+    if (dragDistance > 4) e.preventDefault();
+  }));
+
+  homeBtn.addEventListener('click', goHome);
+
+  // The menu's size decides where photos can't go; rebuild if it changes.
+  function measureMenu() {
+    const w = menu.offsetWidth / 2, h = menu.offsetHeight / 2;
+    if (w === menuHalfW && h === menuHalfH) return;
+    menuHalfW = w;
+    menuHalfH = h;
+    layouts.clear();
+    tiles.clear();
+    revealed.clear();
+  }
+
+  window.addEventListener('resize', () => { measureMenu(); requestRender(); });
+
+  // ---- Start --------------------------------------------------------------
+  measureMenu();
+  if (document.fonts) document.fonts.ready.then(() => { measureMenu(); requestRender(); });
+  cam.s = homeScale();
+  render();
+  loadPhotos().then((list) => {
+    photos = list;
+    render();
+  });
+}
+
+loadSettings().then(startGallery);
+</script>
+</body>
+</html>

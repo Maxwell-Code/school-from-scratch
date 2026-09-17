@@ -1,0 +1,269 @@
+// =============================================================================
+//  THE SCHOOL FROM SCRATCH — WEBSITE SETTINGS
+// =============================================================================
+//
+//  How to edit:
+//    - Each setting looks like:   NAME = value
+//    - Numbers are plain (80). Text and colors go in quotes ("#ffffff").
+//    - Lines starting with // are notes and are ignored.
+//    - Save this file, then reload the page to see the change.
+//    - If a typo breaks this file, the site quietly falls back to its
+//      built-in defaults (the browser console will show the error).
+//
+//  Sizes are in screen pixels at normal zoom. 96 pixels is about 1 inch.
+//
+// =============================================================================
+
+
+// -----------------------------------------------------------------------------
+//  GALLERY ON / OFF
+// -----------------------------------------------------------------------------
+
+// true  = the photo landscape: photos all around the menu, drag to move,
+//         zoom in and out, and the "Center" button.
+// false = a plain, normal webpage: just the title and menu, centered, with no
+//         photos, no dragging, no zooming, and no "Center" button.
+// (Type true or false with no quotes.)
+GALLERY_ENABLED = true
+
+
+// -----------------------------------------------------------------------------
+//  PHOTOS
+// -----------------------------------------------------------------------------
+
+// Folder the gallery photos live in (relative to index.html).
+PHOTO_FOLDER = "photos/infinite_gallery/"
+
+// Every photo to show. Browsers can't look inside a folder on their own,
+// so add each new photo's filename here, in quotes, followed by a comma.
+PHOTOS = [
+  "children_on_an_oak_tree.jpg",
+  "children_playing_in_the_mud.jpg",
+  "sfs_tent_progress.jpg",
+]
+
+// Size range for photos, measured along each photo's longest side.
+// Every photo gets a random size somewhere in between.
+PHOTO_SIZE_SMALLEST = 110
+PHOTO_SIZE_LARGEST = 270
+
+// How long a photo takes to fade in once it loads, in milliseconds.
+PHOTO_FADE_IN_MS = 500
+
+
+// -----------------------------------------------------------------------------
+//  SPACING & DENSITY
+// -----------------------------------------------------------------------------
+
+// Empty space around photos close to the menu. Each photo picks a random
+// amount in this range; two photos sit apart by the average of what they want.
+SPACING_NEAR_MENU_MIN = 15
+SPACING_NEAR_MENU_MAX = 60
+
+// Photos go from crowded, to sparse, to nothing:
+//
+//   menu -- crowded --| CROWDED_AREA_RADIUS -- thinning out --| PHOTOS_END_DISTANCE -- empty
+//
+// Both distances are in pixels, measured from the center of the menu.
+// At normal zoom a laptop screen shows about 700 pixels in each direction;
+// fully zoomed out it shows about three times that (around 2,000-3,000).
+//
+// HOW GRADUAL IT FEELS comes mostly from the gap between these two numbers:
+// the bigger the gap, the slower the photos thin out. For an even slower
+// fade, raise PHOTOS_END_DISTANCE (try 20000 or 30000).
+
+// Photos stay fully crowded out to this distance.
+CROWDED_AREA_RADIUS = 1500
+
+// How full the crowded area is, from 0 to 100 (percent).
+// 100 = as packed as the spacing above allows. 50 = about half as many
+// photos. The thinning-out area scales down along with it.
+CROWDED_AREA_DENSITY = 100
+
+// No photos appear past this distance.
+PHOTOS_END_DISTANCE = 12000
+
+// How the thinning is shaped between those two distances.
+// 1 = thins out evenly the whole way.
+// Lower (0.5) = stays full longer, then drops off closer to the end.
+// Higher (2, 3) = thins out sooner, leaving a long, very sparse outer ring.
+FADE_CURVE = 1
+
+// Gaps between photos also widen as they thin out, reaching this many times
+// the near-menu spacing at the end distance. 1 = no widening.
+SPACING_AT_EDGE_MULTIPLIER = 3
+
+// How many random spots are tried per 1000x1000 pixel area when placing
+// photos. Higher = more tightly packed (up to the spacing rules above).
+PLACEMENT_TRIES = 250
+
+// Empty space kept between the menu and the nearest photos.
+MENU_CLEARANCE = 40
+
+// Change this to any other whole number for a completely different
+// (but still consistent) arrangement of photos.
+LAYOUT_SEED = 1
+
+
+// -----------------------------------------------------------------------------
+//  PHOTO FRAMES
+// -----------------------------------------------------------------------------
+
+// Space between a photo and its border.
+FRAME_PADDING = 3
+
+// Thickness of the border line.
+FRAME_BORDER_WIDTH = 3
+
+// Border color and the color inside the frame around the photo.
+FRAME_BORDER_COLOR = "rgba(255, 255, 255, 0.35)"
+FRAME_FILL_COLOR = "#0b0b0b"
+
+
+// -----------------------------------------------------------------------------
+//  ZOOM & MOVEMENT
+// -----------------------------------------------------------------------------
+
+// How far visitors can zoom out and in (3 = three times smaller / larger).
+ZOOM_OUT_LIMIT = 10
+ZOOM_IN_LIMIT = 3
+
+// Zoom speed for a mouse scroll wheel, and for a trackpad pinch.
+WHEEL_ZOOM_SPEED = 0.0015
+TRACKPAD_PINCH_ZOOM_SPEED = 0.01
+
+// How long the landscape keeps gliding after a quick drag is released.
+// 0 = stops instantly; closer to 1 = glides longer (keep below 1).
+GLIDE_AFTER_DRAG = 0.90
+
+// How far the arrow keys move the view per press.
+KEYBOARD_MOVE_STEP = 120
+
+// How long the "Center" button's trip back to the menu takes, in milliseconds.
+CENTER_BUTTON_TRAVEL_MS = 800
+
+
+// -----------------------------------------------------------------------------
+//  COLORS
+// -----------------------------------------------------------------------------
+
+BACKGROUND_COLOR = "#000000"
+TEXT_COLOR = "#ffffff"
+
+
+// -----------------------------------------------------------------------------
+//  FONTS & MENU
+// -----------------------------------------------------------------------------
+
+// The big title at the top of the menu.
+MENU_TITLE = "The School From Scratch"
+
+// The menu options, top to bottom. Each one goes in quotes, followed by a
+// comma. Reorder, add, or remove lines to change the menu.
+//
+// Each option opens its own page file, named after it in lowercase with
+// dashes: "Campus Location" opens campus-location.html. When you add a new
+// option, copy cost.html, rename the copy to match, and change the name in its
+// data-page="..." line. (Until you do, it still works on a web server, but not
+// when index.html is opened straight from the folder.)
+MENU_ITEMS = [
+  "People",
+  "Curriculum",
+  "Teaching-Learning",
+  "Campus Location",
+  "Teaching-Learning",
+  "Cost",
+  "FAQs",
+]
+
+// Fonts are loaded from Google Fonts (fonts.google.com). Type the family name
+// exactly as it appears there, in quotes. Weight: 400 = regular, 500 = medium,
+// 600 = semi-bold, 700 = bold (the font must offer that weight).
+
+// The title, "The School From Scratch".
+HEADING_FONT = "Lora"
+HEADING_FONT_WEIGHT = 600
+
+// Everything else: the menu options and the Center button.
+BODY_FONT = "Quicksand"
+BODY_FONT_WEIGHT = 500
+
+// Menu options start with their letters spread apart and draw together when
+// the pointer moves over them. Spacing is a fraction of the letter size
+// (0 = normal spacing, 0.3 = noticeably spread out).
+MENU_LETTER_SPACING = 0.75
+MENU_LETTER_SPACING_HOVER = 0.25
+
+// How long the letters take to draw together, in milliseconds.
+MENU_HOVER_SPEED_MS = 450
+
+
+// -----------------------------------------------------------------------------
+//  PAGES
+// -----------------------------------------------------------------------------
+
+// Each menu option opens its own page showing its name and "Under Development".
+
+// Pages that also show the contact details below (use the names exactly as in
+// MENU_ITEMS, in quotes, separated by commas).
+CONTACT_PAGES = ["Cost"]
+
+// Phone number shown on those pages. Tapping it on a phone starts a call.
+// Leave empty ("") to hide it.
+PHONE_NUMBER = "+1 (805) 798-5098"
+
+// Show the Venmo logo under the phone number (true or false).
+SHOW_VENMO_LOGO = true
+
+// Optional: a web address the Venmo logo opens when clicked, starting with
+// https:// (for example your Venmo profile link). Leave "" for no link.
+VENMO_LINK = ""
+
+
+// -----------------------------------------------------------------------------
+//  BACKGROUND GRID
+// -----------------------------------------------------------------------------
+
+// Show a faint grid behind everything (true or false, no quotes).
+// With the gallery on, it moves and zooms along with the photos.
+GRID_ENABLED = true
+
+// Size of each grid square at normal zoom.
+GRID_SQUARE_SIZE = 50
+
+// Line color. The last number is how visible the lines are:
+// 0 = invisible, 1 = solid. Around 0.05 to 0.12 keeps it subtle.
+GRID_LINE_COLOR = "rgba(255, 255, 255, 0.07)"
+
+// Line thickness at normal zoom (lines shrink and grow with zoom, like the photos).
+GRID_LINE_THICKNESS = 3
+
+// true = the grid fades away toward the edges of the screen.
+// false = the grid is evenly visible everywhere.
+GRID_FADES_AT_EDGES = false
+
+
+// -----------------------------------------------------------------------------
+//  PERFORMANCE
+// -----------------------------------------------------------------------------
+
+// true = show a performance panel in the top-right corner: frames per second,
+// a live frame-time graph (green = smooth, yellow = OK, red = a stutter),
+// what's being drawn, memory use, your position and zoom, and more.
+// Press P on the keyboard to hide or show it. Set back to false before publishing.
+SHOW_PERFORMANCE_INFO = false
+
+// true = next to the frames-per-second number, also show a one-word rating
+// (BUTTERY, SMOOTH, OK, CHOPPY, or IDLE when standing still).
+SHOW_PERFORMANCE_RATING = false
+
+// true = when zoomed out, draw areas of photos once and reuse them (like an
+// online map loads tiles). Much smoother. Photos at the edge of the screen
+// may take a moment to sharpen or appear after a big zoom.
+// false = draw every photo individually every frame (slower when zoomed out).
+SPEED_UP_ZOOMED_OUT_VIEW = true
+
+// true = while you're dragging or zooming out, draw at slightly lower
+// sharpness on high-resolution screens, then sharpen when you stop.
+// No effect on standard screens.
+LOWER_RESOLUTION_WHILE_MOVING = true
