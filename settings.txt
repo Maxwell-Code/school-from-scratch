@@ -109,8 +109,10 @@ PLACEMENT_TRIES = 250
 MENU_CLEARANCE = 40
 
 // Change this to any other whole number for a completely different
-// (but still consistent) arrangement of photos.
-LAYOUT_SEED = 1
+// (but still consistent) arrangement of photos. Or write
+//   LAYOUT_SEED = random
+// (no quotes) to scatter the photos differently on every visit.
+LAYOUT_SEED = random
 
 
 // -----------------------------------------------------------------------------
@@ -121,7 +123,7 @@ LAYOUT_SEED = 1
 FRAME_PADDING = 3
 
 // Thickness of the border line.
-FRAME_BORDER_WIDTH = 3
+FRAME_BORDER_WIDTH = 0
 
 // Border color and the color inside the frame around the photo.
 FRAME_BORDER_COLOR = "rgba(255, 255, 255, 0.35)"
@@ -179,7 +181,6 @@ MENU_ITEMS = [
   "Curriculum",
   "Teaching-Learning",
   "Campus Location",
-  "Teaching-Learning",
   "Cost",
   "FAQs",
 ]
@@ -204,7 +205,11 @@ MENU_LETTER_SPACING_HOVER = 0.25
 
 // How far each letter starts nudged up or down before it drops into place
 // when the pointer moves over the option (0 = perfectly lined up).
-MENU_LETTER_OFFSET = 0.12
+MENU_LETTER_OFFSET = 0.25
+
+// Which way each letter is nudged. A whole number keeps the same scatter on
+// every visit; the word random (no quotes) scatters them afresh each time.
+MENU_LETTER_SEED = random
 
 // How long the letters take to draw together, in milliseconds.
 MENU_HOVER_SPEED_MS = 450

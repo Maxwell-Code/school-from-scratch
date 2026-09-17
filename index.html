@@ -313,6 +313,9 @@
 // browsers block fetch, so it's loaded through a <script> tag instead (the
 // format is valid JavaScript either way). Anything missing or invalid falls
 // back to the defaults below.
+// A word settings.txt can use: LAYOUT_SEED = random
+window.random = 'random';
+
 function loadSettings() {
   const viaScriptTag = () => new Promise((resolve) => {
     const s = document.createElement('script');
@@ -367,7 +370,10 @@ function startGallery() {
   const CENTER_DENSITY = clamp(setting('CROWDED_AREA_DENSITY', 100), 0, 100) / 100;
   const TRIES_PER_AREA = setting('PLACEMENT_TRIES', 250);
   const MENU_GAP = setting('MENU_CLEARANCE', 40);
-  const SEED = setting('LAYOUT_SEED', 1) | 0;
+  // LAYOUT_SEED is a number, or the word random for a fresh arrangement on
+  // every visit.
+  const seedSetting = window.LAYOUT_SEED;
+  const SEED = Number.isFinite(seedSetting) ? seedSetting | 0 : Math.floor(Math.random() * 2147483647);
   const FRAME_PADDING = setting('FRAME_PADDING', 6);
   const FRAME_BORDER = setting('FRAME_BORDER_WIDTH', 1);
   const MIN_SCALE = 1 / Math.max(1, setting('ZOOM_OUT_LIMIT', 3));
@@ -408,12 +414,16 @@ function startGallery() {
   if (title) menuEl.querySelector('h1').textContent = title;
   const LETTER_SPREAD = Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06));
   const LETTER_OFFSET = Math.max(0, setting('MENU_LETTER_OFFSET', 0.12));
+  // MENU_LETTER_SEED is a number, or the word random for a fresh scatter on
+  // every visit (the same idea as LAYOUT_SEED).
+  const letterSeedSetting = window.MENU_LETTER_SEED;
+  const LETTER_SEED = Number.isFinite(letterSeedSetting) ? letterSeedSetting | 0 : Math.floor(Math.random() * 2147483647);
 
   // Split an option into letters that each sit a little out of place, then
   // slide home on hover. Moving them this way (rather than by changing the
   // spacing) keeps the option exactly the same size at all times, so it stays
   // centered and can't flicker under the pointer.
-  function layOutLetters(link) {
+  function layOutLetters(link, linkIndex) {
     const label = link.dataset.label || link.textContent;
     link.dataset.label = label;
     const chars = [...label];
@@ -423,8 +433,9 @@ function startGallery() {
 
     // Deterministic per letter, so a page never redraws differently.
     const wobble = (i) => {
-      let h = Math.imul(label.length + i * 2654435761, 2246822519) ^ label.charCodeAt(i % label.length);
-      h = Math.imul(h ^ (h >>> 13), 1274126177);
+      let h = Math.imul(i + 1, 2654435761) ^ Math.imul(linkIndex + 1, 374761393) ^ Math.imul(LETTER_SEED, 2246822519);
+      h = Math.imul(h ^ (h >>> 15), 2246822519);
+      h = Math.imul(h ^ (h >>> 13), 3266489917);
       return (((h ^ (h >>> 16)) >>> 0) / 4294967296) * 2 - 1;
     };
 
@@ -471,7 +482,7 @@ function startGallery() {
   }
   const menuLinks = [...menuEl.querySelectorAll('a')];
   const layOutMenu = () => {
-    menuLinks.forEach(layOutLetters);
+    menuLinks.forEach((link, i) => layOutLetters(link, i));
     centerLetters(menuLinks);
   };
   layOutMenu();

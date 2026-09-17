@@ -3,6 +3,9 @@
 // from the address instead, so an option added in settings.txt still gets a
 // working page on a web server before its own file exists.
 
+// A word settings.txt can use: LAYOUT_SEED = random
+window.random = 'random';
+
 function loadSettings() {
   const viaScriptTag = () => new Promise((resolve) => {
     const s = document.createElement('script');
