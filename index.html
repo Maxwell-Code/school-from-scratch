@@ -213,7 +213,8 @@
   #menu a:hover .menu-letter,
   #menu a:focus-visible .menu-letter,
   #menu.measuring .menu-letter {
-    transform: translate(var(--dx, 0px), 0);
+    /* Settled: letters draw together and line up. */
+    transform: translate(0, 0);
   }
   #menu.measuring .menu-letter { transition: none; }
 
