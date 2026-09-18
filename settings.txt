@@ -244,6 +244,12 @@ MENU_UNDERLINE_THICKNESS = 3
 // less, so every letter moves at the same speed in every option.
 MENU_HOVER_SPEED_MS = 450
 
+// true = every letter moves at the same speed, so letters with farther to go
+// take longer (long options take longer to settle than short ones).
+// false = every letter takes exactly MENU_HOVER_SPEED_MS, however far it
+// moves (the original behavior; long options look like they move faster).
+MENU_LETTERS_EVEN_SPEED = true
+
 
 // -----------------------------------------------------------------------------
 //  PAGES
