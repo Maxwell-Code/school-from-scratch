@@ -211,8 +211,22 @@ MENU_LETTER_OFFSET = 0.25
 // every visit; the word random (no quotes) scatters them afresh each time.
 MENU_LETTER_SEED = random
 
+// Turn either part of that movement off (true or false, no quotes).
+// Sideways: letters spread apart and draw together.
+// Up and down: letters sit off the line and drop into place.
+MENU_LETTERS_SPREAD_SIDEWAYS = true
+MENU_LETTERS_NUDGE_UP_DOWN = true
+
+// Underline an option while the pointer is over it. It grows outward from
+// the middle, starting after MENU_UNDERLINE_DELAY_MS so the letters have
+// time to settle first.
+MENU_UNDERLINE_ON_HOVER = true
+MENU_UNDERLINE_DELAY_MS = 350
+MENU_UNDERLINE_SPEED_MS = 500
+MENU_UNDERLINE_THICKNESS = 1
+
 // How long the letters take to draw together, in milliseconds.
-MENU_HOVER_SPEED_MS = 450
+MENU_HOVER_SPEED_MS = 200
 
 
 // -----------------------------------------------------------------------------

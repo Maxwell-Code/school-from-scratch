@@ -201,8 +201,25 @@
     cursor: pointer;
     letter-spacing: var(--menu-spacing-hover);
     white-space: nowrap;
+    position: relative;
   }
   #menu a:focus-visible { outline: none; }
+  /* Underline: grows out from the middle once the letters have settled. */
+  #menu.underline a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: var(--word-width, 0px);
+    margin-left: calc(var(--word-width, 0px) / -2);
+    height: var(--underline-thickness);
+    background: currentColor;
+    transform: scaleX(0);
+    transition: transform var(--underline-ms) cubic-bezier(0.22, 1, 0.36, 1) var(--underline-delay);
+  }
+  #menu.underline a:hover::after,
+  #menu.underline a:focus-visible::after { transform: scaleX(1); }
+  #menu.measuring a::after { transition: none; }
   /* Letters sit spread apart and nudged up or down, then settle on hover. */
   .menu-letter {
     display: inline-block;
@@ -412,8 +429,14 @@ function startGallery() {
   const menuEl = document.getElementById('menu');
   const title = String(setting('MENU_TITLE', '')).trim();
   if (title) menuEl.querySelector('h1').textContent = title;
-  const LETTER_SPREAD = Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06));
-  const LETTER_OFFSET = Math.max(0, setting('MENU_LETTER_OFFSET', 0.12));
+  const LETTER_SPREAD = setting('MENU_LETTERS_SPREAD_SIDEWAYS', true)
+    ? Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06)) : 0;
+  const LETTER_OFFSET = setting('MENU_LETTERS_NUDGE_UP_DOWN', true)
+    ? Math.max(0, setting('MENU_LETTER_OFFSET', 0.12)) : 0;
+  menuEl.classList.toggle('underline', setting('MENU_UNDERLINE_ON_HOVER', true));
+  rootStyle.setProperty('--underline-thickness', Math.max(0, setting('MENU_UNDERLINE_THICKNESS', 1)) + 'px');
+  rootStyle.setProperty('--underline-ms', Math.max(0, setting('MENU_UNDERLINE_SPEED_MS', 500)) + 'ms');
+  rootStyle.setProperty('--underline-delay', Math.max(0, setting('MENU_UNDERLINE_DELAY_MS', 350)) + 'ms');
   // MENU_LETTER_SEED is a number, or the word random for a fresh scatter on
   // every visit (the same idea as LAYOUT_SEED).
   const letterSeedSetting = window.MENU_LETTER_SEED;
@@ -467,6 +490,7 @@ function startGallery() {
       if (!boxes.length) continue;
       const left = Math.min(...boxes.map((b) => b.left)), right = Math.max(...boxes.map((b) => b.right));
       link.style.transform = `translateX(${(mid - (left + right) / 2).toFixed(2)}px)`;
+      link.style.setProperty('--word-width', (right - left).toFixed(1) + 'px');
     }
     menuEl.classList.remove('measuring');
   }
