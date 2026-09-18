@@ -44,6 +44,8 @@
     -webkit-user-select: none;
   }
   #viewport.dragging { cursor: grabbing; }
+  .read-mode #viewport,
+  .read-mode #viewport.dragging { cursor: default; }
 
   /* Faint background grid (drawn by the script), optionally fading out
      toward the screen edges. */
@@ -398,7 +400,10 @@ function startGallery() {
   const MIN_SCALE = 1 / Math.max(1, setting('ZOOM_OUT_LIMIT', 3));
   const MAX_SCALE = Math.max(1, setting('ZOOM_IN_LIMIT', 3));
   const WHEEL_SPEED = setting('WHEEL_ZOOM_SPEED', 0.0015);
-  const WHEEL_SCROLLS = setting('SCROLL_WHEEL_SCROLLS_PAGE', true);
+  // Read mode: a linear page, scrolled up and down only. Explore mode: pan in
+  // any direction and zoom in and out.
+  const READ_MODE = String(setting('GALLERY_MODE', 'read')).trim().toLowerCase() !== 'explore';
+  document.documentElement.classList.toggle('read-mode', READ_MODE);
   const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
   const GLIDE = clamp(setting('GLIDE_AFTER_DRAG', 0.94), 0, 0.99);
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
@@ -974,7 +979,18 @@ function startGallery() {
   }
 
   let lastCam = {}, moving = false, settleTimer = 0;
+  // In read mode the view stays centered sideways at normal zoom, and only
+  // scrolls as far up and down as there are photos.
+  let readScale = 1;
+  function keepReadView() {
+    if (!READ_MODE) return;
+    cam.x = 0;
+    cam.s = readScale;
+    cam.y = clamp(cam.y, -END_DISTANCE, END_DISTANCE);
+  }
+
   function render() {
+    keepReadView();
     if (!perfOn) return drawFrame();
     const t0 = performance.now();
     drawFrame();
@@ -1407,6 +1423,9 @@ function startGallery() {
 
   viewport.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // Read mode: no dragging with a mouse or pen; a finger can still swipe
+    // the page up and down, like scrolling on a phone.
+    if (READ_MODE && e.pointerType !== 'touch') return;
     stopAnim();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     samples = [];
@@ -1424,12 +1443,12 @@ function startGallery() {
         viewport.setPointerCapture(e.pointerId);
         viewport.classList.add('dragging');
       }
-      cam.x -= dx / cam.s;
+      if (!READ_MODE) cam.x -= dx / cam.s;
       cam.y -= dy / cam.s;
-      samples.push({ t: e.timeStamp, dx, dy });
+      samples.push({ t: e.timeStamp, dx: READ_MODE ? 0 : dx, dy });
       if (samples.length > 8) samples.shift();
       requestRender();
-    } else if (pointers.size === 2) {
+    } else if (pointers.size === 2 && !READ_MODE) {
       dragDistance = Infinity;
       const other = [...pointers.entries()].find(([id]) => id !== e.pointerId)[1];
       const oldMidX = (p.x + other.x) / 2, oldMidY = (p.y + other.y) / 2;
@@ -1462,20 +1481,19 @@ function startGallery() {
   viewport.addEventListener('pointercancel', endPointer);
 
   viewport.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    stopAnim();
-    // Scrolling moves the view up and down like a normal page (sideways on a
-    // trackpad, or with Shift). A trackpad pinch, which arrives with ctrlKey,
-    // still zooms.
-    if (WHEEL_SCROLLS && !e.ctrlKey) {
+    if (READ_MODE) {
+      // Ctrl + wheel is left to the browser's own zoom (for readability).
+      if (e.ctrlKey) return;
+      e.preventDefault();
+      stopAnim();
       const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
-      let sx = e.deltaX * unit, sy = e.deltaY * unit;
-      if (e.shiftKey && !sx) { sx = sy; sy = 0; }
-      cam.x += sx / cam.s;
-      cam.y += sy / cam.s;
+      cam.y += (e.deltaY * unit) / cam.s;
       requestRender();
       return;
     }
+    // Explore mode: scrolling zooms in and out around the pointer.
+    e.preventDefault();
+    stopAnim();
     let dy = e.deltaY;
     if (e.deltaMode === 1) dy *= 16;
     // A trackpad pinch arrives as Ctrl + small steps; Ctrl + a mouse wheel
@@ -1488,6 +1506,16 @@ function startGallery() {
   document.addEventListener('gesturestart', (e) => e.preventDefault());
 
   window.addEventListener('keydown', (e) => {
+    if (READ_MODE) {
+      const page = window.innerHeight * 0.85 / cam.s;
+      const moves = { ArrowUp: -KEY_STEP / cam.s, ArrowDown: KEY_STEP / cam.s, PageUp: -page, PageDown: page, ' ': e.shiftKey ? -page : page };
+      if (moves[e.key] === undefined || e.ctrlKey || e.metaKey || e.altKey) return;
+      e.preventDefault();
+      stopAnim();
+      cam.y += moves[e.key];
+      requestRender();
+      return;
+    }
     const step = KEY_STEP / cam.s;
     const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     if (moves[e.key]) {
@@ -1522,12 +1550,12 @@ function startGallery() {
     revealed.clear();
   }
 
-  window.addEventListener('resize', () => { measureMenu(); requestRender(); });
+  window.addEventListener('resize', () => { measureMenu(); readScale = homeScale(); requestRender(); });
 
   // ---- Start --------------------------------------------------------------
   measureMenu();
-  if (document.fonts) document.fonts.ready.then(() => { measureMenu(); requestRender(); });
-  cam.s = homeScale();
+  if (document.fonts) document.fonts.ready.then(() => { measureMenu(); readScale = homeScale(); requestRender(); });
+  cam.s = readScale = homeScale();
   render();
   loadPhotos().then((list) => {
     photos = list;

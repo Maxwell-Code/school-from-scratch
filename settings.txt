@@ -26,6 +26,14 @@
 // (Type true or false with no quotes.)
 GALLERY_ENABLED = true
 
+// How visitors move around the photo landscape:
+//   "read"    = like a normal website: scroll up and down only (mouse wheel,
+//               arrow keys, Page Up/Down, or swiping on a phone). No dragging,
+//               no sideways movement, no zooming.
+//   "explore" = move in any direction by dragging, arrow keys, or swiping, and
+//               zoom in and out with the mouse wheel or a pinch.
+GALLERY_MODE = "read"
+
 
 // -----------------------------------------------------------------------------
 //  PHOTOS
@@ -136,17 +144,14 @@ FRAME_FILL_COLOR = "transparent"
 // -----------------------------------------------------------------------------
 
 // How far visitors can zoom out and in (3 = three times smaller / larger).
+// Explore mode only; read mode stays at normal zoom.
 ZOOM_OUT_LIMIT = 10
 ZOOM_IN_LIMIT = 3
 
-// Zoom speed for a mouse scroll wheel, and for a trackpad pinch.
+// Zoom speed for a mouse scroll wheel, and for a trackpad pinch (explore mode).
 WHEEL_ZOOM_SPEED = 0.0015
 TRACKPAD_PINCH_ZOOM_SPEED = 0.01
 
-// true = the mouse wheel (or two-finger swipe) scrolls the view up and down
-// like a normal website; zoom with a trackpad pinch, Ctrl + wheel, or + / -.
-// false = the mouse wheel zooms in and out.
-SCROLL_WHEEL_SCROLLS_PAGE = true
 
 // How long the landscape keeps gliding after a quick drag is released.
 // 0 = stops instantly; closer to 1 = glides longer (keep below 1).
@@ -214,7 +219,7 @@ TITLE_GAP = 72
 // Menu options start with their letters spread apart and draw together when
 // the pointer moves over them. Spacing is a fraction of the letter size
 // (0 = normal spacing, 0.3 = noticeably spread out).
-MENU_LETTER_SPACING = 0.75
+MENU_LETTER_SPACING = 0.55
 MENU_LETTER_SPACING_HOVER = 0.25
 
 // How far each letter starts nudged up or down before it drops into place
@@ -242,7 +247,7 @@ MENU_UNDERLINE_THICKNESS = 3
 // How long the letters take to settle, in milliseconds. This is the time for
 // the letter with the farthest to travel; nearer letters take proportionally
 // less, so every letter moves at the same speed in every option.
-MENU_HOVER_SPEED_MS = 450
+MENU_HOVER_SPEED_MS = 150
 
 // true = every letter moves at the same speed, so letters with farther to go
 // take longer (long options take longer to settle than short ones).
