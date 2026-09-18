@@ -256,98 +256,83 @@
     margin-left: calc((var(--word-width, 0px) + 2 * var(--spread-room, 0px)) / -2);
   }
 
-  /* Menu panel: a bar flush in the top-left corner (three-bar icon on its
-     left) that extends down to the bottom of the screen when opened. Shown
-     only once the main menu has been scrolled out of view. */
+  /* Menu: a square in the top-left corner. Pressing it slides a sidebar in
+     from the left, and the square's three bars turn into an X that closes it.
+     Shown only once the main menu has been scrolled out of view. */
   #quick-nav {
-    --bar-height: 64px;
-    --panel-ms: 320ms;
+    --square: 64px;
+    --slide-ms: 320ms;
     position: fixed;
     left: 0;
     top: 0;
     z-index: 2;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 250ms ease, visibility 0s linear 250ms;
+  }
+  #quick-nav.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 250ms ease, visibility 0s;
+  }
+  #quick-toggle {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--square);
+    height: var(--square);
+    padding: 0;
+    background: var(--accent, #e8f0d4);
+    color: var(--fg);
+    border: none;
+    cursor: pointer;
+  }
+  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: -4px; }
+  #quick-toggle svg { width: 36px; height: 36px; overflow: visible; }
+  /* Three bars -> X: the middle bar fades while the outer two meet in the
+     middle and turn into a cross. Closing plays it back. */
+  #quick-toggle .bar {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+    transition: transform var(--slide-ms) cubic-bezier(0.65, 0, 0.35, 1), opacity 160ms ease;
+  }
+  #quick-toggle.open .bar-top { transform: rotate(45deg) translateY(6px); }
+  #quick-toggle.open .bar-bottom { transform: rotate(-45deg) translateY(-6px); }
+  #quick-toggle.open .bar-mid { transform: scaleX(0); opacity: 0; }
+  /* The sidebar slides in from the left, full height, behind the square. */
+  #quick-list {
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
     width: var(--dropdown-width, 300px);
     min-width: max-content;
     height: 100vh;
     height: 100dvh;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    background: var(--dropdown-color, #fafcf5);
-    /* Closed: only the top bar is showing. */
-    clip-path: inset(0 0 calc(100% - var(--bar-height)) 0);
-    pointer-events: none;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 250ms ease, visibility 0s linear 250ms,
-      clip-path var(--panel-ms) cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  #quick-nav.show {
-    opacity: 1;
-    visibility: visible;
-    transition: opacity 250ms ease, visibility 0s,
-      clip-path var(--panel-ms) cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  #quick-nav.open { clip-path: inset(0 0 0 0); }
-  #quick-toggle {
-    flex: none;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-    height: var(--bar-height);
-    padding: 0 12px;
-    background: transparent;
-    color: var(--fg);
-    border: none;
-    cursor: pointer;
-    pointer-events: auto;
-  }
-  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: -4px; }
-  #quick-toggle svg { width: 40px; height: 40px; overflow: visible; }
-  /* Opening: the outer bars slide into the middle one, which is then pulled
-     down from its centre into a downward arrow. The first step speeds up and
-     the second slows down, so the motion flows through without a pause.
-     Closing plays it back. */
-  #quick-toggle .bar {
-    transform-box: view-box;
-    transform-origin: 12px 12px;
-    will-change: transform;
-    transition: transform 170ms cubic-bezier(0, 0.55, 0.45, 1) 190ms, opacity 0s linear 190ms;
-  }
-  #quick-toggle .bar-mid {
-    transition: transform 190ms cubic-bezier(0.55, 0, 1, 0.45) 0ms;
-  }
-  #quick-toggle.open .bar {
-    transition: transform 170ms cubic-bezier(0.55, 0, 1, 0.45) 0ms, opacity 0s linear 170ms;
-  }
-  #quick-toggle.open .bar-mid {
-    transition: transform 190ms cubic-bezier(0, 0.55, 0.45, 1) 170ms;
-  }
-  #quick-toggle.open .bar-top { transform: translateY(6px); opacity: 0; }
-  #quick-toggle.open .bar-bottom { transform: translateY(-6px); opacity: 0; }
-  #quick-toggle.open .bar-left { transform: translateY(3px) rotate(35deg); }
-  #quick-toggle.open .bar-right { transform: translateY(3px) rotate(-35deg); }
-  #quick-list {
-    display: flex;
-    flex-direction: column;
-    padding: 8px 0 24px;
+    padding: calc(var(--square) + 8px) 0 24px;
     overflow-y: auto;
+    background: var(--accent, #e8f0d4);
+    transform: translateX(-100%);
     visibility: hidden;
-    transition: visibility 0s linear var(--panel-ms);
+    transition: transform var(--slide-ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear var(--slide-ms);
   }
   #quick-nav.open #quick-list {
+    transform: translateX(0);
     visibility: visible;
-    pointer-events: auto;
-    transition: visibility 0s;
+    transition: transform var(--slide-ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
   }
   /* DROPDOWN_ANIMATION = false: open and close instantly. */
   .no-dropdown-animation #quick-nav,
   .no-dropdown-animation #quick-nav.show,
   .no-dropdown-animation #quick-list,
   .no-dropdown-animation #quick-nav.open #quick-list,
-  .no-dropdown-animation #quick-toggle .bar,
-  .no-dropdown-animation #quick-toggle.open .bar {
+  .no-dropdown-animation #quick-toggle .bar {
     transition: none;
   }
   #quick-list a {
@@ -418,8 +403,7 @@
     <button id="quick-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="quick-list">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
         <line class="bar bar-top" x1="4" y1="6" x2="20" y2="6"/>
-        <line class="bar bar-mid bar-left" x1="4" y1="12" x2="12" y2="12"/>
-        <line class="bar bar-mid bar-right" x1="12" y1="12" x2="20" y2="12"/>
+        <line class="bar bar-mid" x1="4" y1="12" x2="20" y2="12"/>
         <line class="bar bar-bottom" x1="4" y1="18" x2="20" y2="18"/>
       </svg>
     </button>
@@ -515,7 +499,7 @@ function startGallery() {
   const CORNER_PERCENT = String(setting('PHOTO_CORNER_RADIUS_UNIT', 'pixels')).trim().toLowerCase().startsWith('percent');
 
   const rootStyle = document.documentElement.style;
-  rootStyle.setProperty('--dropdown-color', setting('DROPDOWN_COLOR', '#fafcf5'));
+  rootStyle.setProperty('--accent', setting('ACCENT_COLOR', '#e8f0d4'));
   rootStyle.setProperty('--dropdown-width', Math.max(120, setting('DROPDOWN_WIDTH', 300)) + 'px');
   rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
   rootStyle.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));

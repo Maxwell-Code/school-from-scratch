@@ -145,7 +145,7 @@ PHOTO_ROUNDED_CORNERS = true
 // pixels (0 = square, 12 = gently rounded, 30 = very round). With "percent"
 // it's a percentage of each photo's shorter side, so big and small photos
 // look equally round (50 = as round as possible).
-PHOTO_CORNER_RADIUS = 12
+PHOTO_CORNER_RADIUS = 15
 PHOTO_CORNER_RADIUS_UNIT = "pixels"
 
 
@@ -180,19 +180,21 @@ HOME_TRAVEL_MS = 800
 //  COLORS
 // -----------------------------------------------------------------------------
 
-BACKGROUND_COLOR = "#F9F5D7"
+BACKGROUND_COLOR = "#FAF9F5"
 TEXT_COLOR = "#283c12"
 
-// The menu panel in the top-left corner (appears once you scroll past the
-// main menu).
-DROPDOWN_COLOR = "#fafcf5"
+// Accent color: fills the menu square in the top-left corner and the sidebar
+// it opens.
+ACCENT_COLOR = "#e8f0d4"
+
+// Width of the sidebar the menu square opens, in pixels.
 DROPDOWN_WIDTH = 300
 
-// Animate the menu panel: the three bars turning into an arrow, and the panel
-// sliding down to the bottom of the screen (true or false, no quotes).
+// Animate the menu: the three bars turning into an X, and the sidebar sliding
+// in from the left (true or false, no quotes).
 DROPDOWN_ANIMATION = true
 
-// The panel's first option, which takes you back to the main menu.
+// The sidebar's first option, which takes you back to the main menu.
 DROPDOWN_HOME_LABEL = "Home"
 
 
