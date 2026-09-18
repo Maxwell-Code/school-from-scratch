@@ -125,9 +125,10 @@ FRAME_PADDING = 3
 // Thickness of the border line.
 FRAME_BORDER_WIDTH = 0
 
-// Border color and the color inside the frame around the photo.
+// Border color, and the color of the padding around each photo
+// ("transparent" = no visible frame; the padding is just a gap).
 FRAME_BORDER_COLOR = "rgba(255, 255, 255, 0.35)"
-FRAME_FILL_COLOR = "#0b0b0b"
+FRAME_FILL_COLOR = "transparent"
 
 
 // -----------------------------------------------------------------------------
