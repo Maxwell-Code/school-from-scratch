@@ -224,7 +224,7 @@
   .menu-letter {
     display: inline-block;
     transform: translate(var(--dx, 0px), var(--dy, 0px));
-    transition: transform var(--menu-spacing-ms) cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform var(--ms, var(--menu-spacing-ms)) cubic-bezier(0.22, 1, 0.36, 1);
     transition-delay: var(--delay, 0ms);
   }
   #menu a:hover .menu-letter,
@@ -433,10 +433,12 @@ function startGallery() {
     ? Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06)) : 0;
   const LETTER_OFFSET = setting('MENU_LETTERS_NUDGE_UP_DOWN', true)
     ? Math.max(0, setting('MENU_LETTER_OFFSET', 0.12)) : 0;
+  const HOVER_MS = Math.max(0, setting('MENU_HOVER_SPEED_MS', 450));
+  const UNDERLINE_DELAY = Math.max(0, setting('MENU_UNDERLINE_DELAY_MS', 80));
   menuEl.classList.toggle('underline', setting('MENU_UNDERLINE_ON_HOVER', true));
   rootStyle.setProperty('--underline-thickness', Math.max(0, setting('MENU_UNDERLINE_THICKNESS', 1)) + 'px');
-  rootStyle.setProperty('--underline-ms', Math.max(0, setting('MENU_UNDERLINE_SPEED_MS', 500)) + 'ms');
-  rootStyle.setProperty('--underline-delay', Math.max(0, setting('MENU_UNDERLINE_DELAY_MS', 350)) + 'ms');
+  rootStyle.setProperty('--underline-ms', Math.max(0, setting('MENU_UNDERLINE_SPEED_MS', 220)) + 'ms');
+  rootStyle.setProperty('--underline-delay', UNDERLINE_DELAY + 'ms');
   // MENU_LETTER_SEED is a number, or the word random for a fresh scatter on
   // every visit (the same idea as LAYOUT_SEED).
   const letterSeedSetting = window.MENU_LETTER_SEED;
@@ -446,6 +448,11 @@ function startGallery() {
   // slide home on hover. Moving them this way (rather than by changing the
   // spacing) keeps the option exactly the same size at all times, so it stays
   // centered and can't flicker under the pointer.
+  let farthestTravel = 1;
+  function letterTravel(chars, spread, jitter) {
+    return Math.hypot(((chars - 1) / 2) * spread, jitter);
+  }
+
   function layOutLetters(link, linkIndex) {
     const label = link.dataset.label || link.textContent;
     link.dataset.label = label;
@@ -464,15 +471,24 @@ function startGallery() {
 
     const shifts = chars.map((ch, i) => (i - (chars.length - 1) / 2) * spread);
     const middle = shifts.reduce((a, b) => a + b, 0) / (shifts.length || 1);
+    let settledAt = 0;
     link.replaceChildren(...chars.map((ch, i) => {
       const span = document.createElement('span');
       span.className = 'menu-letter';
       span.textContent = ch === ' ' ? '\u00a0' : ch;
-      span.style.setProperty('--dx', (shifts[i] - middle).toFixed(2) + 'px');
-      span.style.setProperty('--dy', (wobble(i) * jitter).toFixed(2) + 'px');
-      span.style.setProperty('--delay', Math.round(Math.abs(wobble(i)) * 70) + 'ms');
+      const dx = shifts[i] - middle, dy = wobble(i) * jitter;
+      span.style.setProperty('--dx', dx.toFixed(2) + 'px');
+      span.style.setProperty('--dy', dy.toFixed(2) + 'px');
+      // Same speed for every letter: time in proportion to distance.
+      const ms = Math.max(40, Math.round(HOVER_MS * Math.hypot(dx, dy) / farthestTravel));
+      const delay = Math.round(Math.abs(wobble(i)) * HOVER_MS * 0.15);
+      span.style.setProperty('--ms', ms + 'ms');
+      span.style.setProperty('--delay', delay + 'ms');
+      settledAt = Math.max(settledAt, ms + delay);
       return span;
     }));
+    // The underline waits for this option's own letters to settle.
+    link.style.setProperty('--underline-delay', settledAt + UNDERLINE_DELAY + 'ms');
     // Room for the spread-out letters, so the option's size never changes.
     const room = Math.max(...shifts.map((v) => Math.abs(v - middle)));
     link.style.paddingLeft = link.style.paddingRight = (8 + room).toFixed(1) + 'px';
@@ -506,6 +522,9 @@ function startGallery() {
   }
   const menuLinks = [...menuEl.querySelectorAll('a')];
   const layOutMenu = () => {
+    const size = parseFloat(getComputedStyle(menuLinks[0] || menuEl).fontSize) || 18;
+    const longest = Math.max(...menuLinks.map((a) => (a.dataset.label || a.textContent).length), 1);
+    farthestTravel = Math.max(1, letterTravel(longest, LETTER_SPREAD * size, LETTER_OFFSET * size));
     menuLinks.forEach((link, i) => layOutLetters(link, i));
     centerLetters(menuLinks);
   };

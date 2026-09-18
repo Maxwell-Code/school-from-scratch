@@ -217,15 +217,17 @@ MENU_LETTER_SEED = random
 MENU_LETTERS_SPREAD_SIDEWAYS = true
 MENU_LETTERS_NUDGE_UP_DOWN = true
 
-// Underline an option while the pointer is over it. It grows outward from
-// the middle, starting after MENU_UNDERLINE_DELAY_MS so the letters have
-// time to settle first.
+// Underline an option while the pointer is over it, growing outward from the
+// middle. It starts once that option's letters have settled; the delay below
+// is the extra pause on top of that.
 MENU_UNDERLINE_ON_HOVER = true
-MENU_UNDERLINE_DELAY_MS = 350
-MENU_UNDERLINE_SPEED_MS = 500
+MENU_UNDERLINE_DELAY_MS = 80
+MENU_UNDERLINE_SPEED_MS = 220
 MENU_UNDERLINE_THICKNESS = 1
 
-// How long the letters take to draw together, in milliseconds.
+// How long the letters take to settle, in milliseconds. This is the time for
+// the letter with the farthest to travel; nearer letters take proportionally
+// less, so every letter moves at the same speed in every option.
 MENU_HOVER_SPEED_MS = 200
 
 
