@@ -34,6 +34,17 @@ GALLERY_ENABLED = true
 //               zoom in and out with the mouse wheel or a pinch.
 GALLERY_MODE = "read"
 
+// Read mode: how far above the Home position you can scroll, in pixels.
+// 0 = the top of the page is where Home takes you.
+READ_MODE_SCROLL_ABOVE_HOME = 0
+
+// Middle-click scrolling: click the mouse wheel and move the mouse away from
+// the marker to scroll (farther = faster); click again to stop. Or hold it,
+// drag, and let go. (true or false, no quotes)
+MIDDLE_CLICK_SCROLL = true
+// How fast it scrolls. 1 = normal, 2 = twice as fast, 0.5 = half.
+MIDDLE_CLICK_SCROLL_SPEED = 1
+
 
 // -----------------------------------------------------------------------------
 //  PHOTOS
@@ -180,12 +191,12 @@ HOME_TRAVEL_MS = 800
 //  COLORS
 // -----------------------------------------------------------------------------
 
-BACKGROUND_COLOR = "#FAF9F5"
+BACKGROUND_COLOR = "#fffcee"
 TEXT_COLOR = "#283c12"
 
 // Accent color: fills the menu square in the top-left corner and the sidebar
-// it opens.
-ACCENT_COLOR = "#e8f0d4"
+// it opens. #e8f0d4
+ACCENT_COLOR = "#dfeac0"
 
 // Width of the sidebar the menu square opens, in pixels.
 DROPDOWN_WIDTH = 300
