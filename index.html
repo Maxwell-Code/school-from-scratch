@@ -14,6 +14,7 @@
     --frame: rgba(255, 255, 255, 0.35);
     --heading-size: 64px;
     --body-size: 24px;
+    --title-gap: 72px;
     --heading-font: 'Lora', Georgia, serif;
     --heading-weight: 600;
     --body-font: 'Quicksand', 'Segoe UI', sans-serif;
@@ -182,7 +183,7 @@
     /* Shrinks on narrow screens so it still fits. */
     font-size: min(var(--heading-size), 12vw);
     line-height: 1.15;
-    margin: 0 0 0.5em;
+    margin: 0 0 var(--title-gap);
     letter-spacing: 0.02em;
   }
   #menu nav {
@@ -316,13 +317,12 @@
     </div>
   </div>
 
-  <button id="home" type="button" aria-label="Return to center">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-      <circle cx="8" cy="8" r="5"/>
-      <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
-      <path d="M8 0v3M8 13v3M0 8h3M13 8h3"/>
+  <button id="home" type="button" aria-label="Home">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true">
+      <path d="M2 7.5 8 2.5l6 5"/>
+      <path d="M3.5 6.5V13.5h3.25V10h2.5v3.5h3.25V6.5"/>
     </svg>
-    Center
+    Home
   </button>
 
 <script>
@@ -425,6 +425,7 @@ function startGallery() {
   rootStyle.setProperty('--body-weight', BODY_WEIGHT);
   rootStyle.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
   rootStyle.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
+  rootStyle.setProperty('--title-gap', Math.max(0, setting('TITLE_GAP', 72)) + 'px');
   rootStyle.setProperty('--menu-spacing-start', setting('MENU_LETTER_SPACING', 0.3) + 'em');
   rootStyle.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
   rootStyle.setProperty('--menu-spacing-ms', Math.max(0, setting('MENU_HOVER_SPEED_MS', 450)) + 'ms');
