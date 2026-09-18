@@ -248,7 +248,11 @@ MENU_HOVER_SPEED_MS = 450
 // take longer (long options take longer to settle than short ones).
 // false = every letter takes exactly MENU_HOVER_SPEED_MS, however far it
 // moves (the original behavior; long options look like they move faster).
-MENU_LETTERS_EVEN_SPEED = true
+MENU_LETTERS_EVEN_SPEED = false
+
+// Letters start moving at slightly different moments, each up to this many
+// milliseconds after the others. 0 = every letter starts at the same time.
+MENU_LETTER_STAGGER_MS = 0
 
 
 // -----------------------------------------------------------------------------

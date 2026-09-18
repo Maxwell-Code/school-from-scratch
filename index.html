@@ -441,6 +441,7 @@ function startGallery() {
     ? Math.max(0, setting('MENU_LETTER_OFFSET', 0.12)) : 0;
   const HOVER_MS = Math.max(0, setting('MENU_HOVER_SPEED_MS', 450));
   const EVEN_SPEED = setting('MENU_LETTERS_EVEN_SPEED', true);
+  const STAGGER_MS = Math.max(0, setting('MENU_LETTER_STAGGER_MS', 70));
   const UNDERLINE_DELAY = Math.max(0, setting('MENU_UNDERLINE_DELAY_MS', 80));
   menuEl.classList.toggle('underline', setting('MENU_UNDERLINE_ON_HOVER', true));
   rootStyle.setProperty('--underline-thickness', Math.max(0, setting('MENU_UNDERLINE_THICKNESS', 1)) + 'px');
@@ -490,7 +491,8 @@ function startGallery() {
       // Even speed: time in proportion to distance. Otherwise every letter
       // takes the same time (the original behavior).
       const ms = EVEN_SPEED ? Math.max(40, Math.round(HOVER_MS * Math.hypot(dx, dy) / farthestTravel)) : HOVER_MS;
-      const delay = EVEN_SPEED ? Math.round(Math.abs(wobble(i)) * HOVER_MS * 0.15) : Math.round(Math.abs(wobble(i)) * 70);
+      // Each letter can start a little after the others (0 = all together).
+      const delay = Math.round(Math.abs(wobble(i)) * STAGGER_MS);
       span.style.setProperty('--ms', ms + 'ms');
       span.style.setProperty('--delay', delay + 'ms');
       settledAt = Math.max(settledAt, ms + delay);
