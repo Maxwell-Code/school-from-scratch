@@ -228,7 +228,7 @@ MENU_UNDERLINE_THICKNESS = 1
 // How long the letters take to settle, in milliseconds. This is the time for
 // the letter with the farthest to travel; nearer letters take proportionally
 // less, so every letter moves at the same speed in every option.
-MENU_HOVER_SPEED_MS = 200
+MENU_HOVER_SPEED_MS = 450
 
 
 // -----------------------------------------------------------------------------
