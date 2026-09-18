@@ -6,6 +6,8 @@
   --heading-weight: 600;
   --body-font: 'Quicksand', 'Segoe UI', sans-serif;
   --body-weight: 500;
+  --heading-size: 64px;
+  --body-size: 24px;
 }
 html, body {
   min-height: 100%;
@@ -30,13 +32,13 @@ h1 {
   margin: 0 0 16px;
   font-family: var(--heading-font);
   font-weight: var(--heading-weight);
-  font-size: 44px;
+  font-size: min(var(--heading-size), 12vw);
   line-height: 1.15;
   letter-spacing: 0.02em;
 }
 .status {
   margin: 0;
-  font-size: 16px;
+  font-size: calc(var(--body-size) * 0.8);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   opacity: 0.7;
@@ -51,7 +53,7 @@ h1 {
 .contact[hidden] { display: none; }
 .phone {
   color: var(--fg);
-  font-size: 20px;
+  font-size: var(--body-size);
   letter-spacing: 0.06em;
   text-decoration: none;
 }
@@ -63,7 +65,7 @@ h1 {
   left: 20px;
   top: 20px;
   color: var(--fg);
-  font-size: 13px;
+  font-size: calc(var(--body-size) * 0.6);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-decoration: none;
@@ -72,5 +74,4 @@ h1 {
 .back:hover,
 .back:focus-visible { opacity: 1; }
 @media (max-width: 640px) {
-  h1 { font-size: 36px; }
 }

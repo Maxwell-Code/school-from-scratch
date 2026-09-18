@@ -12,6 +12,8 @@
     --fg: #fff;
     --muted: #aaa;
     --frame: rgba(255, 255, 255, 0.35);
+    --heading-size: 64px;
+    --body-size: 24px;
     --heading-font: 'Lora', Georgia, serif;
     --heading-weight: 600;
     --body-font: 'Quicksand', 'Segoe UI', sans-serif;
@@ -167,20 +169,20 @@
     left: 0;
     top: 0;
     z-index: 1;
-    width: 600px;
+    width: 900px;
     transform: translate(-50%, -50%);
     text-align: center;
   }
   @media (max-width: 640px) {
     #menu { width: 340px; }
-    #menu h1 { font-size: 38px; }
   }
   #menu h1 {
     font-family: var(--heading-font);
     font-weight: var(--heading-weight);
-    font-size: 44px;
+    /* Shrinks on narrow screens so it still fits. */
+    font-size: min(var(--heading-size), 12vw);
     line-height: 1.15;
-    margin: 0 0 28px;
+    margin: 0 0 0.5em;
     letter-spacing: 0.02em;
   }
   #menu nav {
@@ -192,7 +194,7 @@
   #menu a {
     color: var(--fg);
     text-decoration: none;
-    font-size: 18px;
+    font-size: min(var(--body-size), 6.5vw);
     text-transform: uppercase;
     /* The script widens the sides to cover the spread-out letters, so the
        clickable area never changes size (otherwise it would slip out from
@@ -249,7 +251,7 @@
     color: var(--fg);
     border: 1px solid var(--frame);
     font: inherit;
-    font-size: 13px;
+    font-size: calc(var(--body-size) * 0.6);
     letter-spacing: 0.14em;
     text-transform: uppercase;
     cursor: pointer;
@@ -289,7 +291,7 @@
     position: static;
     transform: none;
     width: auto;
-    max-width: 600px;
+    max-width: 900px;
   }
   .gallery-off #home { display: none; }
 </style>
@@ -396,6 +398,7 @@ function startGallery() {
   const MIN_SCALE = 1 / Math.max(1, setting('ZOOM_OUT_LIMIT', 3));
   const MAX_SCALE = Math.max(1, setting('ZOOM_IN_LIMIT', 3));
   const WHEEL_SPEED = setting('WHEEL_ZOOM_SPEED', 0.0015);
+  const WHEEL_SCROLLS = setting('SCROLL_WHEEL_SCROLLS_PAGE', true);
   const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
   const GLIDE = clamp(setting('GLIDE_AFTER_DRAG', 0.94), 0, 0.99);
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
@@ -420,6 +423,8 @@ function startGallery() {
   rootStyle.setProperty('--heading-weight', HEADING_WEIGHT);
   rootStyle.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);
   rootStyle.setProperty('--body-weight', BODY_WEIGHT);
+  rootStyle.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
+  rootStyle.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
   rootStyle.setProperty('--menu-spacing-start', setting('MENU_LETTER_SPACING', 0.3) + 'em');
   rootStyle.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
   rootStyle.setProperty('--menu-spacing-ms', Math.max(0, setting('MENU_HOVER_SPEED_MS', 450)) + 'ms');
@@ -1453,9 +1458,23 @@ function startGallery() {
   viewport.addEventListener('wheel', (e) => {
     e.preventDefault();
     stopAnim();
+    // Scrolling moves the view up and down like a normal page (sideways on a
+    // trackpad, or with Shift). A trackpad pinch, which arrives with ctrlKey,
+    // still zooms.
+    if (WHEEL_SCROLLS && !e.ctrlKey) {
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
+      let sx = e.deltaX * unit, sy = e.deltaY * unit;
+      if (e.shiftKey && !sx) { sx = sy; sy = 0; }
+      cam.x += sx / cam.s;
+      cam.y += sy / cam.s;
+      requestRender();
+      return;
+    }
     let dy = e.deltaY;
     if (e.deltaMode === 1) dy *= 16;
-    const sensitivity = e.ctrlKey ? PINCH_SPEED : WHEEL_SPEED; // ctrlKey = trackpad pinch
+    // A trackpad pinch arrives as Ctrl + small steps; Ctrl + a mouse wheel
+    // arrives as Ctrl + big steps and should zoom at the normal wheel speed.
+    const sensitivity = e.ctrlKey && Math.abs(dy) < 50 ? PINCH_SPEED : WHEEL_SPEED;
     zoomAt(e.clientX, e.clientY, cam.s * Math.exp(-dy * sensitivity));
   }, { passive: false });
 

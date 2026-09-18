@@ -55,6 +55,8 @@ loadSettings().then(() => {
   root.setProperty('--heading-weight', HEADING_WEIGHT);
   root.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);
   root.setProperty('--body-weight', BODY_WEIGHT);
+  root.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
+  root.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
 
   // Which page is this? The file's own name, or (on 404.html) the address.
   const own = document.body.dataset.page;
