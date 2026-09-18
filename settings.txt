@@ -20,9 +20,9 @@
 // -----------------------------------------------------------------------------
 
 // true  = the photo landscape: photos all around the menu, drag to move,
-//         zoom in and out, and the "Home" button.
+//         zoom in and out, and the menu button (three bars).
 // false = a plain, normal webpage: just the title and menu, centered, with no
-//         photos, no dragging, no zooming, and no "Home" button.
+//         photos, no dragging, no zooming, and no menu button.
 // (Type true or false with no quotes.)
 GALLERY_ENABLED = true
 
@@ -32,7 +32,7 @@ GALLERY_ENABLED = true
 //               no sideways movement, no zooming.
 //   "explore" = move in any direction by dragging, arrow keys, or swiping, and
 //               zoom in and out with the mouse wheel or a pinch.
-GALLERY_MODE = "explore"
+GALLERY_MODE = "read"
 
 
 // -----------------------------------------------------------------------------
@@ -160,15 +160,13 @@ GLIDE_AFTER_DRAG = 0.90
 // How far the arrow keys move the view per press.
 KEYBOARD_MOVE_STEP = 120
 
-// How long the "Home" button's trip back to the menu takes, in milliseconds.
-CENTER_BUTTON_TRAVEL_MS = 800
 
 
 // -----------------------------------------------------------------------------
 //  COLORS
 // -----------------------------------------------------------------------------
 
-BACKGROUND_COLOR = "#dde5b6"
+BACKGROUND_COLOR = "#e8f0d4"
 TEXT_COLOR = "#283618"
 
 
@@ -204,7 +202,7 @@ MENU_ITEMS = [
 HEADING_FONT = "Lora"
 HEADING_FONT_WEIGHT = 600
 
-// Everything else: the menu options and the Home button.
+// Everything else: the menu options and the dropdown menu.
 BODY_FONT = "Quicksand"
 BODY_FONT_WEIGHT = 500
 
@@ -224,7 +222,7 @@ MENU_LETTER_SPACING_HOVER = 0.15
 
 // How far each letter starts nudged up or down before it drops into place
 // when the pointer moves over the option (0 = perfectly lined up).
-MENU_LETTER_OFFSET = 0.35
+MENU_LETTER_OFFSET = 0.15
 
 // Which way each letter is nudged. A whole number keeps the same scatter on
 // every visit; the word random (no quotes) scatters them afresh each time.
@@ -239,7 +237,7 @@ MENU_LETTERS_NUDGE_UP_DOWN = false
 // Which way the hover goes.
 // false = letters rest spread out and draw together when hovered.
 // true  = the reverse: letters rest tidy and spread out when hovered.
-MENU_HOVER_EXPANDS = false
+MENU_HOVER_EXPANDS = true
 
 // Underline an option while the pointer is over it, growing outward from the
 // middle. It starts once that option's letters have settled; the delay below

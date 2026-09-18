@@ -251,31 +251,61 @@
     margin-left: calc((var(--word-width, 0px) + 2 * var(--spread-room, 0px)) / -2);
   }
 
-  /* Return-to-center button */
-  #home {
+  /* Menu button (three bars) and its dropdown. Shown only once the main
+     menu has been scrolled out of view. */
+  #quick-nav {
     position: fixed;
     left: 20px;
-    bottom: 20px;
+    top: 20px;
     z-index: 2;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 250ms ease, visibility 0s linear 250ms;
+  }
+  #quick-nav.show {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 250ms ease, visibility 0s;
+  }
+  #quick-toggle {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
     background: var(--bg);
     color: var(--fg);
-    border: 1px solid var(--frame);
-    font: inherit;
-    font-size: calc(var(--body-size) * 0.6);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
     cursor: pointer;
   }
-  #home:hover,
-  #home:focus-visible {
-    border-color: var(--fg);
+  #quick-toggle:hover,
+  #quick-toggle:focus-visible { border-color: var(--fg); outline: none; }
+  #quick-toggle svg { width: 20px; height: 20px; }
+  #quick-list {
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    margin-top: 8px;
+    padding: 6px 0;
+    background: var(--bg);
+    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+  }
+  #quick-list[hidden] { display: none; }
+  #quick-list a {
+    padding: 10px 16px;
+    color: var(--fg);
+    font-size: calc(var(--body-size) * 0.7);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  #quick-list a:hover,
+  #quick-list a:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 5px;
     outline: none;
   }
-  #home svg { width: 16px; height: 16px; }
 
   /* Gallery switched off in settings.txt: a plain, normal webpage. */
   html.gallery-off,
@@ -307,7 +337,7 @@
     width: auto;
     max-width: 900px;
   }
-  .gallery-off #home { display: none; }
+  .gallery-off #quick-nav { display: none; }
 </style>
 </head>
 <body>
@@ -330,13 +360,14 @@
     </div>
   </div>
 
-  <button id="home" type="button" aria-label="Home">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true">
-      <path d="M2 7.5 8 2.5l6 5"/>
-      <path d="M3.5 6.5V13.5h3.25V10h2.5v3.5h3.25V6.5"/>
-    </svg>
-    Home
-  </button>
+  <nav id="quick-nav" aria-label="Menu">
+    <button id="quick-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="quick-list">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+        <path d="M3 5.5h14M3 10h14M3 14.5h14"/>
+      </svg>
+    </button>
+    <div id="quick-list" hidden></div>
+  </nav>
 
 <script>
 // ---- Settings ---------------------------------------------------------------
@@ -418,7 +449,6 @@ function startGallery() {
   const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
   const GLIDE = clamp(setting('GLIDE_AFTER_DRAG', 0.94), 0, 0.99);
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
-  const CENTER_MS = Math.max(1, setting('CENTER_BUTTON_TRAVEL_MS', 800));
 
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
@@ -665,7 +695,9 @@ function startGallery() {
   const viewport = document.getElementById('viewport');
   const world = document.getElementById('world');
   const menu = document.getElementById('menu');
-  const homeBtn = document.getElementById('home');
+  const quickNav = document.getElementById('quick-nav');
+  const quickToggle = document.getElementById('quick-toggle');
+  const quickList = document.getElementById('quick-list');
   const photoCanvas = document.getElementById('photos');
   const photoCtx = photoCanvas.getContext('2d');
 
@@ -1017,6 +1049,7 @@ function startGallery() {
     const W = window.innerWidth, H = window.innerHeight;
     const originX = W / 2 - cam.x * cam.s, originY = H / 2 - cam.y * cam.s;
     world.style.transform = `translate(${originX}px, ${originY}px) scale(${cam.s})`;
+    updateQuickNav(originX, originY, cam.s, W, H);
 
     // "Moving" lasts until the view has been still for 150ms.
     if (cam.x !== lastCam.x || cam.y !== lastCam.y || cam.s !== lastCam.s) {
@@ -1410,25 +1443,6 @@ function startGallery() {
     return clamp(fit, MIN_SCALE, 1);
   }
 
-  function goHome() {
-    stopAnim();
-    const from = { ...cam };
-    const to = { x: 0, y: 0, s: homeScale() };
-    const start = performance.now();
-    const duration = CENTER_MS;
-    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-    const step = (now) => {
-      const t = Math.min(1, (now - start) / duration);
-      const e = ease(t);
-      cam.x = from.x + (to.x - from.x) * e;
-      cam.y = from.y + (to.y - from.y) * e;
-      cam.s = from.s + (to.s - from.s) * e;
-      render();
-      animFrame = t < 1 ? requestAnimationFrame(step) : 0;
-    };
-    animFrame = requestAnimationFrame(step);
-  }
-
   // ---- Input: drag, pinch, wheel, keys ------------------------------------
   const pointers = new Map();
   let samples = [];
@@ -1550,7 +1564,37 @@ function startGallery() {
     if (dragDistance > 4) e.preventDefault();
   }));
 
-  homeBtn.addEventListener('click', goHome);
+  // ---- Menu button and dropdown ---------------------------------------------
+  // The dropdown lists the same options as the main menu (built from
+  // MENU_ITEMS), and the button only appears once the main menu is off screen.
+  quickList.replaceChildren(...[...menu.querySelectorAll('nav a')].map((link) => {
+    const copy = document.createElement('a');
+    copy.href = link.getAttribute('href');
+    copy.textContent = link.dataset.label || link.textContent;
+    return copy;
+  }));
+  function setQuickOpen(open) {
+    quickList.hidden = !open;
+    quickToggle.setAttribute('aria-expanded', String(open));
+    quickToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  quickToggle.addEventListener('click', () => setQuickOpen(quickList.hidden));
+  document.addEventListener('pointerdown', (e) => {
+    if (!quickList.hidden && !quickNav.contains(e.target)) setQuickOpen(false);
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !quickList.hidden) { setQuickOpen(false); quickToggle.focus(); }
+  });
+  let quickShown = false;
+  // originX/originY: where the menu's centre is on screen; scale: the zoom.
+  function updateQuickNav(originX, originY, scale, W, H) {
+    const hw = menuHalfW * scale, hh = menuHalfH * scale;
+    const menuOnScreen = originX + hw > 0 && originX - hw < W && originY + hh > 0 && originY - hh < H;
+    if (menuOnScreen === !quickShown) return;
+    quickShown = !menuOnScreen;
+    quickNav.classList.toggle('show', quickShown);
+    if (!quickShown) setQuickOpen(false);
+  }
 
   // The menu's size decides where photos can't go; rebuild if it changes.
   function measureMenu() {
