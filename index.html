@@ -234,15 +234,20 @@
   }
   #menu a:hover .menu-letter,
   #menu a:focus-visible .menu-letter,
+  #quick-list a:hover .menu-letter,
+  #quick-list a:focus-visible .menu-letter,
   #menu.measuring .menu-letter {
     /* Settled: letters draw together and line up. */
     transform: translate(0, 0);
   }
   #menu.measuring .menu-letter { transition: none; }
   /* Reversed (MENU_HOVER_EXPANDS): letters rest tidy and spread out on hover. */
-  #menu.hover-expands .menu-letter { transform: translate(0, 0); }
+  #menu.hover-expands .menu-letter,
+  #quick-list.hover-expands .menu-letter { transform: translate(0, 0); }
   #menu.hover-expands a:hover .menu-letter,
-  #menu.hover-expands a:focus-visible .menu-letter {
+  #menu.hover-expands a:focus-visible .menu-letter,
+  #quick-list.hover-expands a:hover .menu-letter,
+  #quick-list.hover-expands a:focus-visible .menu-letter {
     transform: translate(var(--dx, 0px), var(--dy, 0px));
   }
   /* ...and the underline stretches to the spread-out word. */
@@ -271,17 +276,36 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
+    width: 64px;
+    height: 64px;
     padding: 0;
     background: var(--bg);
     color: var(--fg);
-    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    border: none;
     cursor: pointer;
   }
-  #quick-toggle:hover,
-  #quick-toggle:focus-visible { border-color: var(--fg); outline: none; }
-  #quick-toggle svg { width: 20px; height: 20px; }
+  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  #quick-toggle svg { width: 40px; height: 40px; overflow: visible; }
+  /* Opening: the outer bars slide into the middle one, then the middle bar is
+     pulled down from its centre into a downward arrow. Closing plays it back. */
+  #quick-toggle .bar {
+    transform-box: view-box;
+    transform-origin: 12px 12px;
+    transition: transform 180ms ease-in-out 200ms, opacity 0s linear 200ms;
+  }
+  #quick-toggle .bar-mid {
+    transition: transform 200ms ease-in-out 0ms;
+  }
+  #quick-toggle.open .bar {
+    transition: transform 180ms ease-in-out 0ms, opacity 0s linear 180ms;
+  }
+  #quick-toggle.open .bar-mid {
+    transition: transform 200ms ease-in-out 180ms;
+  }
+  #quick-toggle.open .bar-top { transform: translateY(6px); opacity: 0; }
+  #quick-toggle.open .bar-bottom { transform: translateY(-6px); opacity: 0; }
+  #quick-toggle.open .bar-left { transform: translateY(3px) rotate(35deg); }
+  #quick-toggle.open .bar-right { transform: translateY(3px) rotate(-35deg); }
   #quick-list {
     display: flex;
     flex-direction: column;
@@ -296,16 +320,12 @@
     padding: 10px 16px;
     color: var(--fg);
     font-size: calc(var(--body-size) * 0.7);
-    letter-spacing: 0.14em;
+    letter-spacing: var(--menu-spacing-hover);
     text-transform: uppercase;
     text-decoration: none;
+    white-space: nowrap;
   }
-  #quick-list a:hover,
-  #quick-list a:focus-visible {
-    text-decoration: underline;
-    text-underline-offset: 5px;
-    outline: none;
-  }
+  #quick-list a:focus-visible { outline: none; }
 
   /* Gallery switched off in settings.txt: a plain, normal webpage. */
   html.gallery-off,
@@ -362,8 +382,11 @@
 
   <nav id="quick-nav" aria-label="Menu">
     <button id="quick-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="quick-list">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-        <path d="M3 5.5h14M3 10h14M3 14.5h14"/>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+        <line class="bar bar-top" x1="4" y1="6" x2="20" y2="6"/>
+        <line class="bar bar-mid bar-left" x1="4" y1="12" x2="12" y2="12"/>
+        <line class="bar bar-mid bar-right" x1="12" y1="12" x2="20" y2="12"/>
+        <line class="bar bar-bottom" x1="4" y1="18" x2="20" y2="18"/>
       </svg>
     </button>
     <div id="quick-list" hidden></div>
@@ -580,11 +603,17 @@ function startGallery() {
     }));
   }
   const menuLinks = [...menuEl.querySelectorAll('a')];
-  const layOutMenu = () => {
-    const size = parseFloat(getComputedStyle(menuLinks[0] || menuEl).fontSize) || 18;
-    const longest = Math.max(...menuLinks.map((a) => (a.dataset.label || a.textContent).length), 1);
+  // Split a group of options into moving letters. Each group measures its own
+  // longest option, so even speed works within the group.
+  function layOutGroup(links, seedOffset) {
+    if (!links.length) return;
+    const size = parseFloat(getComputedStyle(links[0]).fontSize) || 18;
+    const longest = Math.max(...links.map((a) => (a.dataset.label || a.textContent).length), 1);
     farthestTravel = Math.max(1, letterTravel(longest, LETTER_SPREAD * size, LETTER_OFFSET * size));
-    menuLinks.forEach((link, i) => layOutLetters(link, i));
+    links.forEach((link, i) => layOutLetters(link, i + seedOffset));
+  }
+  const layOutMenu = () => {
+    layOutGroup(menuLinks, 0);
     centerLetters(menuLinks);
   };
   layOutMenu();
@@ -1573,7 +1602,20 @@ function startGallery() {
     copy.textContent = link.dataset.label || link.textContent;
     return copy;
   }));
+  // Same letter hover as the main menu (without the underline). Every option
+  // gets the same side padding, sized for the longest one, so they stay
+  // lined up on the left and the list never changes width.
+  quickList.classList.toggle('hover-expands', menu.classList.contains('hover-expands'));
+  const quickLinks = [...quickList.querySelectorAll('a')];
+  const layOutQuick = () => {
+    layOutGroup(quickLinks, 100);
+    const room = Math.max(0, ...quickLinks.map((a) => parseFloat(a.style.getPropertyValue('--spread-room')) || 0));
+    quickLinks.forEach((a) => { a.style.paddingLeft = a.style.paddingRight = (16 + room).toFixed(1) + 'px'; });
+  };
+  layOutQuick();
+  if (document.fonts) document.fonts.ready.then(layOutQuick);
   function setQuickOpen(open) {
+    quickToggle.classList.toggle('open', open);
     quickList.hidden = !open;
     quickToggle.setAttribute('aria-expanded', String(open));
     quickToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
