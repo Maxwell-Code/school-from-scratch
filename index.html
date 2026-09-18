@@ -239,6 +239,17 @@
     transform: translate(0, 0);
   }
   #menu.measuring .menu-letter { transition: none; }
+  /* Reversed (MENU_HOVER_EXPANDS): letters rest tidy and spread out on hover. */
+  #menu.hover-expands .menu-letter { transform: translate(0, 0); }
+  #menu.hover-expands a:hover .menu-letter,
+  #menu.hover-expands a:focus-visible .menu-letter {
+    transform: translate(var(--dx, 0px), var(--dy, 0px));
+  }
+  /* ...and the underline stretches to the spread-out word. */
+  #menu.hover-expands.underline a::after {
+    width: calc(var(--word-width, 0px) + 2 * var(--spread-room, 0px));
+    margin-left: calc((var(--word-width, 0px) + 2 * var(--spread-room, 0px)) / -2);
+  }
 
   /* Return-to-center button */
   #home {
@@ -449,6 +460,7 @@ function startGallery() {
   const STAGGER_MS = Math.max(0, setting('MENU_LETTER_STAGGER_MS', 70));
   const UNDERLINE_DELAY = Math.max(0, setting('MENU_UNDERLINE_DELAY_MS', 80));
   menuEl.classList.toggle('underline', setting('MENU_UNDERLINE_ON_HOVER', true));
+  menuEl.classList.toggle('hover-expands', setting('MENU_HOVER_EXPANDS', false));
   rootStyle.setProperty('--underline-thickness', Math.max(0, setting('MENU_UNDERLINE_THICKNESS', 1)) + 'px');
   rootStyle.setProperty('--underline-ms', Math.max(0, setting('MENU_UNDERLINE_SPEED_MS', 220)) + 'ms');
   rootStyle.setProperty('--underline-delay', UNDERLINE_DELAY + 'ms');
@@ -507,6 +519,7 @@ function startGallery() {
     link.style.setProperty('--underline-delay', settledAt + UNDERLINE_DELAY + 'ms');
     // Room for the spread-out letters, so the option's size never changes.
     const room = Math.max(...shifts.map((v) => Math.abs(v - middle)));
+    link.style.setProperty('--spread-room', room.toFixed(1) + 'px');
     link.style.paddingLeft = link.style.paddingRight = (8 + room).toFixed(1) + 'px';
   }
 
