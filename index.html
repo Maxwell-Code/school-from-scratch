@@ -256,51 +256,73 @@
     margin-left: calc((var(--word-width, 0px) + 2 * var(--spread-room, 0px)) / -2);
   }
 
-  /* Menu button (three bars) and its dropdown. Shown only once the main
-     menu has been scrolled out of view. */
+  /* Menu panel: a bar flush in the top-left corner (three-bar icon on its
+     left) that extends down to the bottom of the screen when opened. Shown
+     only once the main menu has been scrolled out of view. */
   #quick-nav {
+    --bar-height: 64px;
+    --panel-ms: 320ms;
     position: fixed;
-    left: 20px;
-    top: 20px;
+    left: 0;
+    top: 0;
     z-index: 2;
+    width: var(--dropdown-width, 300px);
+    min-width: max-content;
+    height: 100vh;
+    height: 100dvh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    background: var(--dropdown-color, #fafcf5);
+    /* Closed: only the top bar is showing. */
+    clip-path: inset(0 0 calc(100% - var(--bar-height)) 0);
+    pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    transition: opacity 250ms ease, visibility 0s linear 250ms;
+    transition: opacity 250ms ease, visibility 0s linear 250ms,
+      clip-path var(--panel-ms) cubic-bezier(0.22, 1, 0.36, 1);
   }
   #quick-nav.show {
     opacity: 1;
     visibility: visible;
-    transition: opacity 250ms ease, visibility 0s;
+    transition: opacity 250ms ease, visibility 0s,
+      clip-path var(--panel-ms) cubic-bezier(0.22, 1, 0.36, 1);
   }
+  #quick-nav.open { clip-path: inset(0 0 0 0); }
   #quick-toggle {
+    flex: none;
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 64px;
-    padding: 0;
-    background: var(--bg);
+    justify-content: flex-start;
+    width: 100%;
+    height: var(--bar-height);
+    padding: 0 12px;
+    background: transparent;
     color: var(--fg);
     border: none;
     cursor: pointer;
+    pointer-events: auto;
   }
-  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: -4px; }
   #quick-toggle svg { width: 40px; height: 40px; overflow: visible; }
-  /* Opening: the outer bars slide into the middle one, then the middle bar is
-     pulled down from its centre into a downward arrow. Closing plays it back. */
+  /* Opening: the outer bars slide into the middle one, which is then pulled
+     down from its centre into a downward arrow. The first step speeds up and
+     the second slows down, so the motion flows through without a pause.
+     Closing plays it back. */
   #quick-toggle .bar {
     transform-box: view-box;
     transform-origin: 12px 12px;
-    transition: transform 180ms ease-in-out 200ms, opacity 0s linear 200ms;
+    will-change: transform;
+    transition: transform 170ms cubic-bezier(0, 0.55, 0.45, 1) 190ms, opacity 0s linear 190ms;
   }
   #quick-toggle .bar-mid {
-    transition: transform 200ms ease-in-out 0ms;
+    transition: transform 190ms cubic-bezier(0.55, 0, 1, 0.45) 0ms;
   }
   #quick-toggle.open .bar {
-    transition: transform 180ms ease-in-out 0ms, opacity 0s linear 180ms;
+    transition: transform 170ms cubic-bezier(0.55, 0, 1, 0.45) 0ms, opacity 0s linear 170ms;
   }
   #quick-toggle.open .bar-mid {
-    transition: transform 200ms ease-in-out 180ms;
+    transition: transform 190ms cubic-bezier(0, 0.55, 0.45, 1) 170ms;
   }
   #quick-toggle.open .bar-top { transform: translateY(6px); opacity: 0; }
   #quick-toggle.open .bar-bottom { transform: translateY(-6px); opacity: 0; }
@@ -309,13 +331,25 @@
   #quick-list {
     display: flex;
     flex-direction: column;
-    min-width: 220px;
-    margin-top: 8px;
-    padding: 6px 0;
-    background: var(--bg);
-    border: 1px solid color-mix(in srgb, var(--fg) 30%, transparent);
+    padding: 8px 0 24px;
+    overflow-y: auto;
+    visibility: hidden;
+    transition: visibility 0s linear var(--panel-ms);
   }
-  #quick-list[hidden] { display: none; }
+  #quick-nav.open #quick-list {
+    visibility: visible;
+    pointer-events: auto;
+    transition: visibility 0s;
+  }
+  /* DROPDOWN_ANIMATION = false: open and close instantly. */
+  .no-dropdown-animation #quick-nav,
+  .no-dropdown-animation #quick-nav.show,
+  .no-dropdown-animation #quick-list,
+  .no-dropdown-animation #quick-nav.open #quick-list,
+  .no-dropdown-animation #quick-toggle .bar,
+  .no-dropdown-animation #quick-toggle.open .bar {
+    transition: none;
+  }
   #quick-list a {
     padding: 10px 16px;
     color: var(--fg);
@@ -389,7 +423,7 @@
         <line class="bar bar-bottom" x1="4" y1="18" x2="20" y2="18"/>
       </svg>
     </button>
-    <div id="quick-list" hidden></div>
+    <div id="quick-list"></div>
   </nav>
 
 <script>
@@ -472,8 +506,17 @@ function startGallery() {
   const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
   const GLIDE = clamp(setting('GLIDE_AFTER_DRAG', 0.94), 0, 0.99);
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
+  const HOME_MS = Math.max(1, setting('HOME_TRAVEL_MS', 800));
+  document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
+  // Rounded photo corners: a size in pixels, or a percentage of each photo's
+  // shorter side.
+  const CORNERS_ON = setting('PHOTO_ROUNDED_CORNERS', true);
+  const CORNER_RADIUS = Math.max(0, setting('PHOTO_CORNER_RADIUS', 12));
+  const CORNER_PERCENT = String(setting('PHOTO_CORNER_RADIUS_UNIT', 'pixels')).trim().toLowerCase().startsWith('percent');
 
   const rootStyle = document.documentElement.style;
+  rootStyle.setProperty('--dropdown-color', setting('DROPDOWN_COLOR', '#fafcf5'));
+  rootStyle.setProperty('--dropdown-width', Math.max(120, setting('DROPDOWN_WIDTH', 300)) + 'px');
   rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
   rootStyle.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
 
@@ -891,6 +934,19 @@ function startGallery() {
   // Paint photos (in world coordinates) with as few drawing calls as
   // possible: all frames in one fill, all borders in one, then the images.
   // pxPerUnit = device pixels per world pixel, for picking detail levels.
+  // Corner radius for a photo's outer edge (frame included), in world pixels.
+  function cornerRadius(it) {
+    if (!CORNERS_ON || CORNER_RADIUS <= 0) return 0;
+    const shorter = Math.min(it.hw, it.hh) * 2;
+    const r = CORNER_PERCENT ? (CORNER_RADIUS / 100) * shorter : CORNER_RADIUS;
+    return Math.min(r, shorter / 2);
+  }
+  // Add a (possibly rounded) rectangle to the current path.
+  function shape(ctx, x, y, w, h, r) {
+    if (r > 0 && ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+    else ctx.rect(x, y, w, h);
+  }
+
   function paintItems(ctx, items, pxPerUnit) {
     const tinyByPhoto = new Map(), framed = [];
     for (const it of items) {
@@ -904,14 +960,14 @@ function startGallery() {
     // Too small for detail: one block of each photo's average color.
     for (const [index, list] of tinyByPhoto) {
       ctx.beginPath();
-      for (const it of list) ctx.rect(it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2);
+      for (const it of list) shape(ctx, it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2, cornerRadius(it));
       ctx.fillStyle = photos[index].color;
       ctx.fill();
     }
     if (!framed.length) return;
 
     ctx.beginPath();
-    for (const it of framed) ctx.rect(it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2);
+    for (const it of framed) shape(ctx, it.x - it.hw, it.y - it.hh, it.hw * 2, it.hh * 2, cornerRadius(it));
     ctx.fillStyle = FRAME_FILL;
     ctx.fill();
     if (FRAME_BORDER * pxPerUnit >= 0.5) {
@@ -920,13 +976,24 @@ function startGallery() {
       ctx.fill();
       const b = FRAME_BORDER;
       ctx.beginPath();
-      for (const it of framed) ctx.rect(it.x - it.hw + b, it.y - it.hh + b, it.hw * 2 - 2 * b, it.hh * 2 - 2 * b);
+      for (const it of framed) shape(ctx, it.x - it.hw + b, it.y - it.hh + b, it.hw * 2 - 2 * b, it.hh * 2 - 2 * b, Math.max(0, cornerRadius(it) - b));
       ctx.fillStyle = FRAME_FILL;
       ctx.fill();
     }
     for (const it of framed) {
       const level = pickLevel(photos[it.index], Math.max(it.w, it.h) * pxPerUnit);
-      ctx.drawImage(level, it.x - it.w / 2, it.y - it.h / 2, it.w, it.h);
+      // The photo's own corners follow the outer curve, inset by the frame.
+      const r = Math.max(0, cornerRadius(it) - FRAME);
+      if (r * pxPerUnit >= 0.5 && ctx.roundRect) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(it.x - it.w / 2, it.y - it.h / 2, it.w, it.h, r);
+        ctx.clip();
+        ctx.drawImage(level, it.x - it.w / 2, it.y - it.h / 2, it.w, it.h);
+        ctx.restore();
+      } else {
+        ctx.drawImage(level, it.x - it.w / 2, it.y - it.h / 2, it.w, it.h);
+      }
     }
   }
 
@@ -1472,6 +1539,25 @@ function startGallery() {
     return clamp(fit, MIN_SCALE, 1);
   }
 
+  // Glide back to the main menu at normal zoom.
+  function goHome() {
+    stopAnim();
+    const from = { ...cam };
+    const to = { x: 0, y: 0, s: homeScale() };
+    const start = performance.now();
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / HOME_MS);
+      const e = ease(t);
+      cam.x = from.x + (to.x - from.x) * e;
+      cam.y = from.y + (to.y - from.y) * e;
+      cam.s = from.s + (to.s - from.s) * e;
+      render();
+      animFrame = t < 1 ? requestAnimationFrame(step) : 0;
+    };
+    animFrame = requestAnimationFrame(step);
+  }
+
   // ---- Input: drag, pinch, wheel, keys ------------------------------------
   const pointers = new Map();
   let samples = [];
@@ -1596,7 +1682,16 @@ function startGallery() {
   // ---- Menu button and dropdown ---------------------------------------------
   // The dropdown lists the same options as the main menu (built from
   // MENU_ITEMS), and the button only appears once the main menu is off screen.
-  quickList.replaceChildren(...[...menu.querySelectorAll('nav a')].map((link) => {
+  // First option: Home, which glides back to the main menu.
+  const homeLink = document.createElement('a');
+  homeLink.href = '#';
+  homeLink.textContent = String(setting('DROPDOWN_HOME_LABEL', 'Home')).trim() || 'Home';
+  homeLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    setQuickOpen(false);
+    goHome();
+  });
+  quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
     const copy = document.createElement('a');
     copy.href = link.getAttribute('href');
     copy.textContent = link.dataset.label || link.textContent;
@@ -1614,18 +1709,20 @@ function startGallery() {
   };
   layOutQuick();
   if (document.fonts) document.fonts.ready.then(layOutQuick);
+  let quickOpen = false;
   function setQuickOpen(open) {
+    quickOpen = open;
+    quickNav.classList.toggle('open', open);
     quickToggle.classList.toggle('open', open);
-    quickList.hidden = !open;
     quickToggle.setAttribute('aria-expanded', String(open));
     quickToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
   }
-  quickToggle.addEventListener('click', () => setQuickOpen(quickList.hidden));
+  quickToggle.addEventListener('click', () => setQuickOpen(!quickOpen));
   document.addEventListener('pointerdown', (e) => {
-    if (!quickList.hidden && !quickNav.contains(e.target)) setQuickOpen(false);
+    if (quickOpen && !quickNav.contains(e.target)) setQuickOpen(false);
   });
   window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !quickList.hidden) { setQuickOpen(false); quickToggle.focus(); }
+    if (e.key === 'Escape' && quickOpen) { setQuickOpen(false); quickToggle.focus(); }
   });
   let quickShown = false;
   // originX/originY: where the menu's centre is on screen; scale: the zoom.

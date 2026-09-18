@@ -138,6 +138,16 @@ FRAME_BORDER_WIDTH = 0
 FRAME_BORDER_COLOR = "rgba(255, 255, 255, 0.35)"
 FRAME_FILL_COLOR = "transparent"
 
+// Rounded corners on the photos (true or false, no quotes).
+PHOTO_ROUNDED_CORNERS = true
+
+// How rounded. With PHOTO_CORNER_RADIUS_UNIT = "pixels" this is a size in
+// pixels (0 = square, 12 = gently rounded, 30 = very round). With "percent"
+// it's a percentage of each photo's shorter side, so big and small photos
+// look equally round (50 = as round as possible).
+PHOTO_CORNER_RADIUS = 12
+PHOTO_CORNER_RADIUS_UNIT = "pixels"
+
 
 // -----------------------------------------------------------------------------
 //  ZOOM & MOVEMENT
@@ -160,6 +170,10 @@ GLIDE_AFTER_DRAG = 0.90
 // How far the arrow keys move the view per press.
 KEYBOARD_MOVE_STEP = 120
 
+// How long the dropdown's Home option takes to glide back to the main menu,
+// in milliseconds.
+HOME_TRAVEL_MS = 800
+
 
 
 // -----------------------------------------------------------------------------
@@ -168,6 +182,18 @@ KEYBOARD_MOVE_STEP = 120
 
 BACKGROUND_COLOR = "#F9F5D7"
 TEXT_COLOR = "#283c12"
+
+// The menu panel in the top-left corner (appears once you scroll past the
+// main menu).
+DROPDOWN_COLOR = "#fafcf5"
+DROPDOWN_WIDTH = 300
+
+// Animate the menu panel: the three bars turning into an arrow, and the panel
+// sliding down to the bottom of the screen (true or false, no quotes).
+DROPDOWN_ANIMATION = true
+
+// The panel's first option, which takes you back to the main menu.
+DROPDOWN_HOME_LABEL = "Home"
 
 
 // -----------------------------------------------------------------------------
