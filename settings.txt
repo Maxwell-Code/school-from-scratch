@@ -192,6 +192,10 @@ TEXT_COLOR = "#0b1105"
 // Accent color: fills the menu bar across the top of the screen. #e8f0d4
 ACCENT_COLOR = "#dfeac0"
 
+// Color the home screen's title and the line under it with the accent color
+// (true), or with TEXT_COLOR like the rest of the text (false).
+MENU_TITLE_IN_ACCENT_COLOR = true
+
 // The menu bar across the top appears once the main menu has been scrolled
 // off screen. Its height, and the size of its text, in pixels:
 TOP_MENU_HEIGHT = 64

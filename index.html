@@ -302,6 +302,10 @@
     line-height: 1.4;
   }
   #menu.has-subtitle h1 { margin-bottom: var(--subtitle-gap, 16px); }
+  /* MENU_TITLE_IN_ACCENT_COLOR: the title and the line under it take the
+     accent color. */
+  #menu.title-accent h1,
+  #menu.title-accent .subtitle { color: var(--accent, #e8f0d4); }
   #menu nav {
     display: flex;
     flex-direction: column;
@@ -629,6 +633,7 @@ function startGallery() {
   subtitleEl.textContent = subtitle;
   subtitleEl.hidden = !subtitle;
   menuEl.classList.toggle('has-subtitle', !!subtitle);
+  menuEl.classList.toggle('title-accent', setting('MENU_TITLE_IN_ACCENT_COLOR', true));
   const LETTER_SPREAD = setting('MENU_LETTERS_SPREAD_SIDEWAYS', true)
     ? Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06)) : 0;
   const LETTER_OFFSET = setting('MENU_LETTERS_NUDGE_UP_DOWN', true)
@@ -1789,7 +1794,7 @@ function startGallery() {
     const BREAK = '\u0001';
     function inline(text) {
       const kept = [];
-      let t = text.replace(/\\([\\`*_{}\[\]()#+\-.!>~|])/g, (_, c) => '\u0000' + (kept.push(c) - 1) + '\u0000');
+      let t = text.replace(/\\([!-\/:-@\[-`{-~])/g, (_, c) => '\u0000' + (kept.push(c) - 1) + '\u0000');
       t = esc(t);
       t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, label, url) => {
         if (!/^(https?:|mailto:|tel:|#)/i.test(url)) return label;
