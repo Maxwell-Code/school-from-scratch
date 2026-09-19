@@ -78,7 +78,6 @@
 
   /* Read mode: a section of text for each menu option, down the page below
      the menu, with room for photos in between. The script places them. */
-  html.read-mode.smooth-links { scroll-behavior: smooth; }
   #sections {
     position: absolute;
     left: 0;
@@ -597,9 +596,10 @@ function startGallery() {
   // Read mode's sections of text, and the room for photos between them.
   const SECTION_SPACE = Math.max(0, setting('SPACE_BETWEEN_SECTIONS', 400));
   const SECTION_CLEARANCE = Math.max(0, setting('SECTION_PHOTO_CLEARANCE', 40));
-  const SECTION_DENSITY = clamp(setting('SECTION_PHOTO_DENSITY', 25), 0, 100) / 100;
-  const SECTION_THIN = Math.max(1, setting('SECTION_PHOTO_THIN_OUT_DISTANCE', 500));
-  document.documentElement.classList.toggle('smooth-links', setting('SECTION_LINKS_SCROLL_SMOOTHLY', true));
+  const SECTION_THIN = Math.max(1, setting('SECTION_PHOTO_THIN_OUT_DISTANCE', 10500));
+  const SMOOTH_LINKS = setting('SECTION_LINKS_SCROLL_SMOOTHLY', true);
+  const SECTION_SCROLL_MS = Math.max(0, setting('SECTION_SCROLL_MS', 1000));
+  const SECTION_MARGIN = Math.max(0, setting('SECTION_SCROLL_MARGIN', 96));
   document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
   // Rounded photo corners: a size in pixels, or a percentage of each photo's
   // shorter side.
@@ -862,24 +862,20 @@ function startGallery() {
   // units, clearance included), centred on the menu's line, where no photo
   // may go. Photos can still sit beside the text.
   //
-  // With sections, photos are crowded only around the menu (down to the top
-  // of the first section), then thin out over SECTION_THIN to SECTION_DENSITY
-  // for the rest of the sections, and below the last one (contentBottom)
-  // fade to nothing over the usual thinning-out distance.
+  // With sections, photos are crowded only around the menu, down to the top
+  // of the first section (fadeStart). From there they thin out gradually,
+  // reaching nothing after fadeLength: SECTION_THIN, stretched if needed so
+  // about a third of the crowded amount is still left by the last section
+  // (contentBottom).
   let textBands = [];   // { hx, y0, y1 }: half-width, top, bottom
-  let contentBottom = 0;
-  const TAIL = END_DISTANCE - CROWDED_RADIUS;
+  let contentBottom = 0, fadeStart = 0, fadeLength = 1;
 
   // 0 inside the crowded area, rising to 1 at the end distance.
   const fadeProgress = (x, y) => textBands.length
-    ? clamp((y - contentBottom) / TAIL, 0, 1)
-    : clamp((Math.hypot(x, y) - CROWDED_RADIUS) / TAIL, 0, 1);
-  // Share of the crowded density kept alongside the sections (1 = all).
-  const sectionShare = (y) => textBands.length && y > textBands[0].y0
-    ? 1 + (SECTION_DENSITY - 1) * clamp((y - textBands[0].y0) / SECTION_THIN, 0, 1)
-    : 1;
+    ? clamp((y - fadeStart) / fadeLength, 0, 1)
+    : clamp((Math.hypot(x, y) - CROWDED_RADIUS) / (END_DISTANCE - CROWDED_RADIUS), 0, 1);
   const spacingScale = (x, y) => 1 + (EDGE_MULTIPLIER - 1) * fadeProgress(x, y);
-  const keepChance = (x, y) => CENTER_DENSITY * sectionShare(y) * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
+  const keepChance = (x, y) => CENTER_DENSITY * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
 
   const viewport = document.getElementById('viewport');
   const world = document.getElementById('world');
@@ -1660,7 +1656,8 @@ function startGallery() {
   // Glide back to the main menu at normal zoom.
   function goHome() {
     if (READ_MODE) {
-      window.scrollTo({ top: readHomeTop(), behavior: 'smooth' });
+      if (location.hash) history.pushState(null, '', location.pathname + location.search);
+      glideTo(readHomeTop(), HOME_MS);
       return;
     }
     stopAnim();
@@ -1711,9 +1708,9 @@ function startGallery() {
     world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
     if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
     layOutSections(g);
-    // Below the last section, photos fade out over TAIL (or END_DISTANCE
-    // from the menu when there are no sections).
-    const photosEnd = textBands.length ? contentBottom + TAIL : END_DISTANCE;
+    // Where the photos run out (END_DISTANCE from the menu when there are no
+    // sections).
+    const photosEnd = textBands.length ? fadeStart + fadeLength : END_DISTANCE;
     viewport.style.height = Math.ceil(g.top + photosEnd * g.s + g.H / 2) + 'px';
 
     if (photos.length) {
@@ -1899,6 +1896,10 @@ function startGallery() {
       contentBottom = y + h;
       y += h + SECTION_SPACE;
     }
+    if (bands.length) {
+      fadeStart = bands[0].y0;
+      fadeLength = Math.max(SECTION_THIN, (contentBottom - fadeStart) / 0.7);
+    }
     if (JSON.stringify(bands) !== JSON.stringify(textBands)) {
       textBands = bands;
       layouts.clear();
@@ -1906,11 +1907,40 @@ function startGallery() {
   }
 
   // Scroll to the section named in the address (#cost), or to Home.
-  function scrollToHash() {
+  // (glide = true: move there smoothly, as when a menu option is chosen.)
+  function scrollToHash(glide) {
     const id = decodeURIComponent(location.hash.slice(1));
     const target = id && sectionEls.find((el) => el.id === id);
-    if (target) target.scrollIntoView({ behavior: 'instant' });
-    else window.scrollTo({ top: readHomeTop(), behavior: 'instant' });
+    const top = target ? sectionTop(target) : readHomeTop();
+    if (glide) glideTo(top, target ? SECTION_SCROLL_MS : HOME_MS);
+    else window.scrollTo({ top, behavior: 'instant' });
+  }
+  const sectionTop = (el) => Math.max(0, el.offsetTop - SECTION_MARGIN);
+
+  // Smooth scrolling to a spot on the page: starts gently, speeds up, and
+  // settles in, taking the same time however far it goes. The browser's own
+  // smooth scrolling jumps across long distances, so the page is moved here
+  // frame by frame instead. Scrolling by hand stops it.
+  let glideFrame = 0;
+  function glideTo(top, ms) {
+    cancelAnimationFrame(glideFrame);
+    glideFrame = 0;
+    const from = window.scrollY, distance = top - from;
+    if (!SMOOTH_LINKS || ms <= 0 || Math.abs(distance) < 2) {
+      window.scrollTo({ top, behavior: 'instant' });
+      return;
+    }
+    const start = performance.now();
+    const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const step = (now) => {
+      const t = Math.min(1, (now - start) / ms);
+      window.scrollTo({ top: from + distance * ease(t), behavior: 'instant' });
+      glideFrame = t < 1 ? requestAnimationFrame(step) : 0;
+    };
+    glideFrame = requestAnimationFrame(step);
+  }
+  for (const type of ['wheel', 'touchstart', 'keydown']) {
+    window.addEventListener(type, () => { cancelAnimationFrame(glideFrame); glideFrame = 0; }, { passive: true });
   }
 
   function readPhoto(it, g) {
@@ -2163,9 +2193,19 @@ function startGallery() {
       if (location.hash && window.scrollY > readHomeTop() + 1) scrollToHash();
     });
     // Back and Forward move between the sections visited from the menu.
+    // Menu options (home screen and sidebar) glide to their section. Ctrl-,
+    // Shift- or middle-clicks are left alone so "open in new tab" still works.
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('#menu a, #quick-list a');
+      if (!link || e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+      const hash = link.getAttribute('href');
+      if (!hash || hash.length < 2 || hash[0] !== '#') return;
+      e.preventDefault();
+      if (location.hash !== hash) history.pushState(null, '', hash);
+      scrollToHash(true);
+    });
     window.addEventListener('popstate', () => {
-      if (location.hash) scrollToHash();
-      else window.scrollTo({ top: readHomeTop(), behavior: 'instant' });
+      scrollToHash(true);
     });
     loadPhotos().then((list) => { photos = list; buildReadPage(); });
   } else {

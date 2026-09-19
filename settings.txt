@@ -329,15 +329,12 @@ MENU_LETTER_STAGGER_MS = 0
 SPACE_BETWEEN_SECTIONS = 550
 
 // Photos are crowded only around the menu. From the top of the first
-// section they thin out to this share of the crowded amount, in percent
-// (100 = just as crowded, 0 = no photos beside or between the sections),
-// and stay that way down to the last section. Below it they fade to nothing
-// over the thinning-out distance set in SPACING & DENSITY.
-SECTION_PHOTO_DENSITY = 25
-
-// How quickly they thin out: the distance, in pixels, from the top of the
-// first section to where SECTION_PHOTO_DENSITY is reached. Smaller = quicker.
-SECTION_PHOTO_THIN_OUT_DISTANCE = 500
+// section they thin out gradually, over this many pixels, until there are
+// none left (like CROWDED_AREA_RADIUS to PHOTOS_END_DISTANCE in the gallery).
+// Bigger = a slower, more gradual thinning. The shape of the thinning follows
+// FADE_CURVE. If the sections are longer than this (on a phone, say), it
+// stretches so there are still photos down to the last section.
+SECTION_PHOTO_THIN_OUT_DISTANCE = 10500
 
 // Empty space kept between a section's text and the nearest photo, in pixels.
 SECTION_PHOTO_CLEARANCE = 40
@@ -352,8 +349,13 @@ SECTION_HEADING_SIZE = 44
 SECTION_TEXT_SIZE = 19
 
 // When a menu option is chosen, the page glides down to the section (true)
-// or jumps straight there (false). No quotes.
+// or jumps straight there (false). No quotes. The same goes for the
+// sidebar's Home option.
 SECTION_LINKS_SCROLL_SMOOTHLY = true
+
+// How long that glide takes, in milliseconds, however far the section is.
+// (Home uses HOME_TRAVEL_MS.)
+SECTION_SCROLL_MS = 1000
 
 // How far below the top of the screen a section's heading lands after
 // choosing it from the menu, in pixels.
