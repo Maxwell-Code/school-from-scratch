@@ -1,2 +1,5 @@
 # Local only: notes and documents for Maxwell and Claude. Never pushed.
 private/
+
+# Notes app (Obsidian) settings, created when a folder is opened in it.
+.obsidian/

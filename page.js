@@ -36,10 +36,14 @@ function pageSlug(name) {
   return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
 
-loadSettings().then(() => {
+// Other scripts on a page (payments.js) wait on this before reading settings.
+window.settingsLoaded = loadSettings();
+
+window.settingsLoaded.then(() => {
   const root = document.documentElement.style;
   root.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
   root.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
+  root.setProperty('--accent', setting('ACCENT_COLOR', '#dfeac0'));
 
   const HEADING_FONT = setting('HEADING_FONT', 'Lora');
   const HEADING_WEIGHT = setting('HEADING_FONT_WEIGHT', 600);

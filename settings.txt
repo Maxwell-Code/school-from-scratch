@@ -210,13 +210,13 @@ TOP_MENU_HOVER_SPEED_MS = 250
 
 // Underline a menu bar option while the pointer is over it, growing out from
 // the middle (true or false), and how thick the line is, in pixels.
-TOP_MENU_UNDERLINE_ON_HOVER = true
+TOP_MENU_UNDERLINE_ON_HOVER = false
 TOP_MENU_UNDERLINE_THICKNESS = 2
 
 // When a chosen option leans up (on its way to a section above), its
 // underline turns into a small arrow under the word pointing up (true or
 // false). Length of each side of the arrow, in pixels.
-TOP_MENU_ARROW_WHEN_MOVING_UP = true
+TOP_MENU_ARROW_WHEN_MOVING_UP = false
 TOP_MENU_ARROW_SIZE = 10
 
 // Slide the menu bar down from the top of the screen when it appears, and
@@ -446,11 +446,36 @@ CONTACT_PAGES = ["Cost"]
 PHONE_NUMBER = "+1 (805) 798-5098"
 
 // Show the Venmo logo under the phone number (true or false).
-SHOW_VENMO_LOGO = true
+SHOW_VENMO_LOGO = false
 
 // Optional: a web address the Venmo logo opens when clicked, starting with
 // https:// (for example your Venmo profile link). Leave "" for no link.
 VENMO_LINK = ""
+
+
+// -----------------------------------------------------------------------------
+//  PAYMENTS PAGE (payments.html)
+// -----------------------------------------------------------------------------
+
+// The payments page lists these ways to pay. Visitors pick one and see how
+// to pay that way. Until a way's details are filled in below, it says the
+// details are coming soon and shows PHONE_NUMBER to call instead.
+
+// Zelle: the email or US phone number the school's Zelle is registered to,
+// and the name parents will see when they send to it.
+ZELLE_RECIPIENT = ""
+ZELLE_RECIPIENT_NAME = "The School From Scratch"
+
+// Stripe: the Payment Link from the school's Stripe account (starts with
+// https://buy.stripe.com/). Parents pay by card, Apple Pay, Google Pay, or
+// bank account on Stripe's own secure page.
+STRIPE_PAYMENT_LINK = ""
+
+// Bank billing (online bill pay): parents add the school as a payee in their
+// own bank's online bill pay, and their bank sends the payment. They need
+// the payee name and the mailing address payments are sent to.
+BANK_BILL_PAY_PAYEE = "The School From Scratch"
+BANK_BILL_PAY_ADDRESS = ""
 
 
 // -----------------------------------------------------------------------------

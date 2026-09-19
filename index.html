@@ -1874,7 +1874,7 @@ function startGallery() {
   // A small Markdown reader for the section files: paragraphs (separated by a
   // blank line), headings (# ...), centered names (## ..., with the lines
   // right under it centered too), lists (- ... or 1. ...), **bold**,
-  // *italic*, ***both***, [links](https://...), pictures (![words](images/x.jpg)),
+  // *italic*, ***both***, [links](https://... or page.html), pictures (![words](images/x.jpg)),
   // and \ before a character to show it as it is. Everything else is shown
   // as plain text (no HTML).
   function markdownToHtml(md) {
@@ -1890,7 +1890,9 @@ function startGallery() {
         return '<img class="md-image" src="' + src + '" alt="' + alt + '" loading="lazy">';
       });
       t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, label, url) => {
-        if (!/^(https?:|mailto:|tel:|#)/i.test(url)) return label;
+        // Web addresses, email, phone, or a page on this site (payments.html).
+        // Anything else with a scheme (javascript: and so on) is dropped.
+        if (/^[a-z][\w+.-]*:/i.test(url) && !/^(https?:|mailto:|tel:)/i.test(url)) return label;
         const newTab = /^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : '';
         return `<a href="${url}"${newTab}>${label}</a>`;
       });
