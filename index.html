@@ -339,6 +339,7 @@
     letter-spacing: var(--menu-spacing-hover);
     white-space: nowrap;
     position: relative;
+    transition: translate var(--nudge-ms, 300ms) cubic-bezier(0.22, 1, 0.36, 1);
   }
   #menu a:focus-visible { outline: none; }
   /* Underline: grows out from the middle once the letters have settled. */
@@ -434,7 +435,8 @@
     text-decoration: none;
     white-space: nowrap;
     transition: letter-spacing var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1),
-      text-indent var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1);
+      text-indent var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1),
+      translate var(--nudge-ms, 300ms) cubic-bezier(0.22, 1, 0.36, 1);
   }
   #quick-list a:hover,
   #quick-list a:focus-visible {
@@ -453,7 +455,15 @@
   }
   .bar-letter { display: inline-block; text-indent: 0; transition: translate var(--nudge-ms, 300ms) cubic-bezier(0.22, 1, 0.36, 1); }
   .nudged .menu-letter,
-  .nudged .bar-letter { translate: 0 var(--ny, 0px); }
+  .nudged .bar-letter { translate: var(--nx, 0px) var(--ny, 0px); }
+  /* MENU_CLICK_MOVE_TOWARD_SECTION: the whole word leans the way the page
+     is heading (down to a section below, up to one above). */
+  #menu a,
+  #quick-list a { translate: 0 0; }
+  #menu a.nudged.heading-down,
+  #quick-list a.nudged.heading-down { translate: 0 var(--word-shift, 0.4em); }
+  #menu a.nudged.heading-up,
+  #quick-list a.nudged.heading-up { translate: 0 calc(-1 * var(--word-shift, 0.4em)); }
 
   /* A menu option glows briefly when it's clicked (MENU_CLICK_GLOW). */
   @keyframes menu-glow {
@@ -2148,27 +2158,40 @@ function startGallery() {
   }));
 
   // ---- Nudge on click --------------------------------------------------------
-  // The chosen option (and the same option in the other menu) has its letters
-  // jump to scattered heights, and they stay there until the page arrives.
+  // The chosen option (and the same option in the other menu) changes until
+  // the page arrives at its section: its letters jump to scattered heights
+  // (NUDGE), spread apart (EXPAND), and the whole word leans the way the page
+  // is heading (MOVE). Each can be switched on or off.
   const NUDGE_ON = setting('MENU_CLICK_NUDGE', true);
   const NUDGE_EM = Math.max(0, setting('MENU_CLICK_NUDGE_AMOUNT', 0.2));
   const NUDGE_MS = Math.max(0, setting('MENU_CLICK_NUDGE_SPEED_MS', 300));
+  const EXPAND_ON = setting('MENU_CLICK_EXPAND', true);
+  const EXPAND_EM = Math.max(0, setting('MENU_CLICK_EXPAND_AMOUNT', 0.12));
+  const MOVE_ON = setting('MENU_CLICK_MOVE_TOWARD_SECTION', true);
   rootStyle.setProperty('--nudge-ms', NUDGE_MS + 'ms');
+  rootStyle.setProperty('--word-shift', Math.max(0, setting('MENU_CLICK_MOVE_AMOUNT', 0.4)) + 'em');
   let nudgedLinks = [];
   function settleNudge() {
-    nudgedLinks.forEach((link) => link.classList.remove('nudged'));
+    nudgedLinks.forEach((link) => link.classList.remove('nudged', 'heading-down', 'heading-up'));
     nudgedLinks = [];
   }
-  function nudge(links) {
+  // direction: 1 = the page is heading down, -1 = up, 0 = not moving.
+  function nudge(links, direction) {
     settleNudge();
-    if (!NUDGE_ON) return;
+    if (!NUDGE_ON && !EXPAND_ON && !MOVE_ON) return;
     for (const link of links) {
-      [...link.querySelectorAll('.menu-letter, .bar-letter')].forEach((letter, i) => {
-        // Alternate up and down, each by a random share of the amount.
-        const amount = (0.4 + 0.6 * Math.random()) * NUDGE_EM * (i % 2 ? 1 : -1);
-        letter.style.setProperty('--ny', amount.toFixed(3) + 'em');
+      const letters = [...link.querySelectorAll('.menu-letter, .bar-letter')];
+      const middle = (letters.length - 1) / 2;
+      letters.forEach((letter, i) => {
+        // Up and down: alternate, each by a random share of the amount.
+        const y = NUDGE_ON ? (0.4 + 0.6 * Math.random()) * NUDGE_EM * (i % 2 ? 1 : -1) : 0;
+        // Sideways: each letter moves out from the middle of the word.
+        const x = EXPAND_ON ? (i - middle) * EXPAND_EM : 0;
+        letter.style.setProperty('--ny', y.toFixed(3) + 'em');
+        letter.style.setProperty('--nx', x.toFixed(3) + 'em');
       });
       link.classList.add('nudged');
+      if (MOVE_ON && direction) link.classList.add(direction > 0 ? 'heading-down' : 'heading-up');
     }
     nudgedLinks = links;
   }
@@ -2208,7 +2231,7 @@ function startGallery() {
   homeLink.append(...barLetters(homeLabel));
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
-    nudge([homeLink]);
+    nudge([homeLink], Math.sign(readHomeTop() - window.scrollY));
     goHome(settleNudge);
   });
   quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
@@ -2281,7 +2304,9 @@ function startGallery() {
       if (!hash || hash.length < 2 || hash[0] !== '#') return;
       e.preventDefault();
       if (location.hash !== hash) history.pushState(null, '', hash);
-      nudge([...document.querySelectorAll('#menu a, #quick-list a')].filter((a) => a.getAttribute('href') === hash));
+      const target = sectionEls.find((el) => '#' + el.id === hash);
+      nudge([...document.querySelectorAll('#menu a, #quick-list a')].filter((a) => a.getAttribute('href') === hash),
+        target ? Math.sign(sectionTop(target) - window.scrollY) : 0);
       scrollToHash(true, settleNudge);
     });
     // Back and Forward move between the sections visited from the menu.

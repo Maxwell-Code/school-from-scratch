@@ -228,9 +228,20 @@ MENU_CLICK_GLOW_MS = 1200
 // On or off (true or false, no quotes):
 MENU_CLICK_NUDGE = true
 // How far the letters jump, as a fraction of the letter size:
-MENU_CLICK_NUDGE_AMOUNT = 0.2
+MENU_CLICK_NUDGE_AMOUNT = 0.25
 // How long they take to jump and to drop back, in milliseconds:
-MENU_CLICK_NUDGE_SPEED_MS = 300
+MENU_CLICK_NUDGE_SPEED_MS = 150
+
+// The chosen option's letters also spread apart until it arrives (true or
+// false), by this much per letter, as a fraction of the letter size:
+MENU_CLICK_EXPAND = true
+MENU_CLICK_EXPAND_AMOUNT = 0.12
+
+// The chosen option's whole word also moves down (to a section further down
+// the page) or up (to one above) until it arrives, so it looks like it's
+// leading the way (true or false). How far, as a fraction of the letter size:
+MENU_CLICK_MOVE_TOWARD_SECTION = true
+MENU_CLICK_MOVE_AMOUNT = 0.4
 
 // The menu bar's first option, which takes you back to the main menu.
 TOP_MENU_HOME_LABEL = "Home"
