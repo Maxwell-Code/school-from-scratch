@@ -2170,15 +2170,20 @@ function startGallery() {
   const MOVE_ON = setting('MENU_CLICK_MOVE_TOWARD_SECTION', true);
   rootStyle.setProperty('--nudge-ms', NUDGE_MS + 'ms');
   rootStyle.setProperty('--word-shift', Math.max(0, setting('MENU_CLICK_MOVE_AMOUNT', 0.4)) + 'em');
-  let nudgedLinks = [];
+  let nudgedLinks = [], nudgeId = 0;
   function settleNudge() {
     nudgedLinks.forEach((link) => link.classList.remove('nudged', 'heading-down', 'heading-up'));
     nudgedLinks = [];
   }
   // direction: 1 = the page is heading down, -1 = up, 0 = not moving.
+  // Returns this click's own "arrived" function: it settles the letters only
+  // if no other option has been clicked since (a quick second click ends the
+  // first glide, and must not settle its own letters).
   function nudge(links, direction) {
     settleNudge();
-    if (!NUDGE_ON && !EXPAND_ON && !MOVE_ON) return;
+    const id = ++nudgeId;
+    const settle = () => { if (id === nudgeId) settleNudge(); };
+    if (!NUDGE_ON && !EXPAND_ON && !MOVE_ON) return settle;
     for (const link of links) {
       const letters = [...link.querySelectorAll('.menu-letter, .bar-letter')];
       const middle = (letters.length - 1) / 2;
@@ -2194,6 +2199,7 @@ function startGallery() {
       if (MOVE_ON && direction) link.classList.add(direction > 0 ? 'heading-down' : 'heading-up');
     }
     nudgedLinks = links;
+    return settle;
   }
 
   // ---- Glow on click ---------------------------------------------------------
@@ -2231,8 +2237,7 @@ function startGallery() {
   homeLink.append(...barLetters(homeLabel));
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
-    nudge([homeLink], Math.sign(readHomeTop() - window.scrollY));
-    goHome(settleNudge);
+    goHome(nudge([homeLink], Math.sign(readHomeTop() - window.scrollY)));
   });
   quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
     const copy = document.createElement('a');
@@ -2305,8 +2310,7 @@ function startGallery() {
       e.preventDefault();
       if (location.hash !== hash) history.pushState(null, '', hash);
       const target = sectionEls.find((el) => '#' + el.id === hash);
-      nudge([link], target ? Math.sign(sectionTop(target) - window.scrollY) : 0);
-      scrollToHash(true, settleNudge);
+      scrollToHash(true, nudge([link], target ? Math.sign(sectionTop(target) - window.scrollY) : 0));
     });
     // Back and Forward move between the sections visited from the menu.
     window.addEventListener('popstate', () => {
