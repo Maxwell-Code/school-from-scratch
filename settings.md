@@ -670,11 +670,12 @@ fit across.
 PAYMENT_CIRCLE_SIZE = 180
 ```
 
-How long after the page opens the one circle splits into three, and how long
-the circles take to split apart or gather together, in milliseconds.
+How long the one circle waits, once it has appeared, before splitting into
+three, and how long the circles take to appear, split apart, or gather
+together, in milliseconds.
 
 ```js
-PAYMENT_SPLIT_DELAY_MS = 500
+PAYMENT_SPLIT_DELAY_MS = 150
 PAYMENT_ANIMATION_MS = 600
 ```
 
