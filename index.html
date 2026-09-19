@@ -116,6 +116,20 @@
     line-height: 1.4;
   }
   .section h2 + div > h3:first-child { margin-top: 0; }
+  /* A person's name (## in a section file), and the lines right under it. */
+  .section h3.name {
+    margin-top: 2.2em;
+    font-size: 1.15em;
+    text-align: center;
+  }
+  .section p.centered { text-align: center; }
+  /* Pictures in a section (a headshot, for example). */
+  .section p.picture { margin: 0.8em 0 0.9em; text-align: center; line-height: 0; }
+  .section .md-image {
+    max-width: min(var(--section-image-width, 200px), 100%);
+    height: auto;
+    border-radius: var(--section-image-radius, 15px);
+  }
   .section p { margin: 0 0 1em; }
   .section ul,
   .section ol { margin: 0 0 1em; padding-left: 1.3em; }
@@ -614,6 +628,9 @@ function startGallery() {
   rootStyle.setProperty('--section-width', Math.max(200, setting('SECTION_TEXT_WIDTH', 720)) + 'px');
   rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
+  rootStyle.setProperty('--section-image-width', Math.max(20, setting('SECTION_PICTURE_WIDTH', 200)) + 'px');
+  rootStyle.setProperty('--section-image-radius', (setting('PHOTO_ROUNDED_CORNERS', true) ? Math.max(0, setting('PHOTO_CORNER_RADIUS', 12)) : 0) +
+    (String(setting('PHOTO_CORNER_RADIUS_UNIT', 'pixels')).trim().toLowerCase().startsWith('percent') ? '%' : 'px'));
   rootStyle.setProperty('--section-scroll-margin', Math.max(0, setting('SECTION_SCROLL_MARGIN', 96)) + 'px');
   rootStyle.setProperty('--title-gap', Math.max(0, setting('TITLE_GAP', 72)) + 'px');
   rootStyle.setProperty('--title-size', Math.max(8, setting('MENU_TITLE_SIZE', 76)) + 'px');
@@ -1786,9 +1803,11 @@ function startGallery() {
   }
 
   // A small Markdown reader for the section files: paragraphs (separated by a
-  // blank line), headings (# ...), lists (- ... or 1. ...), **bold**,
-  // *italic*, ***both***, [links](https://...), and \ before a character to
-  // show it as it is. Everything else is shown as plain text (no HTML).
+  // blank line), headings (# ...), centered names (## ..., with the lines
+  // right under it centered too), lists (- ... or 1. ...), **bold**,
+  // *italic*, ***both***, [links](https://...), pictures (![words](images/x.jpg)),
+  // and \ before a character to show it as it is. Everything else is shown
+  // as plain text (no HTML).
   function markdownToHtml(md) {
     const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const BREAK = '\u0001';
@@ -1796,6 +1815,11 @@ function startGallery() {
       const kept = [];
       let t = text.replace(/\\([!-\/:-@\[-`{-~])/g, (_, c) => '\u0000' + (kept.push(c) - 1) + '\u0000');
       t = esc(t);
+      // Pictures: a file on this site (images/...) or an https:// address.
+      t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (all, alt, src) => {
+        if (/^[a-z][\w+.-]*:/i.test(src) && !/^https:/i.test(src)) return alt;
+        return '<img class="md-image" src="' + src + '" alt="' + alt + '" loading="lazy">';
+      });
       t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, label, url) => {
         if (!/^(https?:|mailto:|tel:|#)/i.test(url)) return label;
         const newTab = /^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : '';
@@ -1809,8 +1833,9 @@ function startGallery() {
     }
     const out = [];
     let para = [], list = null;
+    let centered = false; // under a ## name, until the next blank line
     const flushPara = () => {
-      if (para.length) out.push('<p>' + inline(para.join('\n').replace(/ {2,}\n/g, BREAK).replace(/\n/g, ' ')) + '</p>');
+      if (para.length) out.push((centered ? '<p class="centered">' : '<p>') + inline(para.join('\n').replace(/ {2,}\n/g, BREAK).replace(/\n/g, ' ')) + '</p>');
       para = [];
     };
     const flushList = () => {
@@ -1820,8 +1845,16 @@ function startGallery() {
     for (const raw of md.replace(/\r\n?/g, '\n').split('\n')) {
       const line = raw.trim();
       let m;
-      if (!line || /^([-*_])( ?\1){2,}$/.test(line)) { flushPara(); flushList(); continue; }
-      if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); out.push('<h3>' + inline(m[1]) + '</h3>'); continue; }
+      if (!line || /^([-*_])( ?\1){2,}$/.test(line)) { flushPara(); flushList(); centered = false; continue; }
+      if ((m = line.match(/^##\s+(.*?)\s*#*$/))) {
+        flushPara(); flushList();
+        out.push('<h3 class="name">' + inline(m[1]) + '</h3>');
+        centered = true;
+        continue;
+      }
+      if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); centered = false; out.push('<h3>' + inline(m[1]) + '</h3>'); continue; }
+      // A picture on a line of its own sits on its own, centered.
+      if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line)) { flushPara(); flushList(); out.push('<p class="picture">' + inline(line) + '</p>'); continue; }
       if ((m = line.match(/^([-*+]|\d+[.)])\s+(.*)$/))) {
         flushPara();
         const tag = /\d/.test(m[1]) ? 'ol' : 'ul';

@@ -341,6 +341,11 @@ MENU_LETTER_STAGGER_MS = 0
 // The files are Markdown, a plain-text format:
 //   - A blank line starts a new paragraph.
 //   - A line starting with # is a small heading: # Our questions
+//   - A line starting with ## is a centered name: ## Dr. Gopal Krishnamurthy
+//     The lines right under it (before the next blank line) are centered too,
+//     for a picture and a title.
+//   - A picture: ![Headshot of Gopal](images/gopal_headshot.jpeg)
+//     On a line of its own it sits centered. Put picture files in images/.
 //   - Lines starting with - (or 1. 2. 3.) make a list.
 //   - **bold**, *italic*, ***bold and italic***
 //   - A link: [the words to click](https://example.com)
@@ -375,6 +380,10 @@ SECTION_TEXT_WIDTH = 720
 // on narrow screens) and its paragraphs.
 SECTION_HEADING_SIZE = 44
 SECTION_TEXT_SIZE = 19
+
+// Widest a picture in a section (a headshot, say) can be, in pixels. It uses
+// the same rounded corners as the gallery photos.
+SECTION_PICTURE_WIDTH = 200
 
 // When a menu option is chosen, the page glides down to the section (true)
 // or jumps straight there (false). No quotes. The same goes for the
