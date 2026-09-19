@@ -301,9 +301,41 @@ MENU_LETTER_STAGGER_MS = 0
 //  PAGES
 // -----------------------------------------------------------------------------
 
-// Each menu option opens its own page showing its name and "Under Development".
+// In read mode, each menu option (on the home screen and in the sidebar)
+// scrolls down to that option's section on the same page. The section's text
+// is written in index.html, inside <template id="section-text">. An option
+// with no text there shows "Under Development".
+//
+// In explore mode, or with the gallery off, each option opens its own page
+// instead (people.html, cost.html, ...), showing its name and
+// "Under Development".
 
-// Pages that also show the contact details below (use the names exactly as in
+// Room for photos between one section and the next (and between the menu and
+// the first section), in pixels. Photos 110 to 270 pixels tall fit in a gap
+// of 400 once the clearance below is taken off both sides.
+SPACE_BETWEEN_SECTIONS = 400
+
+// Empty space kept between a section's text and the nearest photo, in pixels.
+SECTION_PHOTO_CLEARANCE = 40
+
+// Widest the text of a section can be, in pixels. On narrow screens it fills
+// the screen, less a small margin on each side.
+SECTION_TEXT_WIDTH = 720
+
+// Text sizes in the sections, in pixels: each section's heading (it shrinks
+// on narrow screens) and its paragraphs.
+SECTION_HEADING_SIZE = 44
+SECTION_TEXT_SIZE = 19
+
+// When a menu option is chosen, the page glides down to the section (true)
+// or jumps straight there (false). No quotes.
+SECTION_LINKS_SCROLL_SMOOTHLY = true
+
+// How far below the top of the screen a section's heading lands after
+// choosing it from the menu, in pixels.
+SECTION_SCROLL_MARGIN = 96
+
+// Sections (and pages) that also show the contact details below (use the names exactly as in
 // MENU_ITEMS, in quotes, separated by commas).
 CONTACT_PAGES = ["Cost"]
 

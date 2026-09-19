@@ -76,6 +76,78 @@
   .read-photo.loaded { opacity: 1; }
   .read-photo img { display: block; }
 
+  /* Read mode: a section of text for each menu option, down the page below
+     the menu, with room for photos in between. The script places them. */
+  html.read-mode.smooth-links { scroll-behavior: smooth; }
+  #sections {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    pointer-events: none;
+  }
+  .section {
+    position: absolute;
+    left: 50%;
+    width: min(var(--section-width, 720px), 100% - 32px);
+    transform: translateX(-50%);
+    box-sizing: border-box;
+    scroll-margin-top: var(--section-scroll-margin, 96px);
+    pointer-events: auto;
+    cursor: auto;
+    user-select: text;
+    -webkit-user-select: text;
+    font-size: var(--section-text-size, 19px);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+  .section h2 {
+    margin: 0 0 0.6em;
+    font-family: var(--heading-font);
+    font-weight: var(--heading-weight);
+    font-size: min(var(--section-heading-size, 44px), 10vw);
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    text-align: center;
+  }
+  .section h3 {
+    margin: 1.6em 0 0.5em;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .section h2 + div > h3:first-child { margin-top: 0; }
+  .section p { margin: 0 0 1em; }
+  .section ul { margin: 0 0 1em; padding-left: 1.3em; }
+  .section li { margin-bottom: 0.35em; }
+  .section strong { font-weight: 700; }
+  .section a { color: inherit; text-underline-offset: 3px; }
+  .section > div > :last-child { margin-bottom: 0; }
+  .section .status {
+    margin: 0;
+    text-align: center;
+    font-size: calc(var(--body-size) * 0.8);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  /* Phone number and Venmo logo, on the sections named in CONTACT_PAGES. */
+  .section .contact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-top: 32px;
+  }
+  .section .phone {
+    font-size: var(--body-size);
+    letter-spacing: 0.06em;
+    text-decoration: none;
+  }
+  .section .phone:hover,
+  .section .phone:focus-visible { text-decoration: underline; text-underline-offset: 5px; }
+  .section .venmo { display: block; width: 160px; max-width: 60vw; height: auto; }
+
   /* Faint background grid (drawn by the script), optionally fading out
      toward the screen edges. */
   #grid,
@@ -438,6 +510,72 @@
     <div id="quick-list"></div>
   </nav>
 
+  <!-- The text for each menu option's section on the scrolling page (read
+       mode). data-for names the menu option it belongs to; the section's
+       heading is taken from MENU_ITEMS, and sections appear in menu order.
+       A menu option with no section here shows "Under Development". -->
+  <template id="section-text">
+    <div data-for="Logistics">
+      <p>We start operating with a maximum of 15 children, 4-18 yrs, in a multi-age learning environment with a minimum 3 day/week commitment.</p>
+      <ul>
+        <li>9am: Arrivals &amp; Circle Time</li>
+        <li>12pm: Lunch time</li>
+        <li>3:00pm: Circle Time</li>
+        <li>3:00pm: End of Day</li>
+      </ul>
+      <p>Daily activities include:</p>
+      <ul>
+        <li>Circle time: movement, singing, dancing, noticing, sitting quietly, announcements, wonderings, and sharing.</li>
+        <li>Exploring phenomena: interdisciplinary explorations of primary soruces, materials, and phenomena in diverse subject matters - <em>from math to dance</em>.</li>
+        <li>Dialogues &amp; Inquiry: dialogues rooted in core questions of the week/month.</li>
+        <li>Independent Learning: time for self-directed reading, writing, drawing, movement, making, and other explorations responding to the child’s individual explorations.</li>
+        <li>Reflection Time: journaling, drawing, and group sharing.</li>
+        <li>Walks and Hikes</li>
+      </ul>
+      <p><em>The root meaning of ‘school’ originates from leisure.</em> The structure will prioritize a sense of leisure.</p>
+    </div>
+
+    <div data-for="Approach">
+      <p><strong>The curriculum is curiosity.</strong></p>
+      <ul>
+        <li><strong>The curriculum is uncovered rather than covered</strong> - sustaining attention, engagement, and inquiry.</li>
+        <li><strong>The curriculum is emergent</strong> in its meticulous attention to materials, phenomena, and the learning of the children and the educators. The curriculum and 'lessons' include <strong>intentionally planned and unplanned</strong> experiences and activities.</li>
+      </ul>
+      <h3>Curriculum: Roots, Provocations/Opportunities, Inquiry, and Explorations:</h3>
+      <p>We learn deeply when we are genuinely curious about the world. Rather than dividing learning into separate subjects, we co-create an environment where explorations naturally arise from observations, questions, conversations, play, collaboration, silence, and a deep sense of connection with the world and with one another. These experiences may continue for days, weeks, months, or even a lifetime as explorations grow.</p>
+      <p>The teacher's focus is to: (i) be learning themselves (ii) make available and co-create environments for direct engagement with phenomena, materials, and the world (iii) understand how children make sense of the world - their observations, questions, ideas and how they carry them out, what they do (iv) inquire, observe, and document the process (not merely the product) of children's work (v) explore learning/unlearning that is not merely the accumulation of knowledge (vi) engage in a partnership with the parents in sustaining and documenting the above at the learning center and at home.</p>
+      <p>The investigations listed above are not a fixed curriculum to be covered or completed. Instead, they represent rich areas of exploration that invite children into ongoing inquiry. Through these experiences, literacy, mathematics, science, the arts, communication, and social-emotional learning emerge and develop naturally within meaningful contexts. Meaningful investigations often emerge unexpectedly from a child’s observation, a conversation, a walk in nature, a community event, a story, or an everyday experience.</p>
+    </div>
+
+    <div data-for="Cost">
+      <p>This is not a for profit operation. Nevertheless, the running costs of the center including health care, basic needs, and livelihoods of the teachers need to be covered and parents and others contribute financially or in other ways that support the center. Since we would not like to limit the parent body to economically well off families, we encourage those who are financially more able to support other families. It is important that the ability to pay does not hinder a child and parent from joining.</p>
+    </div>
+
+    <div data-for="People">
+      <p><a href="https://www.antioch.edu/faculty/gopal-krishnamurthy/" target="_blank" rel="noopener"><strong>Dr. Gopal Krishnamurthy</strong></a>, Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
+      <p>Gopal brings decades of experience in schools, universities, teacher education, and education in India, the UK, and the US. He has a PhD in education, and served as university Dept. Chair &amp; faculty, school director, and teacher. He sees Ojai as a crucible for wonder, not knowing, and deep inquiry.</p>
+      <p><strong>Sunsong (Susan) Clark</strong>, Founding Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
+      <p>Sunsong's work entails developing rich learning environments where children pursue their trajectories of interest in an atmosphere of mutual learning alongside observant adults focused on understanding how the child makes meaning of the world around them and acts those meanings out. She holds an MEd with a concentration in the Reggio Emilia approach, and certificate in ECE. She spent 18 years homesteading off-grid in a small remote community. In addition, she is constantly amazed by nature and the everyday beauty of all kinds of things.</p>
+      <p><strong>Amol Gejawar</strong>, Founding Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
+      <p>Twelve years of expertise in natural learning, ecological restoration, organic farming, alternative architecture, and traditional craftsmanship, have cultivated Amol's diverse and impactful career. His commitment to sustainability and community-focused initiatives continues to drive his work in these interconnected domains. He holds a Bachelors in Engineering. Amol brings years of experience in educational leadership, and the observation and education of children.</p>
+      <p><strong>Dharmakaruna Santhi Edara</strong>, MD, Internist, Dignity health- St. John Regional medical center, Oxnard CA. Founding Parent, The School From Scratch (Ojai, Microschool).</p>
+      <p>Being a mother of two young children and working as a physician, I have often questioned the learning I experienced in my own childhood. Modern education systems seem to be successful at dumping knowledge into children, rather than helping with knowledge creation.</p>
+      <p>It has become clear to me that there is no shortcut to true learning. A newborn rolls, crawls, sits, and walks on their own. In the same way, a child’s learning about the world needs to happen as naturally as possible—with time, freedom, curiosity, and their own experiences.</p>
+      <p>I firmly believe that ‘The School From Scratch' can provide a space where a child’s originality is protected, allowing their uniqueness to naturally blossom.</p>
+      <p><strong>Maxwell Lommel</strong>, Web Design, TEC, and Founding Student-Intern, Teaching Apprentice, The School From Scratch, (Ojai, Microschool).</p>
+      <p>Maxwell has explored the educational landscape in different ways in and out of Ojai including attending both traditional and alternative school systems, and was selected to join the Education Reimagined Conference in Washington DC. He is a junior in high school currently taking classes at Ventura College as a dual enrollment student. Maxwell hopes to continue growing at The School From Scratch as the first teacher apprentice/student intern.</p>
+      <p>Child safety is a priority at The School From Scratch and teachers have background check certification.</p>
+      <p>Sunsong (Susan) Clark (director, teacher, and safeguarding lead), served for years as government mandated residential <strong><em>school safeguarding lead</em></strong> and <strong><em>conducted child protection training</em></strong> for staff and teachers.</p>
+    </div>
+
+    <div data-for="FAQs">
+      <h3>Will my child be able to obtain grade level standards?</h3>
+      <p>Depth, breadth, and learning excellence in all areas are core to the center. We hold the question - what does it look like for learning rather than the measurement of learning to be at the heart of a learning endeavor? Nevertheless, should the students and parents wish to work towards meeting standards, the center will support them with this. The documentation of the learning activities and experiences can be used towards addressing the standards.</p>
+      <h3>Is this a project-based, play-based, nature-based, inquiry-based school? Will it be a structured, unstructured, or semi-structured school? Will it be a self-directed learning school?</h3>
+      <p>It is important for us not to limit and restrict ourselves to branding and slogans. We do not see unstructured and structured as opposites nor strive to find a semi-structured balance between the two. We are interested in the question - structured or unstructured with regard to what and for what? Having said this, there will be project-based, play-based, nature-based, inquiry-based, active, silent, dialogic, independent, and collaborative experiences and learning.</p>
+    </div>
+  </template>
+
 <script>
 // ---- Settings ---------------------------------------------------------------
 // All tunable values live in settings.txt, written as `NAME = value` lines.
@@ -513,6 +651,7 @@ function startGallery() {
   const WHEEL_SPEED = setting('WHEEL_ZOOM_SPEED', 0.0015);
   // Read mode: a linear page, scrolled up and down only. Explore mode: pan in
   // any direction and zoom in and out.
+  const GALLERY_ON = setting('GALLERY_ENABLED', true);
   const READ_MODE = String(setting('GALLERY_MODE', 'read')).trim().toLowerCase() !== 'explore';
   document.documentElement.classList.toggle('read-mode', READ_MODE);
   const PINCH_SPEED = setting('TRACKPAD_PINCH_ZOOM_SPEED', 0.01);
@@ -520,6 +659,10 @@ function startGallery() {
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
   const HOME_MS = Math.max(1, setting('HOME_TRAVEL_MS', 800));
   const ABOVE_HOME = Math.max(0, setting('READ_MODE_SCROLL_ABOVE_HOME', 0));
+  // Read mode's sections of text, and the room for photos between them.
+  const SECTION_SPACE = Math.max(0, setting('SPACE_BETWEEN_SECTIONS', 400));
+  const SECTION_CLEARANCE = Math.max(0, setting('SECTION_PHOTO_CLEARANCE', 40));
+  document.documentElement.classList.toggle('smooth-links', setting('SECTION_LINKS_SCROLL_SMOOTHLY', true));
   document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
   // Rounded photo corners: a size in pixels, or a percentage of each photo's
   // shorter side.
@@ -542,7 +685,8 @@ function startGallery() {
   fontLink.rel = 'stylesheet';
   fontLink.href = 'https://fonts.googleapis.com/css2?family=' +
     encodeURIComponent(HEADING_FONT) + ':wght@' + HEADING_WEIGHT +
-    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + BODY_WEIGHT + '&display=swap';
+    // Bold (700) is also loaded for the bold words in the sections' text.
+    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + [...new Set([BODY_WEIGHT, 700])].sort((a, b) => a - b).join(';') + '&display=swap';
   document.head.appendChild(fontLink);
   rootStyle.setProperty('--heading-font', `'${HEADING_FONT}', Georgia, serif`);
   rootStyle.setProperty('--heading-weight', HEADING_WEIGHT);
@@ -550,6 +694,10 @@ function startGallery() {
   rootStyle.setProperty('--body-weight', BODY_WEIGHT);
   rootStyle.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
   rootStyle.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
+  rootStyle.setProperty('--section-width', Math.max(200, setting('SECTION_TEXT_WIDTH', 720)) + 'px');
+  rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
+  rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
+  rootStyle.setProperty('--section-scroll-margin', Math.max(0, setting('SECTION_SCROLL_MARGIN', 96)) + 'px');
   rootStyle.setProperty('--title-gap', Math.max(0, setting('TITLE_GAP', 72)) + 'px');
   rootStyle.setProperty('--menu-spacing-start', setting('MENU_LETTER_SPACING', 0.3) + 'em');
   rootStyle.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
@@ -653,7 +801,9 @@ function startGallery() {
   if (items.length) {
     menuEl.querySelector('nav').replaceChildren(...items.map((label) => {
       const link = document.createElement('a');
-      link.href = pageSlug(label) + '.html';
+      // Read mode: jump to the option's section further down this page.
+      // Otherwise (explore mode, gallery off): open its own page.
+      link.href = READ_MODE && GALLERY_ON ? '#' + pageSlug(label) : pageSlug(label) + '.html';
       link.textContent = label;
       return link;
     }));
@@ -732,7 +882,7 @@ function startGallery() {
     ctx.fill();
   }
 
-  if (!setting('GALLERY_ENABLED', true)) {
+  if (!GALLERY_ON) {
     document.documentElement.classList.add('gallery-off');
     const drawStill = () => {
       if (!GRID_ON) return;
@@ -771,9 +921,17 @@ function startGallery() {
   const CHUNK = Math.max(1000, Math.ceil(REACH * 1.05));
   const ATTEMPTS = Math.round(TRIES_PER_AREA * (CHUNK / 1000) ** 2);
 
+  // Read mode's sections of text: bands across the whole page (in landscape
+  // units, clearance included) where no photo may go. The landscape stays
+  // fully crowded from the menu down to the last section (contentBottom),
+  // and only starts thinning out below it.
+  let textBands = [];   // { y0, y1 }
+  let contentBottom = 0;
+  const photoDistance = (x, y) => Math.hypot(x, y > 0 ? Math.max(0, y - contentBottom) : y);
+
   // 0 inside the crowded area, rising to 1 at the end distance.
   const fadeProgress = (x, y) =>
-    clamp((Math.hypot(x, y) - CROWDED_RADIUS) / (END_DISTANCE - CROWDED_RADIUS), 0, 1);
+    clamp((photoDistance(x, y) - CROWDED_RADIUS) / (END_DISTANCE - CROWDED_RADIUS), 0, 1);
   const spacingScale = (x, y) => 1 + (EDGE_MULTIPLIER - 1) * fadeProgress(x, y);
   const keepChance = (x, y) => CENTER_DENSITY * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
 
@@ -813,7 +971,8 @@ function startGallery() {
     if (layouts.has(key)) return layouts.get(key);
 
     // Chunks entirely past the end distance (plus a margin) stay empty.
-    const nearX = clamp(0, cx * CHUNK, (cx + 1) * CHUNK), nearY = clamp(0, cy * CHUNK, (cy + 1) * CHUNK);
+    const nearX = clamp(0, cx * CHUNK, (cx + 1) * CHUNK);
+    const nearY = Math.max(0, cy * CHUNK - contentBottom, -(cy + 1) * CHUNK);
     if (Math.hypot(nearX, nearY) > END_DISTANCE + REACH) {
       layouts.set(key, []);
       return [];
@@ -840,6 +999,8 @@ function startGallery() {
       // Skip spots where even the smallest photo would crowd the menu.
       const minHalf = SIZE_MIN / 2 + FRAME + MENU_GAP;
       if (Math.abs(x) < menuHalfW + minHalf && Math.abs(y) < menuHalfH + minHalf) continue;
+      // ...or would touch a section's text.
+      if (textBands.some((b) => y > b.y0 - SIZE_MIN / 2 - FRAME && y < b.y1 + SIZE_MIN / 2 + FRAME)) continue;
 
       // Prefer a photo that none of the nearby photos are already showing.
       const nearby = [...neighbors, ...placed].filter((o) => Math.hypot(o.x - x, o.y - y) < REACH * Math.SQRT2);
@@ -859,6 +1020,9 @@ function startGallery() {
         (Math.abs(x) - menuHalfW - MENU_GAP - FRAME) / (w0 / 2),
         (Math.abs(y) - menuHalfH - MENU_GAP - FRAME) / (h0 / 2));
       fit = Math.min(1, fit);
+      for (const b of textBands) {
+        fit = Math.min(fit, y < b.y0 ? (b.y0 - FRAME - y) / (h0 / 2) : (y - b.y1 - FRAME) / (h0 / 2));
+      }
       for (const o of nearby) {
         const need = (gap + o.gap) / 2 + FRAME;
         const fitX = (Math.abs(x - o.x) - o.hw - need) / (w0 / 2);
@@ -1587,17 +1751,23 @@ function startGallery() {
   function buildReadPage() {
     const before = readGeo;
     const worldAtTop = before ? (window.scrollY - before.top) / before.s : null;
+    // The section at (or next below) the top of the screen, so the same text
+    // stays in view when sections change height (window resized, font loaded).
+    const anchor = before && sectionEls.find((el) => el.offsetTop + el.offsetHeight > window.scrollY);
+    const anchorOffset = anchor ? window.scrollY - anchor.offsetTop : 0;
+    const pastHome = before && window.scrollY > readHomeTop() + 1;
     const g = readGeo = readGeometry();
     cam.s = g.s;
     cam.x = 0;
     world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
-    viewport.style.height = Math.ceil(g.top + END_DISTANCE * g.s + g.H / 2) + 'px';
     if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
+    layOutSections(g);
+    viewport.style.height = Math.ceil(g.top + (contentBottom + END_DISTANCE) * g.s + g.H / 2) + 'px';
 
     if (photos.length) {
       // Every photo that falls in the screen-wide column, top to bottom.
       const halfW = g.W / 2 / g.s;
-      const worldTop = -g.top / g.s, worldBottom = END_DISTANCE + g.H / 2 / g.s;
+      const worldTop = -g.top / g.s, worldBottom = contentBottom + END_DISTANCE + g.H / 2 / g.s;
       const cx0 = Math.floor((-halfW - PAD) / CHUNK), cx1 = Math.floor((halfW + PAD) / CHUNK);
       const cy0 = Math.floor((worldTop - PAD) / CHUNK), cy1 = Math.floor((worldBottom + PAD) / CHUNK);
       const els = [];
@@ -1614,8 +1784,117 @@ function startGallery() {
     }
     stats.mode = 'read mode: normal page scrolling';
     // Keep the same part of the page on screen when the window is resized.
-    if (worldAtTop !== null) window.scrollTo(0, g.top + worldAtTop * g.s);
+    if (anchor && pastHome) {
+      window.scrollTo({ top: anchor.offsetTop + anchorOffset, behavior: 'instant' });
+    } else if (worldAtTop !== null) {
+      window.scrollTo({ top: g.top + worldAtTop * g.s, behavior: 'instant' });
+    }
     readFrame();
+  }
+
+  // One section per menu option, in menu order, filled with its text from
+  // the <template id="section-text"> near the top of this file.
+  const sectionsLayer = document.createElement('div');
+  sectionsLayer.id = 'sections';
+  let sectionEls = [];
+  function buildSections() {
+    const texts = new Map([...document.getElementById('section-text').content.children]
+      .map((div) => [pageSlug(div.dataset.for), div]));
+    const contactSlugs = setting('CONTACT_PAGES', ['Cost']).map(pageSlug);
+    sectionEls = menuLinks.map((link) => {
+      const label = link.dataset.label || link.textContent;
+      const slug = pageSlug(label);
+      const section = document.createElement('section');
+      section.className = 'section';
+      section.id = slug;
+      const heading = document.createElement('h2');
+      heading.textContent = label;
+      let body = texts.get(slug);
+      if (body) {
+        body = body.cloneNode(true);
+        body.removeAttribute('data-for');
+      } else {
+        body = document.createElement('div');
+        const status = document.createElement('p');
+        status.className = 'status';
+        status.textContent = 'Under Development';
+        body.appendChild(status);
+      }
+      if (contactSlugs.includes(slug)) body.appendChild(contactDetails());
+      section.append(heading, body);
+      return section;
+    });
+    sectionsLayer.replaceChildren(...sectionEls);
+    viewport.appendChild(sectionsLayer);
+    // A section changes height when a font or the Venmo logo finishes
+    // loading; the photos are then laid out again around the new size.
+    if ('ResizeObserver' in window) {
+      let queued = false;
+      const observer = new ResizeObserver(() => {
+        if (queued || !readGeo) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; buildReadPage(); });
+      });
+      sectionEls.forEach((el) => observer.observe(el));
+    }
+  }
+
+  // Phone number and Venmo logo (same settings as the Cost page).
+  function contactDetails() {
+    const box = document.createElement('div');
+    box.className = 'contact';
+    const phone = setting('PHONE_NUMBER', '+1 (805) 798-5098').trim();
+    if (phone) {
+      const a = document.createElement('a');
+      a.className = 'phone';
+      a.textContent = phone;
+      a.href = 'tel:' + phone.replace(/[^\d+]/g, '');
+      box.appendChild(a);
+    }
+    if (setting('SHOW_VENMO_LOGO', true)) {
+      const venmoLink = setting('VENMO_LINK', '').trim();
+      const a = document.createElement('a');
+      if (/^https:\/\//i.test(venmoLink)) {
+        a.href = venmoLink;
+        a.target = '_blank';
+        a.rel = 'noopener';
+      }
+      const img = new Image();
+      img.className = 'venmo';
+      img.alt = 'Venmo';
+      img.src = IMAGE_DIR + 'venmo_logo.svg';
+      a.appendChild(img);
+      box.appendChild(a);
+    }
+    return box;
+  }
+
+  // Stack the sections down the page below the menu, SECTION_SPACE apart,
+  // and record where photos must stay clear of them. The photo layout is
+  // rebuilt whenever that changes.
+  function layOutSections(g) {
+    let y = menuHalfH + SECTION_SPACE;
+    const bands = [];
+    contentBottom = 0;
+    for (const el of sectionEls) {
+      el.style.top = (g.top + y * g.s).toFixed(1) + 'px';
+      const h = el.offsetHeight / g.s;
+      bands.push({ y0: y - SECTION_CLEARANCE, y1: y + h + SECTION_CLEARANCE });
+      contentBottom = y + h;
+      y += h + SECTION_SPACE;
+    }
+    if (JSON.stringify(bands) !== JSON.stringify(textBands)) {
+      textBands = bands;
+      layouts.clear();
+    }
+  }
+
+  // Scroll to the section named in the address (#cost), or to Home.
+  function scrollToHash() {
+    const id = decodeURIComponent(location.hash.slice(1));
+    const target = id && sectionEls.find((el) => el.id === id);
+    if (target) target.scrollIntoView({ behavior: 'instant' });
+    else window.scrollTo({ top: readHomeTop(), behavior: 'instant' });
   }
 
   function readPhoto(it, g) {
@@ -1784,6 +2063,7 @@ function startGallery() {
     const copy = document.createElement('a');
     copy.href = link.getAttribute('href');
     copy.textContent = link.dataset.label || link.textContent;
+    copy.addEventListener('click', () => setQuickOpen(false));
     return copy;
   }));
   // Same letter hover as the main menu (without the underline). Every option
@@ -1852,9 +2132,21 @@ function startGallery() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => { measureMenu(); buildReadPage(); }, 150);
     });
+    buildSections();
     buildReadPage();
-    window.scrollTo(0, readHomeTop());
-    if (document.fonts) document.fonts.ready.then(() => { measureMenu(); buildReadPage(); });
+    scrollToHash();
+    // Once the fonts arrive the text changes height; a visitor who arrived
+    // at a section (#cost) is put back at its start.
+    if (document.fonts) document.fonts.ready.then(() => {
+      measureMenu();
+      buildReadPage();
+      if (location.hash && window.scrollY > readHomeTop() + 1) scrollToHash();
+    });
+    // Back and Forward move between the sections visited from the menu.
+    window.addEventListener('popstate', () => {
+      if (location.hash) scrollToHash();
+      else window.scrollTo({ top: readHomeTop(), behavior: 'instant' });
+    });
     loadPhotos().then((list) => { photos = list; buildReadPage(); });
   } else {
     window.addEventListener('resize', () => { measureMenu(); requestRender(); });
