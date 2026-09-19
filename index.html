@@ -597,6 +597,8 @@ function startGallery() {
   // Read mode's sections of text, and the room for photos between them.
   const SECTION_SPACE = Math.max(0, setting('SPACE_BETWEEN_SECTIONS', 400));
   const SECTION_CLEARANCE = Math.max(0, setting('SECTION_PHOTO_CLEARANCE', 40));
+  const SECTION_DENSITY = clamp(setting('SECTION_PHOTO_DENSITY', 25), 0, 100) / 100;
+  const SECTION_THIN = Math.max(1, setting('SECTION_PHOTO_THIN_OUT_DISTANCE', 500));
   document.documentElement.classList.toggle('smooth-links', setting('SECTION_LINKS_SCROLL_SMOOTHLY', true));
   document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
   // Rounded photo corners: a size in pixels, or a percentage of each photo's
@@ -858,18 +860,26 @@ function startGallery() {
 
   // Read mode's sections of text: the area each one covers (in landscape
   // units, clearance included), centred on the menu's line, where no photo
-  // may go. Photos can still sit beside the text. The landscape stays fully
-  // crowded from the menu down to the last section (contentBottom), and only
-  // starts thinning out below it.
+  // may go. Photos can still sit beside the text.
+  //
+  // With sections, photos are crowded only around the menu (down to the top
+  // of the first section), then thin out over SECTION_THIN to SECTION_DENSITY
+  // for the rest of the sections, and below the last one (contentBottom)
+  // fade to nothing over the usual thinning-out distance.
   let textBands = [];   // { hx, y0, y1 }: half-width, top, bottom
   let contentBottom = 0;
-  const photoDistance = (x, y) => Math.hypot(x, y > 0 ? Math.max(0, y - contentBottom) : y);
+  const TAIL = END_DISTANCE - CROWDED_RADIUS;
 
   // 0 inside the crowded area, rising to 1 at the end distance.
-  const fadeProgress = (x, y) =>
-    clamp((photoDistance(x, y) - CROWDED_RADIUS) / (END_DISTANCE - CROWDED_RADIUS), 0, 1);
+  const fadeProgress = (x, y) => textBands.length
+    ? clamp((y - contentBottom) / TAIL, 0, 1)
+    : clamp((Math.hypot(x, y) - CROWDED_RADIUS) / TAIL, 0, 1);
+  // Share of the crowded density kept alongside the sections (1 = all).
+  const sectionShare = (y) => textBands.length && y > textBands[0].y0
+    ? 1 + (SECTION_DENSITY - 1) * clamp((y - textBands[0].y0) / SECTION_THIN, 0, 1)
+    : 1;
   const spacingScale = (x, y) => 1 + (EDGE_MULTIPLIER - 1) * fadeProgress(x, y);
-  const keepChance = (x, y) => CENTER_DENSITY * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
+  const keepChance = (x, y) => CENTER_DENSITY * sectionShare(y) * Math.pow(1 - fadeProgress(x, y), FADE_CURVE);
 
   const viewport = document.getElementById('viewport');
   const world = document.getElementById('world');
@@ -1701,12 +1711,15 @@ function startGallery() {
     world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
     if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
     layOutSections(g);
-    viewport.style.height = Math.ceil(g.top + (contentBottom + END_DISTANCE) * g.s + g.H / 2) + 'px';
+    // Below the last section, photos fade out over TAIL (or END_DISTANCE
+    // from the menu when there are no sections).
+    const photosEnd = textBands.length ? contentBottom + TAIL : END_DISTANCE;
+    viewport.style.height = Math.ceil(g.top + photosEnd * g.s + g.H / 2) + 'px';
 
     if (photos.length) {
       // Every photo that falls in the screen-wide column, top to bottom.
       const halfW = g.W / 2 / g.s;
-      const worldTop = -g.top / g.s, worldBottom = contentBottom + END_DISTANCE + g.H / 2 / g.s;
+      const worldTop = -g.top / g.s, worldBottom = photosEnd + g.H / 2 / g.s;
       const cx0 = Math.floor((-halfW - PAD) / CHUNK), cx1 = Math.floor((halfW + PAD) / CHUNK);
       const cy0 = Math.floor((worldTop - PAD) / CHUNK), cy1 = Math.floor((worldBottom + PAD) / CHUNK);
       const els = [];

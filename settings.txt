@@ -328,6 +328,17 @@ MENU_LETTER_STAGGER_MS = 0
 // the first section), in pixels. Photos can also sit beside the text.
 SPACE_BETWEEN_SECTIONS = 550
 
+// Photos are crowded only around the menu. From the top of the first
+// section they thin out to this share of the crowded amount, in percent
+// (100 = just as crowded, 0 = no photos beside or between the sections),
+// and stay that way down to the last section. Below it they fade to nothing
+// over the thinning-out distance set in SPACING & DENSITY.
+SECTION_PHOTO_DENSITY = 25
+
+// How quickly they thin out: the distance, in pixels, from the top of the
+// first section to where SECTION_PHOTO_DENSITY is reached. Smaller = quicker.
+SECTION_PHOTO_THIN_OUT_DISTANCE = 500
+
 // Empty space kept between a section's text and the nearest photo, in pixels.
 SECTION_PHOTO_CLEARANCE = 40
 
