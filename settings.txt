@@ -218,9 +218,19 @@ TOP_MENU_SLIDE_MS = 350
 // A menu option (on the home screen or in the menu bar) glows for a moment
 // when it's clicked (true or false, no quotes), in this color, for this many
 // milliseconds.
-MENU_CLICK_GLOW = true
-MENU_CLICK_GLOW_COLOR = "#9fc25a"
+MENU_CLICK_GLOW = false
+MENU_CLICK_GLOW_COLOR = "#ffffff"
 MENU_CLICK_GLOW_MS = 1200
+
+// When a menu option is chosen, its letters (and the same option's letters
+// in the other menu) jump to scattered heights, stay there while the page
+// glides to its section, and drop back into line once it arrives.
+// On or off (true or false, no quotes):
+MENU_CLICK_NUDGE = true
+// How far the letters jump, as a fraction of the letter size:
+MENU_CLICK_NUDGE_AMOUNT = 0.2
+// How long they take to jump and to drop back, in milliseconds:
+MENU_CLICK_NUDGE_SPEED_MS = 300
 
 // The menu bar's first option, which takes you back to the main menu.
 TOP_MENU_HOME_LABEL = "Home"

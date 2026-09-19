@@ -361,8 +361,8 @@
   .menu-letter {
     display: inline-block;
     transform: translate(var(--dx, 0px), var(--dy, 0px));
-    transition: transform var(--ms, var(--menu-spacing-ms)) cubic-bezier(0.22, 1, 0.36, 1);
-    transition-delay: var(--delay, 0ms);
+    transition: transform var(--ms, var(--menu-spacing-ms)) cubic-bezier(0.22, 1, 0.36, 1) var(--delay, 0ms),
+      translate var(--nudge-ms, 300ms) cubic-bezier(0.22, 1, 0.36, 1);
   }
   #menu a:hover .menu-letter,
   #menu a:focus-visible .menu-letter,
@@ -442,6 +442,18 @@
     text-indent: var(--top-menu-hover-spacing, 0.3em);
   }
   #quick-list a:focus-visible { outline: none; }
+
+  /* A chosen menu option's letters jump to scattered heights and stay there
+     while the page glides to its section, then drop back into line
+     (MENU_CLICK_NUDGE). Uses the separate translate property, so it adds to
+     the hover movement instead of replacing it. */
+  .menu-letter,
+  .bar-letter {
+    translate: 0 0;
+  }
+  .bar-letter { display: inline-block; text-indent: 0; transition: translate var(--nudge-ms, 300ms) cubic-bezier(0.22, 1, 0.36, 1); }
+  .nudged .menu-letter,
+  .nudged .bar-letter { translate: 0 var(--ny, 0px); }
 
   /* A menu option glows briefly when it's clicked (MENU_CLICK_GLOW). */
   @keyframes menu-glow {
@@ -1668,12 +1680,13 @@ function startGallery() {
   }
 
   // Glide back to the main menu at normal zoom.
-  function goHome() {
+  function goHome(done) {
     if (READ_MODE) {
       if (location.hash) history.pushState(null, '', location.pathname + location.search);
-      glideTo(readHomeTop(), HOME_MS);
+      glideTo(readHomeTop(), HOME_MS, done);
       return;
     }
+    if (done) done();
     stopAnim();
     const from = { ...cam };
     const to = { x: 0, y: 0, s: homeScale() };
@@ -1938,11 +1951,12 @@ function startGallery() {
 
   // Scroll to the section named in the address (#cost), or to Home.
   // (glide = true: move there smoothly, as when a menu option is chosen.)
-  function scrollToHash(glide) {
+  // (done: called once it's there, or when the glide is interrupted.)
+  function scrollToHash(glide, done) {
     const id = decodeURIComponent(location.hash.slice(1));
     const target = id && sectionEls.find((el) => el.id === id);
     const top = target ? sectionTop(target) : readHomeTop();
-    if (glide) glideTo(top, target ? SECTION_SCROLL_MS : HOME_MS);
+    if (glide) glideTo(top, target ? SECTION_SCROLL_MS : HOME_MS, done);
     else window.scrollTo({ top, behavior: 'instant' });
   }
   const sectionTop = (el) => Math.max(0, el.offsetTop - SECTION_MARGIN);
@@ -1951,26 +1965,36 @@ function startGallery() {
   // settles in, taking the same time however far it goes. The browser's own
   // smooth scrolling jumps across long distances, so the page is moved here
   // frame by frame instead. Scrolling by hand stops it.
-  let glideFrame = 0;
-  function glideTo(top, ms) {
+  let glideFrame = 0, glideDone = null;
+  function endGlide() {
     cancelAnimationFrame(glideFrame);
     glideFrame = 0;
+    const done = glideDone;
+    glideDone = null;
+    if (done) done();
+  }
+  function glideTo(top, ms, done) {
+    endGlide();
     const from = window.scrollY, distance = top - from;
     if (!SMOOTH_LINKS || ms <= 0 || Math.abs(distance) < 2) {
       window.scrollTo({ top, behavior: 'instant' });
+      // No glide to wait for: let the nudge show for a moment anyway.
+      if (done) setTimeout(done, NUDGE_MS * 2);
       return;
     }
+    glideDone = done || null;
     const start = performance.now();
     const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
     const step = (now) => {
       const t = Math.min(1, (now - start) / ms);
       window.scrollTo({ top: from + distance * ease(t), behavior: 'instant' });
-      glideFrame = t < 1 ? requestAnimationFrame(step) : 0;
+      if (t < 1) glideFrame = requestAnimationFrame(step);
+      else { glideFrame = 0; endGlide(); }
     };
     glideFrame = requestAnimationFrame(step);
   }
   for (const type of ['wheel', 'touchstart', 'keydown']) {
-    window.addEventListener(type, () => { cancelAnimationFrame(glideFrame); glideFrame = 0; }, { passive: true });
+    window.addEventListener(type, () => { if (glideFrame) endGlide(); }, { passive: true });
   }
 
   function readPhoto(it, g) {
@@ -2123,6 +2147,32 @@ function startGallery() {
     if (dragDistance > 4) e.preventDefault();
   }));
 
+  // ---- Nudge on click --------------------------------------------------------
+  // The chosen option (and the same option in the other menu) has its letters
+  // jump to scattered heights, and they stay there until the page arrives.
+  const NUDGE_ON = setting('MENU_CLICK_NUDGE', true);
+  const NUDGE_EM = Math.max(0, setting('MENU_CLICK_NUDGE_AMOUNT', 0.2));
+  const NUDGE_MS = Math.max(0, setting('MENU_CLICK_NUDGE_SPEED_MS', 300));
+  rootStyle.setProperty('--nudge-ms', NUDGE_MS + 'ms');
+  let nudgedLinks = [];
+  function settleNudge() {
+    nudgedLinks.forEach((link) => link.classList.remove('nudged'));
+    nudgedLinks = [];
+  }
+  function nudge(links) {
+    settleNudge();
+    if (!NUDGE_ON) return;
+    for (const link of links) {
+      [...link.querySelectorAll('.menu-letter, .bar-letter')].forEach((letter, i) => {
+        // Alternate up and down, each by a random share of the amount.
+        const amount = (0.4 + 0.6 * Math.random()) * NUDGE_EM * (i % 2 ? 1 : -1);
+        letter.style.setProperty('--ny', amount.toFixed(3) + 'em');
+      });
+      link.classList.add('nudged');
+    }
+    nudgedLinks = links;
+  }
+
   // ---- Glow on click ---------------------------------------------------------
   // A clicked menu option (home screen or menu bar) glows for a moment.
   if (setting('MENU_CLICK_GLOW', true)) {
@@ -2144,17 +2194,29 @@ function startGallery() {
   // The bar lists the same options as the main menu (built from MENU_ITEMS)
   // and only appears once the main menu is off screen. First option: Home,
   // which glides back to the main menu.
+  // Each option's letters are separate pieces, so they can be nudged.
+  const barLetters = (text) => [...text].map((ch) => {
+    const span = document.createElement('span');
+    span.className = 'bar-letter';
+    span.textContent = ch === ' ' ? '\u00a0' : ch;
+    return span;
+  });
   const homeLink = document.createElement('a');
   homeLink.href = '#';
-  homeLink.textContent = String(setting('TOP_MENU_HOME_LABEL', 'Home')).trim() || 'Home';
+  const homeLabel = String(setting('TOP_MENU_HOME_LABEL', 'Home')).trim() || 'Home';
+  homeLink.setAttribute('aria-label', homeLabel);
+  homeLink.append(...barLetters(homeLabel));
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
-    goHome();
+    nudge([homeLink]);
+    goHome(settleNudge);
   });
   quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
     const copy = document.createElement('a');
     copy.href = link.getAttribute('href');
-    copy.textContent = link.dataset.label || link.textContent;
+    const label = link.dataset.label || link.textContent;
+    copy.setAttribute('aria-label', label);
+    copy.append(...barLetters(label));
     return copy;
   }));
   let quickShown = false;
@@ -2209,9 +2271,9 @@ function startGallery() {
       buildReadPage();
       if (location.hash && window.scrollY > readHomeTop() + 1) scrollToHash();
     });
-    // Back and Forward move between the sections visited from the menu.
-    // Menu options (home screen and top bar) glide to their section. Ctrl-,
-    // Shift- or middle-clicks are left alone so "open in new tab" still works.
+    // Menu options (home screen and top bar) glide to their section, their
+    // letters nudged until they arrive. Ctrl-, Shift- or middle-clicks are
+    // left alone so "open in new tab" still works.
     document.addEventListener('click', (e) => {
       const link = e.target.closest('#menu a, #quick-list a');
       if (!link || e.defaultPrevented || e.button || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
@@ -2219,8 +2281,10 @@ function startGallery() {
       if (!hash || hash.length < 2 || hash[0] !== '#') return;
       e.preventDefault();
       if (location.hash !== hash) history.pushState(null, '', hash);
-      scrollToHash(true);
+      nudge([...document.querySelectorAll('#menu a, #quick-list a')].filter((a) => a.getAttribute('href') === hash));
+      scrollToHash(true, settleNudge);
     });
+    // Back and Forward move between the sections visited from the menu.
     window.addEventListener('popstate', () => {
       scrollToHash(true);
     });
