@@ -86,14 +86,16 @@ main.payments {
 /* The Zelle logo under the heading (or the word Zelle until the logo file
    is there). */
 .zelle-mark {
+  width: 100%;
   margin: 8px 0 40px;
   line-height: 1;
 }
 .zelle-mark img[hidden] { display: none; }
 .zelle-mark img {
   display: block;
-  width: var(--zelle-logo-width, 170px);
-  max-width: 70%;
+  width: var(--zelle-logo-width, 240px);
+  border-radius: var(--zelle-logo-radius, 15px);
+  max-width: 100%;
   height: auto;
   margin: 0 auto;
 }

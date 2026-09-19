@@ -4,7 +4,10 @@
 
 window.settingsLoaded.then(() => {
   const root = document.documentElement.style;
-  root.setProperty('--zelle-logo-width', Math.max(40, setting('ZELLE_LOGO_WIDTH', 170)) + 'px');
+  root.setProperty('--zelle-logo-width', Math.max(40, setting('ZELLE_LOGO_WIDTH', 240)) + 'px');
+  // Same rounded corners as the gallery photos (PHOTO_CORNER_RADIUS).
+  root.setProperty('--zelle-logo-radius', (setting('PHOTO_ROUNDED_CORNERS', true) ? Math.max(0, setting('PHOTO_CORNER_RADIUS', 12)) : 0) +
+    (String(setting('PHOTO_CORNER_RADIUS_UNIT', 'pixels')).trim().toLowerCase().startsWith('percent') ? '%' : 'px'));
   root.setProperty('--step-circle', Math.max(16, setting('PAYMENT_STEP_CIRCLE_SIZE', 36)) + 'px');
   root.setProperty('--step-gap', Math.max(0, setting('PAYMENT_STEP_SPACING', 28)) + 'px');
 

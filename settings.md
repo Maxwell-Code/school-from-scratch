@@ -652,7 +652,8 @@ ZELLE_RECIPIENT = "transformativeedu26"
 ZELLE_RECIPIENT_NAME = "The School From Scratch"
 ```
 
-The Zelle logo file, and how wide it's shown, in pixels. Download the
+The Zelle logo file, and how wide it's shown, in pixels. Its corners are
+rounded like the gallery photos' (PHOTO_CORNER_RADIUS). Download the
 official logo from Zelle's brand page (zellepay.com has a "Brand guidelines"
 section), save it in the images folder, and put its file name here, for
 example "images/zelle_logo.svg". While this is empty, the page shows the
@@ -660,7 +661,7 @@ word "Zelle" instead.
 
 ```js
 ZELLE_LOGO = "images/Zelle_logo.svg"
-ZELLE_LOGO_WIDTH = 170
+ZELLE_LOGO_WIDTH = 240
 ```
 
 Size of the numbered circles beside the steps, and the space between one
