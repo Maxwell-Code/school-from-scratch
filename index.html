@@ -118,7 +118,8 @@
   }
   .section h2 + div > h3:first-child { margin-top: 0; }
   .section p { margin: 0 0 1em; }
-  .section ul { margin: 0 0 1em; padding-left: 1.3em; }
+  .section ul,
+  .section ol { margin: 0 0 1em; padding-left: 1.3em; }
   .section li { margin-bottom: 0.35em; }
   .section strong { font-weight: 700; }
   .section a { color: inherit; text-underline-offset: 3px; }
@@ -510,72 +511,6 @@
     <div id="quick-list"></div>
   </nav>
 
-  <!-- The text for each menu option's section on the scrolling page (read
-       mode). data-for names the menu option it belongs to; the section's
-       heading is taken from MENU_ITEMS, and sections appear in menu order.
-       A menu option with no section here shows "Under Development". -->
-  <template id="section-text">
-    <div data-for="Logistics">
-      <p>We start operating with a maximum of 15 children, 4-18 yrs, in a multi-age learning environment with a minimum 3 day/week commitment.</p>
-      <ul>
-        <li>9am: Arrivals &amp; Circle Time</li>
-        <li>12pm: Lunch time</li>
-        <li>3:00pm: Circle Time</li>
-        <li>3:00pm: End of Day</li>
-      </ul>
-      <p>Daily activities include:</p>
-      <ul>
-        <li>Circle time: movement, singing, dancing, noticing, sitting quietly, announcements, wonderings, and sharing.</li>
-        <li>Exploring phenomena: interdisciplinary explorations of primary soruces, materials, and phenomena in diverse subject matters - <em>from math to dance</em>.</li>
-        <li>Dialogues &amp; Inquiry: dialogues rooted in core questions of the week/month.</li>
-        <li>Independent Learning: time for self-directed reading, writing, drawing, movement, making, and other explorations responding to the child’s individual explorations.</li>
-        <li>Reflection Time: journaling, drawing, and group sharing.</li>
-        <li>Walks and Hikes</li>
-      </ul>
-      <p><em>The root meaning of ‘school’ originates from leisure.</em> The structure will prioritize a sense of leisure.</p>
-    </div>
-
-    <div data-for="Approach">
-      <p><strong>The curriculum is curiosity.</strong></p>
-      <ul>
-        <li><strong>The curriculum is uncovered rather than covered</strong> - sustaining attention, engagement, and inquiry.</li>
-        <li><strong>The curriculum is emergent</strong> in its meticulous attention to materials, phenomena, and the learning of the children and the educators. The curriculum and 'lessons' include <strong>intentionally planned and unplanned</strong> experiences and activities.</li>
-      </ul>
-      <h3>Curriculum: Roots, Provocations/Opportunities, Inquiry, and Explorations:</h3>
-      <p>We learn deeply when we are genuinely curious about the world. Rather than dividing learning into separate subjects, we co-create an environment where explorations naturally arise from observations, questions, conversations, play, collaboration, silence, and a deep sense of connection with the world and with one another. These experiences may continue for days, weeks, months, or even a lifetime as explorations grow.</p>
-      <p>The teacher's focus is to: (i) be learning themselves (ii) make available and co-create environments for direct engagement with phenomena, materials, and the world (iii) understand how children make sense of the world - their observations, questions, ideas and how they carry them out, what they do (iv) inquire, observe, and document the process (not merely the product) of children's work (v) explore learning/unlearning that is not merely the accumulation of knowledge (vi) engage in a partnership with the parents in sustaining and documenting the above at the learning center and at home.</p>
-      <p>The investigations listed above are not a fixed curriculum to be covered or completed. Instead, they represent rich areas of exploration that invite children into ongoing inquiry. Through these experiences, literacy, mathematics, science, the arts, communication, and social-emotional learning emerge and develop naturally within meaningful contexts. Meaningful investigations often emerge unexpectedly from a child’s observation, a conversation, a walk in nature, a community event, a story, or an everyday experience.</p>
-    </div>
-
-    <div data-for="Cost">
-      <p>This is not a for profit operation. Nevertheless, the running costs of the center including health care, basic needs, and livelihoods of the teachers need to be covered and parents and others contribute financially or in other ways that support the center. Since we would not like to limit the parent body to economically well off families, we encourage those who are financially more able to support other families. It is important that the ability to pay does not hinder a child and parent from joining.</p>
-    </div>
-
-    <div data-for="People">
-      <p><a href="https://www.antioch.edu/faculty/gopal-krishnamurthy/" target="_blank" rel="noopener"><strong>Dr. Gopal Krishnamurthy</strong></a>, Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
-      <p>Gopal brings decades of experience in schools, universities, teacher education, and education in India, the UK, and the US. He has a PhD in education, and served as university Dept. Chair &amp; faculty, school director, and teacher. He sees Ojai as a crucible for wonder, not knowing, and deep inquiry.</p>
-      <p><strong>Sunsong (Susan) Clark</strong>, Founding Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
-      <p>Sunsong's work entails developing rich learning environments where children pursue their trajectories of interest in an atmosphere of mutual learning alongside observant adults focused on understanding how the child makes meaning of the world around them and acts those meanings out. She holds an MEd with a concentration in the Reggio Emilia approach, and certificate in ECE. She spent 18 years homesteading off-grid in a small remote community. In addition, she is constantly amazed by nature and the everyday beauty of all kinds of things.</p>
-      <p><strong>Amol Gejawar</strong>, Founding Director/Teacher, The School From Scratch (Ojai, Microschool).</p>
-      <p>Twelve years of expertise in natural learning, ecological restoration, organic farming, alternative architecture, and traditional craftsmanship, have cultivated Amol's diverse and impactful career. His commitment to sustainability and community-focused initiatives continues to drive his work in these interconnected domains. He holds a Bachelors in Engineering. Amol brings years of experience in educational leadership, and the observation and education of children.</p>
-      <p><strong>Dharmakaruna Santhi Edara</strong>, MD, Internist, Dignity health- St. John Regional medical center, Oxnard CA. Founding Parent, The School From Scratch (Ojai, Microschool).</p>
-      <p>Being a mother of two young children and working as a physician, I have often questioned the learning I experienced in my own childhood. Modern education systems seem to be successful at dumping knowledge into children, rather than helping with knowledge creation.</p>
-      <p>It has become clear to me that there is no shortcut to true learning. A newborn rolls, crawls, sits, and walks on their own. In the same way, a child’s learning about the world needs to happen as naturally as possible—with time, freedom, curiosity, and their own experiences.</p>
-      <p>I firmly believe that ‘The School From Scratch' can provide a space where a child’s originality is protected, allowing their uniqueness to naturally blossom.</p>
-      <p><strong>Maxwell Lommel</strong>, Web Design, TEC, and Founding Student-Intern, Teaching Apprentice, The School From Scratch, (Ojai, Microschool).</p>
-      <p>Maxwell has explored the educational landscape in different ways in and out of Ojai including attending both traditional and alternative school systems, and was selected to join the Education Reimagined Conference in Washington DC. He is a junior in high school currently taking classes at Ventura College as a dual enrollment student. Maxwell hopes to continue growing at The School From Scratch as the first teacher apprentice/student intern.</p>
-      <p>Child safety is a priority at The School From Scratch and teachers have background check certification.</p>
-      <p>Sunsong (Susan) Clark (director, teacher, and safeguarding lead), served for years as government mandated residential <strong><em>school safeguarding lead</em></strong> and <strong><em>conducted child protection training</em></strong> for staff and teachers.</p>
-    </div>
-
-    <div data-for="FAQs">
-      <h3>Will my child be able to obtain grade level standards?</h3>
-      <p>Depth, breadth, and learning excellence in all areas are core to the center. We hold the question - what does it look like for learning rather than the measurement of learning to be at the heart of a learning endeavor? Nevertheless, should the students and parents wish to work towards meeting standards, the center will support them with this. The documentation of the learning activities and experiences can be used towards addressing the standards.</p>
-      <h3>Is this a project-based, play-based, nature-based, inquiry-based school? Will it be a structured, unstructured, or semi-structured school? Will it be a self-directed learning school?</h3>
-      <p>It is important for us not to limit and restrict ourselves to branding and slogans. We do not see unstructured and structured as opposites nor strive to find a semi-structured balance between the two. We are interested in the question - structured or unstructured with regard to what and for what? Having said this, there will be project-based, play-based, nature-based, inquiry-based, active, silent, dialogic, independent, and collaborative experiences and learning.</p>
-    </div>
-  </template>
-
 <script>
 // ---- Settings ---------------------------------------------------------------
 // All tunable values live in settings.txt, written as `NAME = value` lines.
@@ -921,11 +856,12 @@ function startGallery() {
   const CHUNK = Math.max(1000, Math.ceil(REACH * 1.05));
   const ATTEMPTS = Math.round(TRIES_PER_AREA * (CHUNK / 1000) ** 2);
 
-  // Read mode's sections of text: bands across the whole page (in landscape
-  // units, clearance included) where no photo may go. The landscape stays
-  // fully crowded from the menu down to the last section (contentBottom),
-  // and only starts thinning out below it.
-  let textBands = [];   // { y0, y1 }
+  // Read mode's sections of text: the area each one covers (in landscape
+  // units, clearance included), centred on the menu's line, where no photo
+  // may go. Photos can still sit beside the text. The landscape stays fully
+  // crowded from the menu down to the last section (contentBottom), and only
+  // starts thinning out below it.
+  let textBands = [];   // { hx, y0, y1 }: half-width, top, bottom
   let contentBottom = 0;
   const photoDistance = (x, y) => Math.hypot(x, y > 0 ? Math.max(0, y - contentBottom) : y);
 
@@ -1000,7 +936,8 @@ function startGallery() {
       const minHalf = SIZE_MIN / 2 + FRAME + MENU_GAP;
       if (Math.abs(x) < menuHalfW + minHalf && Math.abs(y) < menuHalfH + minHalf) continue;
       // ...or would touch a section's text.
-      if (textBands.some((b) => y > b.y0 - SIZE_MIN / 2 - FRAME && y < b.y1 + SIZE_MIN / 2 + FRAME)) continue;
+      if (textBands.some((b) => Math.abs(x) < b.hx + SIZE_MIN / 2 + FRAME &&
+        y > b.y0 - SIZE_MIN / 2 - FRAME && y < b.y1 + SIZE_MIN / 2 + FRAME)) continue;
 
       // Prefer a photo that none of the nearby photos are already showing.
       const nearby = [...neighbors, ...placed].filter((o) => Math.hypot(o.x - x, o.y - y) < REACH * Math.SQRT2);
@@ -1021,7 +958,9 @@ function startGallery() {
         (Math.abs(y) - menuHalfH - MENU_GAP - FRAME) / (h0 / 2));
       fit = Math.min(1, fit);
       for (const b of textBands) {
-        fit = Math.min(fit, y < b.y0 ? (b.y0 - FRAME - y) / (h0 / 2) : (y - b.y1 - FRAME) / (h0 / 2));
+        const fitX = (Math.abs(x) - b.hx - FRAME) / (w0 / 2);
+        const fitY = (y < b.y0 ? b.y0 - FRAME - y : y - b.y1 - FRAME) / (h0 / 2);
+        fit = Math.min(fit, Math.max(fitX, fitY));
       }
       for (const o of nearby) {
         const need = (gap + o.gap) / 2 + FRAME;
@@ -1792,14 +1731,24 @@ function startGallery() {
     readFrame();
   }
 
-  // One section per menu option, in menu order, filled with its text from
-  // the <template id="section-text"> near the top of this file.
+  // One section per menu option, in menu order. Each one's text is the file
+  // sections/<option name>.md (People -> sections/people.md), written in
+  // Markdown. A missing or empty file shows "Under Development".
+  const SECTION_DIR = 'sections/';
   const sectionsLayer = document.createElement('div');
   sectionsLayer.id = 'sections';
   let sectionEls = [];
-  function buildSections() {
-    const texts = new Map([...document.getElementById('section-text').content.children]
-      .map((div) => [pageSlug(div.dataset.for), div]));
+  const sectionSlugs = () => menuLinks.map((link) => pageSlug(link.dataset.label || link.textContent));
+  function loadSectionTexts() {
+    return Promise.all(sectionSlugs().map((slug) =>
+      fetch(SECTION_DIR + slug + '.md', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.text() : ''))
+        .catch(() => '')
+        .then((text) => [slug, text.trim() ? markdownToHtml(text) : ''])))
+      .then((pairs) => new Map(pairs));
+  }
+
+  function buildSections(texts) {
     const contactSlugs = setting('CONTACT_PAGES', ['Cost']).map(pageSlug);
     sectionEls = menuLinks.map((link) => {
       const label = link.dataset.label || link.textContent;
@@ -1809,12 +1758,11 @@ function startGallery() {
       section.id = slug;
       const heading = document.createElement('h2');
       heading.textContent = label;
-      let body = texts.get(slug);
-      if (body) {
-        body = body.cloneNode(true);
-        body.removeAttribute('data-for');
+      const body = document.createElement('div');
+      const html = texts.get(slug);
+      if (html) {
+        body.innerHTML = html;
       } else {
-        body = document.createElement('div');
         const status = document.createElement('p');
         status.className = 'status';
         status.textContent = 'Under Development';
@@ -1837,6 +1785,60 @@ function startGallery() {
       });
       sectionEls.forEach((el) => observer.observe(el));
     }
+  }
+
+  // A small Markdown reader for the section files: paragraphs (separated by a
+  // blank line), headings (# ...), lists (- ... or 1. ...), **bold**,
+  // *italic*, ***both***, [links](https://...), and \ before a character to
+  // show it as it is. Everything else is shown as plain text (no HTML).
+  function markdownToHtml(md) {
+    const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const BREAK = '\u0001';
+    function inline(text) {
+      const kept = [];
+      let t = text.replace(/\\([\\`*_{}\[\]()#+\-.!>~|])/g, (_, c) => '\u0000' + (kept.push(c) - 1) + '\u0000');
+      t = esc(t);
+      t = t.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (all, label, url) => {
+        if (!/^(https?:|mailto:|tel:|#)/i.test(url)) return label;
+        const newTab = /^https?:/i.test(url) ? ' target="_blank" rel="noopener"' : '';
+        return `<a href="${url}"${newTab}>${label}</a>`;
+      });
+      t = t.replace(/\*\*\*(?!\s)(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      t = t.replace(/\*\*(?!\s)(.+?)\*\*/g, '<strong>$1</strong>');
+      t = t.replace(/(^|[^*\w])\*(?!\s)(.+?)\*(?!\w)/g, '$1<em>$2</em>');
+      t = t.replace(/(^|[^\w])_(?!\s)(.+?)_(?!\w)/g, '$1<em>$2</em>');
+      return t.replace(/\u0000(\d+)\u0000/g, (_, i) => esc(kept[i])).split(BREAK).join('<br>');
+    }
+    const out = [];
+    let para = [], list = null;
+    const flushPara = () => {
+      if (para.length) out.push('<p>' + inline(para.join('\n').replace(/ {2,}\n/g, BREAK).replace(/\n/g, ' ')) + '</p>');
+      para = [];
+    };
+    const flushList = () => {
+      if (list) out.push(`<${list.tag}>` + list.items.map((li) => '<li>' + inline(li) + '</li>').join('') + `</${list.tag}>`);
+      list = null;
+    };
+    for (const raw of md.replace(/\r\n?/g, '\n').split('\n')) {
+      const line = raw.trim();
+      let m;
+      if (!line || /^([-*_])( ?\1){2,}$/.test(line)) { flushPara(); flushList(); continue; }
+      if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); out.push('<h3>' + inline(m[1]) + '</h3>'); continue; }
+      if ((m = line.match(/^([-*+]|\d+[.)])\s+(.*)$/))) {
+        flushPara();
+        const tag = /\d/.test(m[1]) ? 'ol' : 'ul';
+        if (list && list.tag !== tag) flushList();
+        if (!list) list = { tag, items: [] };
+        list.items.push(m[2]);
+        continue;
+      }
+      if (list && /^\s/.test(raw)) { list.items[list.items.length - 1] += ' ' + line; continue; }
+      flushList();
+      para.push(raw.replace(/^\s+/, ''));
+    }
+    flushPara();
+    flushList();
+    return out.join('\n');
   }
 
   // Phone number and Venmo logo (same settings as the Cost page).
@@ -1879,7 +1881,8 @@ function startGallery() {
     for (const el of sectionEls) {
       el.style.top = (g.top + y * g.s).toFixed(1) + 'px';
       const h = el.offsetHeight / g.s;
-      bands.push({ y0: y - SECTION_CLEARANCE, y1: y + h + SECTION_CLEARANCE });
+      const hx = el.offsetWidth / 2 / g.s + SECTION_CLEARANCE;
+      bands.push({ hx, y0: y - SECTION_CLEARANCE, y1: y + h + SECTION_CLEARANCE });
       contentBottom = y + h;
       y += h + SECTION_SPACE;
     }
@@ -2132,9 +2135,13 @@ function startGallery() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => { measureMenu(); buildReadPage(); }, 150);
     });
-    buildSections();
     buildReadPage();
     scrollToHash();
+    loadSectionTexts().then((texts) => {
+      buildSections(texts);
+      buildReadPage();
+      if (location.hash) scrollToHash();
+    });
     // Once the fonts arrive the text changes height; a visitor who arrived
     // at a section (#cost) is put back at its start.
     if (document.fonts) document.fonts.ready.then(() => {

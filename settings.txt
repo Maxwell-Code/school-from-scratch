@@ -220,8 +220,8 @@ MENU_TITLE = "The School From Scratch"
 // data-page="..." line. (Until you do, it still works on a web server, but not
 // when index.html is opened straight from the folder.)
 MENU_ITEMS = [
-  "People",
   "Approach",
+  "People",
   "Parenting-Learning",
   "Logistics",
   "Cost",
@@ -302,18 +302,31 @@ MENU_LETTER_STAGGER_MS = 0
 // -----------------------------------------------------------------------------
 
 // In read mode, each menu option (on the home screen and in the sidebar)
-// scrolls down to that option's section on the same page. The section's text
-// is written in index.html, inside <template id="section-text">. An option
-// with no text there shows "Under Development".
+// scrolls down to that option's section on the same page.
+//
+// Each section's text is its own file in the "sections" folder, named after
+// the menu option in lowercase with dashes: People -> sections/people.md,
+// Parenting-Learning -> sections/parenting-learning.md. Edit a file, save it,
+// and reload the page. A missing or empty file shows "Under Development".
+// The section's heading is the menu option's name, so don't repeat it.
+//
+// The files are Markdown, a plain-text format:
+//   - A blank line starts a new paragraph.
+//   - A line starting with # is a small heading: # Our questions
+//   - Lines starting with - (or 1. 2. 3.) make a list.
+//   - **bold**, *italic*, ***bold and italic***
+//   - A link: [the words to click](https://example.com)
+//   - Put  in front of a character to show it as it is: *not italic*
+// (The text files only load when the site is served, e.g. on localhost or
+// online, not when index.html is opened straight from the folder.)
 //
 // In explore mode, or with the gallery off, each option opens its own page
 // instead (people.html, cost.html, ...), showing its name and
 // "Under Development".
 
 // Room for photos between one section and the next (and between the menu and
-// the first section), in pixels. Photos 110 to 270 pixels tall fit in a gap
-// of 400 once the clearance below is taken off both sides.
-SPACE_BETWEEN_SECTIONS = 400
+// the first section), in pixels. Photos can also sit beside the text.
+SPACE_BETWEEN_SECTIONS = 550
 
 // Empty space kept between a section's text and the nearest photo, in pixels.
 SECTION_PHOTO_CLEARANCE = 40
