@@ -15,27 +15,21 @@
   </nav>
   <main class="payments">
     <h1 id="title">Payments</h1>
-    <p class="intro" id="pay-prompt">Payments are made with Zelle.</p>
 
-    <!-- The ways to pay, as circles: only Zelle for now. The circle
-         appears, then the steps below it. payments.js runs the steps.
-         Adding another <button class="pay-circle" data-method="..."> here
-         with a matching step below brings the split-and-choose back. -->
-    <div class="pay-stage" id="pay-stage">
-      <button class="pay-circle" type="button" data-method="zelle" data-slot="1"><span class="pay-label">Zelle</span></button>
-    </div>
+    <!-- The Zelle logo (ZELLE_LOGO in settings.md). Until that file is
+         there, the word Zelle stands in for it. -->
+    <p class="zelle-mark">
+      <img id="zelle-logo" alt="Zelle" hidden>
+      <span id="zelle-word">Zelle</span>
+    </p>
 
-    <!-- Zelle: how to send to the school's Zelle. -->
-    <section class="pay-step" id="step-zelle" hidden>
-      <h2>Paying with Zelle</h2>
-      <ol>
-        <li>Open your bank's app and choose Send with Zelle.</li>
-        <li>Send to the Zelle tag <strong data-setting="ZELLE_RECIPIENT" data-placeholder="[the school's Zelle tag]"></strong>. Before you send, check that the name shown is <strong data-setting="ZELLE_RECIPIENT_NAME" data-placeholder="[the school's name]"></strong>.</li>
-        <li>Enter the amount.</li>
-        <li>In the memo, write your child's name and what the payment is for.</li>
-      </ol>
-    </section>
-
+    <!-- How to send to the school's Zelle. -->
+    <ol class="pay-steps">
+      <li>Open your bank's app and choose Send with Zelle.</li>
+      <li>Send to the Zelle tag <strong data-setting="ZELLE_RECIPIENT" data-placeholder="[the school's Zelle tag]"></strong>. Before you send, check that the name shown is <strong data-setting="ZELLE_RECIPIENT_NAME" data-placeholder="[the school's name]"></strong>.</li>
+      <li>Enter the amount.</li>
+      <li>In the memo, write your child's name and what the payment is for.</li>
+    </ol>
   </main>
   <script src="page.js"></script>
   <script src="payments.js"></script>

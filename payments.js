@@ -1,23 +1,12 @@
-// The payments page. An accent-colored circle appears with the way to pay.
-// With only one way (Zelle), its steps open by themselves. With more than
-// one, the circle splits into one per way; choosing one gathers them back
-// together with the chosen one on top, and "Choose a different way to pay"
-// splits them again.
-// Details (Zelle recipient, bill pay address) come from settings.md; any
-// that are still empty show a [bracketed placeholder].
+// The payments page: the Zelle logo and the steps for sending a payment.
+// The Zelle tag and the logo's file come from settings.md; details that are
+// still empty show a [bracketed placeholder].
 
 window.settingsLoaded.then(() => {
   const root = document.documentElement.style;
-  // Devices can ask sites for less motion (on Windows, turning off
-  // "Animation effects" does this). Only honored if the setting says so.
-  const reduceMotion = setting('PAYMENT_RESPECT_REDUCED_MOTION', false) &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ANIMATE = setting('PAYMENT_ANIMATION', true) && !reduceMotion;
-  const MOVE_MS = ANIMATE ? Math.max(0, setting('PAYMENT_ANIMATION_MS', 600)) : 0;
-  // Pause between the circle finishing its appearance and splitting.
-  const SPLIT_DELAY = ANIMATE ? Math.max(0, setting('PAYMENT_SPLIT_DELAY_MS', 150)) : 0;
-  root.setProperty('--pay-circle', Math.max(60, setting('PAYMENT_CIRCLE_SIZE', 180)) + 'px');
-  root.setProperty('--pay-ms', MOVE_MS + 'ms');
+  root.setProperty('--zelle-logo-width', Math.max(40, setting('ZELLE_LOGO_WIDTH', 170)) + 'px');
+  root.setProperty('--step-circle', Math.max(16, setting('PAYMENT_STEP_CIRCLE_SIZE', 36)) + 'px');
+  root.setProperty('--step-gap', Math.max(0, setting('PAYMENT_STEP_SPACING', 28)) + 'px');
 
   // Fill in the details from settings.md, or a placeholder.
   document.querySelectorAll('[data-setting]').forEach((el) => {
@@ -26,98 +15,15 @@ window.settingsLoaded.then(() => {
     el.classList.toggle('placeholder', !value);
   });
 
-  const stage = document.getElementById('pay-stage');
-  const circles = [...stage.querySelectorAll('.pay-circle')];
-  // One way to pay: nothing to choose, so the circle is just a picture.
-  const single = circles.length < 2;
-  stage.classList.toggle('single', single);
-  if (single) {
-    circles[0].tabIndex = -1;
-    circles[0].setAttribute('aria-hidden', 'true');
+  // The logo replaces the word "Zelle" once it has loaded. If the file is
+  // missing, the word stays.
+  const file = String(setting('ZELLE_LOGO', '')).trim();
+  if (file) {
+    const logo = document.getElementById('zelle-logo');
+    logo.onload = () => {
+      logo.hidden = false;
+      document.getElementById('zelle-word').hidden = true;
+    };
+    logo.src = file;
   }
-  const change = document.getElementById('pay-change'); // missing when there's only one way
-  const steps = [...document.querySelectorAll('.pay-step')];
-  let stepTimer = 0, movingTimer = 0;
-  // While the circles move, hovering them does nothing (see page.css).
-  function markMoving() {
-    stage.classList.add('moving');
-    clearTimeout(movingTimer);
-    movingTimer = setTimeout(() => stage.classList.remove('moving'), MOVE_MS);
-  }
-
-  function split() {
-    clearTimeout(stepTimer);
-    markMoving();
-    stage.classList.remove('chosen');
-    stage.classList.add('split');
-    circles.forEach((c) => {
-      c.classList.remove('picked');
-      c.setAttribute('aria-checked', 'false');
-      c.tabIndex = 0;
-    });
-    steps.forEach((s) => { s.hidden = true; s.classList.remove('shown'); });
-    if (change) change.hidden = true;
-  }
-
-  function choose(circle) {
-    clearTimeout(stepTimer);
-    markMoving();
-    stage.classList.remove('split');
-    stage.classList.add('chosen');
-    circles.forEach((c) => {
-      const picked = c === circle;
-      c.classList.toggle('picked', picked);
-      c.setAttribute('aria-checked', String(picked));
-      c.tabIndex = picked ? 0 : -1;
-    });
-    // Once the circles have gathered, show that way's step.
-    stepTimer = setTimeout(() => {
-      const step = document.getElementById('step-' + circle.dataset.method);
-      steps.forEach((s) => { s.hidden = s !== step; });
-      if (change) change.hidden = false;
-      requestAnimationFrame(() => step.classList.add('shown'));
-    }, MOVE_MS);
-  }
-
-  if (!single) {
-    circles.forEach((c) => c.addEventListener('click', () => {
-      if (stage.classList.contains('chosen')) {
-        // Clicking the gathered circles opens the choice again.
-        split();
-      } else {
-        choose(c);
-      }
-    }));
-  }
-  if (change) change.addEventListener('click', () => {
-    split();
-    circles[0].focus();
-  });
-
-  // One circle appears almost straight away, then splits into three. It
-  // waits for the fonts first (up to a second), since the heading changes
-  // height when they arrive and would jolt the circles mid-movement.
-  const fontsReady = new Promise((resolve) => {
-    // The font stylesheet (added by page.js) first, then the fonts it names.
-    const link = document.querySelector('link[href*="fonts.googleapis.com/css"]');
-    const sheetLoaded = !link || link.sheet ? Promise.resolve()
-      : new Promise((r) => { link.addEventListener('load', r); link.addEventListener('error', r); });
-    sheetLoaded.then(() => {
-      if (!document.fonts) return resolve();
-      const heading = setting('HEADING_FONT_WEIGHT', 600) + ' 1em "' + setting('HEADING_FONT', 'Lora') + '"';
-      const body = setting('BODY_FONT_WEIGHT', 500) + ' 1em "' + setting('BODY_FONT', 'Quicksand') + '"';
-      Promise.all([document.fonts.load(heading), document.fonts.load(body), document.fonts.load('700 1em "' + setting('BODY_FONT', 'Quicksand') + '"')])
-        .then(resolve, resolve);
-    });
-  });
-  Promise.race([fontsReady, new Promise((r) => setTimeout(r, 1000))]).then(() => {
-    requestAnimationFrame(() => {
-      markMoving();
-      stage.classList.add('appear');
-      // One way to pay: its steps open by themselves. Otherwise the circle
-      // splits into one per way, once it has finished appearing (starting a
-      // movement halfway through another makes a visible hitch).
-      setTimeout(() => (single ? choose(circles[0]) : split()), MOVE_MS + SPLIT_DELAY);
-    });
-  });
 });

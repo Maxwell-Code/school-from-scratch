@@ -77,162 +77,69 @@ h1 {
 }
 
 /* ---- Payments page (payments.html) ---------------------------------------- */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
 main.payments {
   justify-content: flex-start;
   max-width: 560px;
   margin: 0 auto;
-  padding-top: 96px;
+  padding-top: 104px;
 }
-.payments .intro {
-  margin: 0 0 36px;
-  font-size: calc(var(--body-size) * 0.8);
+/* The Zelle logo under the heading (or the word Zelle until the logo file
+   is there). */
+.zelle-mark {
+  margin: 8px 0 40px;
+  line-height: 1;
 }
-
-/* The circles. All three sit in the middle (looking like one circle) until
-   they split apart; when one is chosen they gather again, the chosen one on
-   top. Each moves by its own --x offset. */
-.pay-stage {
-  --gap: 24px;
-  /* PAYMENT_CIRCLE_SIZE, shrunk if needed so all three fit across the
-     screen (phones). */
-  --size: min(var(--pay-circle, 180px), calc((100vw - 40px - 2 * var(--gap)) / 3));
-  position: relative;
-  width: 100%;
-  height: var(--size);
+.zelle-mark img[hidden] { display: none; }
+.zelle-mark img {
+  display: block;
+  width: var(--zelle-logo-width, 170px);
+  max-width: 70%;
+  height: auto;
+  margin: 0 auto;
 }
-.pay-circle {
-  --x: 0px;
-  --s: 0;
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: var(--size);
-  height: var(--size);
-  margin-left: calc(var(--size) / -2);
-  padding: 8px;
-  border: none;
-  border-radius: 50%;
-  background: var(--accent, #dfeac0);
-  color: var(--fg);
-  font: inherit;
-  font-size: clamp(14px, calc(var(--size) * 0.12), 22px);
+#zelle-word {
+  font-size: calc(var(--body-size) * 1.4);
   font-weight: 700;
-  line-height: 1.2;
-  cursor: pointer;
-  transform: translateX(var(--x)) scale(var(--s));
-  transition: transform var(--pay-ms, 600ms) cubic-bezier(0.65, 0, 0.35, 1);
-  /* Ready to move from the start, so the first frames don't hitch. */
-  will-change: transform;
+  letter-spacing: 0.02em;
 }
-.pay-circle:focus-visible { outline: 2px solid var(--fg); outline-offset: 4px; }
-.pay-label { opacity: 0; transition: opacity 200ms ease; }
-/* 1. One circle appears. */
-.pay-stage.appear .pay-circle { --s: 1; }
-/* 2. It splits into three, and their names show. */
-.pay-stage.split .pay-circle[data-slot="0"] { --x: calc(-1 * (var(--size) + var(--gap))); }
-.pay-stage.split .pay-circle[data-slot="2"] { --x: calc(var(--size) + var(--gap)); }
-.pay-stage.split .pay-label { opacity: 1; transition-delay: calc(var(--pay-ms, 600ms) * 0.5); }
-/* (Not while they're moving: growing under the pointer mid-glide would
-   interrupt the movement.) */
-.pay-stage.split:not(.moving) .pay-circle:hover { --s: 1.05; }
-/* 3. Chosen: all gather in the middle, the chosen one on top. */
-.pay-stage.chosen .pay-circle { z-index: 1; }
-.pay-stage.chosen .pay-circle.picked { z-index: 2; }
-.pay-stage.chosen .pay-circle.picked .pay-label { opacity: 1; }
-/* Only one way to pay: nothing to choose, so the circle just sits there. */
-.pay-stage.single .pay-circle { cursor: default; pointer-events: none; }
-@media (max-width: 440px) {
-  .pay-stage { --gap: 12px; }
-}
-.pay-change {
-  margin-top: 18px;
-  padding: 4px 6px;
-  border: none;
-  background: none;
-  color: var(--fg);
-  font: inherit;
-  font-size: calc(var(--body-size) * 0.6);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  opacity: 0.75;
-  cursor: pointer;
-}
-.pay-change:hover,
-.pay-change:focus-visible { opacity: 1; }
-.pay-change[hidden] { display: none; }
 
-/* The step for the chosen way to pay, fading in below the circles. */
-.pay-step {
+/* The steps: each numbered by a filled accent circle, with room between
+   them. */
+.pay-steps {
+  counter-reset: step;
   width: 100%;
-  margin-top: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   text-align: left;
   font-size: calc(var(--body-size) * 0.75);
   line-height: 1.6;
-  opacity: 0;
-  transform: translateY(8px);
-  transition: opacity 300ms ease, transform 300ms ease;
 }
-.pay-step.shown { opacity: 1; transform: none; }
-.pay-step h2 {
-  margin: 0 0 12px;
-  font-family: var(--heading-font);
-  font-weight: var(--heading-weight);
-  font-size: calc(var(--body-size) * 1.1);
-  text-align: center;
+.pay-steps li {
+  position: relative;
+  min-height: var(--step-circle, 36px);
+  padding-left: calc(var(--step-circle, 36px) + 18px);
+  margin-bottom: var(--step-gap, 28px);
 }
-.pay-step ol { margin: 0; padding-left: 1.3em; }
-.pay-step li { margin-bottom: 0.5em; }
-.placeholder { font-style: italic; font-weight: 500; opacity: 0.7; }
-.pay-note {
-  margin: 0 0 18px;
-  padding: 12px 14px;
-  border-radius: 10px;
-  background: rgba(11, 17, 5, 0.05);
-  font-size: 0.9em;
-}
-
-/* Card form: two columns, the wide fields across both. */
-.card-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; font-size: 0.85em; }
-.field-wide { grid-column: 1 / -1; }
-.field input {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  padding: 12px 14px;
-  border: none;
-  border-radius: 10px;
-  background: rgba(11, 17, 5, 0.06);
+.pay-steps li:last-child { margin-bottom: 0; }
+.pay-steps li::before {
+  counter-increment: step;
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: calc((1.6em - var(--step-circle, 36px)) / 2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--step-circle, 36px);
+  height: var(--step-circle, 36px);
+  border-radius: 50%;
+  background: var(--accent, #dfeac0);
   color: var(--fg);
-  font: inherit;
-  font-size: 1.05em;
-}
-.field input:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; }
-.field input:disabled { cursor: not-allowed; }
-.pay-button {
-  margin-top: 6px;
-  padding: 14px 22px;
-  border: none;
-  border-radius: 10px;
-  background: var(--fg);
-  color: var(--bg);
-  font: inherit;
   font-weight: 700;
-  cursor: pointer;
+  font-size: 0.95em;
 }
-.pay-button:disabled { opacity: 0.4; cursor: not-allowed; }
+.placeholder { font-style: italic; font-weight: 500; opacity: 0.7; }
 
 /* ---- Menu bar across the top (pages that have one) ------------------------
    The same bar as the home page's, built by page.js from MENU_ITEMS. Its

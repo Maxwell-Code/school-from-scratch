@@ -640,53 +640,35 @@ VENMO_LINK = ""
 
 ## Payments page (payments.html)
 
-The payments page shows an accent-colored circle with the way to pay. Zelle
-is the only way at the moment, so its steps open by themselves once the
-circle has appeared. Details that are still empty below show as a [bracketed
+The payments page shows the heading, the Zelle logo, and the steps for
+sending a payment. Details that are still empty below show as a [bracketed
 placeholder].
 
-More ways to pay (a card, say) live in payments.html: each is a circle and a
-step. With more than one, the circle splits into one per way, choosing one
-gathers them back with the chosen one on top, and "Choose a different way to
-pay" opens the choice again.
-
-Animate the circles (true), or show them already split with no movement
-(false).
-
-```js
-PAYMENT_ANIMATION = true
-```
-
-Some visitors set their device to reduce motion (on Windows, turning off
-"Animation effects" does this). true = show those visitors the circles with
-no movement; false = animate for everyone.
-
-```js
-PAYMENT_RESPECT_REDUCED_MOTION = false
-```
-
-Size of the circle, in pixels. On narrow screens the circles shrink so they
-all fit across.
-
-```js
-PAYMENT_CIRCLE_SIZE = 180
-```
-
-How long the circle waits, once it has appeared, before the steps open (or,
-with more than one way to pay, before it splits), and how long the circles
-take to appear, split apart, or gather together, in milliseconds.
-
-```js
-PAYMENT_SPLIT_DELAY_MS = 150
-PAYMENT_ANIMATION_MS = 600
-```
-
-Zelle: the school's Zelle tag (or the email or US phone number its Zelle is
+The school's Zelle tag (or the email or US phone number its Zelle is
 registered to), and the name parents will see when they send to it.
 
 ```js
 ZELLE_RECIPIENT = "transformativeedu26"
 ZELLE_RECIPIENT_NAME = "The School From Scratch"
+```
+
+The Zelle logo file, and how wide it's shown, in pixels. Download the
+official logo from Zelle's brand page (zellepay.com has a "Brand guidelines"
+section), save it in the images folder, and put its file name here, for
+example "images/zelle_logo.svg". While this is empty, the page shows the
+word "Zelle" instead.
+
+```js
+ZELLE_LOGO = ""
+ZELLE_LOGO_WIDTH = 170
+```
+
+Size of the numbered circles beside the steps, and the space between one
+step and the next, in pixels.
+
+```js
+PAYMENT_STEP_CIRCLE_SIZE = 36
+PAYMENT_STEP_SPACING = 28
 ```
 
 ## Background grid
