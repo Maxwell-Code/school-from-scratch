@@ -215,6 +215,13 @@ TOP_MENU_ANIMATION = true
 // How long that slide takes, in milliseconds.
 TOP_MENU_SLIDE_MS = 350
 
+// A menu option (on the home screen or in the menu bar) glows for a moment
+// when it's clicked (true or false, no quotes), in this color, for this many
+// milliseconds.
+MENU_CLICK_GLOW = true
+MENU_CLICK_GLOW_COLOR = "#9fc25a"
+MENU_CLICK_GLOW_MS = 1200
+
 // The menu bar's first option, which takes you back to the main menu.
 TOP_MENU_HOME_LABEL = "Home"
 

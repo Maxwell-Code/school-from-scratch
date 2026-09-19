@@ -443,6 +443,15 @@
   }
   #quick-list a:focus-visible { outline: none; }
 
+  /* A menu option glows briefly when it's clicked (MENU_CLICK_GLOW). */
+  @keyframes menu-glow {
+    0% { text-shadow: 0 0 0 transparent; }
+    20% { text-shadow: 0 0 6px var(--glow-color), 0 0 14px var(--glow-color), 0 0 28px var(--glow-color); }
+    100% { text-shadow: 0 0 0 transparent; }
+  }
+  #menu a.glow,
+  #quick-list a.glow { animation: menu-glow var(--glow-ms, 1200ms) ease-out; }
+
   /* Gallery switched off in settings.txt: a plain, normal webpage. */
   html.gallery-off,
   html.gallery-off body {
@@ -2113,6 +2122,23 @@ function startGallery() {
   menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', (e) => {
     if (dragDistance > 4) e.preventDefault();
   }));
+
+  // ---- Glow on click ---------------------------------------------------------
+  // A clicked menu option (home screen or menu bar) glows for a moment.
+  if (setting('MENU_CLICK_GLOW', true)) {
+    rootStyle.setProperty('--glow-color', setting('MENU_CLICK_GLOW_COLOR', '#9fc25a'));
+    rootStyle.setProperty('--glow-ms', Math.max(0, setting('MENU_CLICK_GLOW_MS', 1200)) + 'ms');
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('#menu a, #quick-list a');
+      if (!link) return;
+      link.classList.remove('glow');
+      void link.offsetWidth; // restart the glow if it's clicked again mid-glow
+      link.classList.add('glow');
+    });
+    document.addEventListener('animationend', (e) => {
+      if (e.animationName === 'menu-glow') e.target.classList.remove('glow');
+    });
+  }
 
   // ---- Menu bar across the top ----------------------------------------------
   // The bar lists the same options as the main menu (built from MENU_ITEMS)
