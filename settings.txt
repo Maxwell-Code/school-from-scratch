@@ -208,6 +208,17 @@ TOP_MENU_TEXT_SIZE = 17
 TOP_MENU_HOVER_LETTER_SPACING = 0.5
 TOP_MENU_HOVER_SPEED_MS = 250
 
+// Underline a menu bar option while the pointer is over it, growing out from
+// the middle (true or false), and how thick the line is, in pixels.
+TOP_MENU_UNDERLINE_ON_HOVER = true
+TOP_MENU_UNDERLINE_THICKNESS = 2
+
+// When a chosen option leans up (on its way to a section above), its
+// underline turns into a small arrow under the word pointing up (true or
+// false). Length of each side of the arrow, in pixels.
+TOP_MENU_ARROW_WHEN_MOVING_UP = true
+TOP_MENU_ARROW_SIZE = 10
+
 // Slide the menu bar down from the top of the screen when it appears, and
 // back up when it goes (true), or show and hide it instantly (false).
 TOP_MENU_ANIMATION = true
