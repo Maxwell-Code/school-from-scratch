@@ -222,6 +222,9 @@ TOP_MENU_HOME_LABEL = "Home"
 // The big title at the top of the menu.
 MENU_TITLE = "The School From Scratch"
 
+// A line of text under the title. Leave empty ("") for none.
+MENU_SUBTITLE = "An Educational Commons for students, teachers, parents, and other learners."
+
 // The menu options, top to bottom. Each one goes in quotes, followed by a
 // comma. Reorder, add, or remove lines to change the menu.
 //
@@ -252,12 +255,22 @@ BODY_FONT = "Quicksand"
 BODY_FONT_WEIGHT = 500
 
 // Text sizes, in pixels. Both shrink automatically on narrow screens.
+// HEADING_FONT_SIZE is the heading on the separate pages; BODY_FONT_SIZE is
+// the menu options.
 HEADING_FONT_SIZE = 64
 BODY_FONT_SIZE = 24
 
-// Space between the title and the menu options below it, in pixels.
-// Bigger = the title sits higher, more like a heading on its own.
-TITLE_GAP = 72
+// The big title on the home screen, and the line under it, in pixels. Both
+// shrink automatically on narrow screens.
+MENU_TITLE_SIZE = 76
+MENU_SUBTITLE_SIZE = 24
+
+// Space between the title and the line under it, in pixels.
+SUBTITLE_GAP = 16
+
+// Space between the title (or the line under it) and the menu options below,
+// in pixels. Bigger = the title sits higher, more like a heading on its own.
+TITLE_GAP = 96
 
 // Menu options start with their letters spread apart and draw together when
 // the pointer moves over them. Spacing is a fraction of the letter size

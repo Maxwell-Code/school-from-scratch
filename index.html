@@ -273,22 +273,35 @@
     left: 0;
     top: 0;
     z-index: 1;
-    width: 900px;
+    /* At least 900 wide, or as wide as the title if that's wider (the title
+       stays on one line). */
+    width: max-content;
+    min-width: 900px;
     transform: translate(-50%, -50%);
     text-align: center;
   }
+  #menu h1 { white-space: nowrap; }
   @media (max-width: 640px) {
-    #menu { width: 340px; }
+    #menu { width: 340px; min-width: 0; }
+    #menu h1 { white-space: normal; }
   }
   #menu h1 {
     font-family: var(--heading-font);
     font-weight: var(--heading-weight);
     /* Shrinks on narrow screens so it still fits. */
-    font-size: min(var(--heading-size), 12vw);
+    font-size: min(var(--title-size, 76px), 12vw);
     line-height: 1.15;
     margin: 0 0 var(--title-gap);
     letter-spacing: 0.02em;
   }
+  /* The line under the title (MENU_SUBTITLE). */
+  #menu .subtitle {
+    max-width: 900px;
+    margin: 0 auto var(--title-gap);
+    font-size: min(var(--subtitle-size, 24px), 5.5vw);
+    line-height: 1.4;
+  }
+  #menu.has-subtitle h1 { margin-bottom: var(--subtitle-gap, 16px); }
   #menu nav {
     display: flex;
     flex-direction: column;
@@ -452,6 +465,7 @@
     <div id="world">
       <div id="menu">
         <h1>The School From Scratch</h1>
+        <p class="subtitle" hidden></p>
         <nav>
           <a href="people.html">People</a>
           <a href="approach.html">Approach</a>
@@ -598,6 +612,9 @@ function startGallery() {
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
   rootStyle.setProperty('--section-scroll-margin', Math.max(0, setting('SECTION_SCROLL_MARGIN', 96)) + 'px');
   rootStyle.setProperty('--title-gap', Math.max(0, setting('TITLE_GAP', 72)) + 'px');
+  rootStyle.setProperty('--title-size', Math.max(8, setting('MENU_TITLE_SIZE', 76)) + 'px');
+  rootStyle.setProperty('--subtitle-size', Math.max(8, setting('MENU_SUBTITLE_SIZE', 24)) + 'px');
+  rootStyle.setProperty('--subtitle-gap', Math.max(0, setting('SUBTITLE_GAP', 16)) + 'px');
   rootStyle.setProperty('--menu-spacing-start', setting('MENU_LETTER_SPACING', 0.3) + 'em');
   rootStyle.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
   rootStyle.setProperty('--menu-spacing-ms', Math.max(0, setting('MENU_HOVER_SPEED_MS', 450)) + 'ms');
@@ -607,6 +624,11 @@ function startGallery() {
   const menuEl = document.getElementById('menu');
   const title = String(setting('MENU_TITLE', '')).trim();
   if (title) menuEl.querySelector('h1').textContent = title;
+  const subtitle = String(setting('MENU_SUBTITLE', '')).trim();
+  const subtitleEl = menuEl.querySelector('.subtitle');
+  subtitleEl.textContent = subtitle;
+  subtitleEl.hidden = !subtitle;
+  menuEl.classList.toggle('has-subtitle', !!subtitle);
   const LETTER_SPREAD = setting('MENU_LETTERS_SPREAD_SIDEWAYS', true)
     ? Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06)) : 0;
   const LETTER_OFFSET = setting('MENU_LETTERS_NUDGE_UP_DOWN', true)
