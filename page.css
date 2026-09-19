@@ -107,24 +107,42 @@ main.payments {
 
 /* The steps: each numbered by a filled accent circle, with room between
    them. */
-.pay-steps {
+.pay-content {
+  width: 100%;
+  text-align: left;
+  font-size: calc(var(--body-size) * 0.75);
+  line-height: 1.6;
+}
+.pay-content h2,
+.pay-content h3 {
+  margin: 0 0 12px;
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  font-size: calc(var(--body-size) * 1.1);
+  text-align: center;
+}
+.pay-content p { margin: 0 0 1em; }
+.pay-content p.centered { text-align: center; }
+.pay-content a { color: inherit; text-underline-offset: 3px; }
+.pay-content .md-image { display: block; max-width: 100%; height: auto; margin: 0 auto 1em; border-radius: var(--zelle-logo-radius, 15px); }
+.pay-content ul { margin: 0 0 1em; padding-left: 1.3em; }
+/* A numbered list becomes the steps: each number in a filled accent circle,
+   with room between them. */
+.pay-content ol {
   counter-reset: step;
   width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
-  text-align: left;
-  font-size: calc(var(--body-size) * 0.75);
-  line-height: 1.6;
 }
-.pay-steps li {
+.pay-content ol li {
   position: relative;
   min-height: var(--step-circle, 36px);
   padding-left: calc(var(--step-circle, 36px) + 18px);
   margin-bottom: var(--step-gap, 28px);
 }
-.pay-steps li:last-child { margin-bottom: 0; }
-.pay-steps li::before {
+.pay-content ol li:last-child { margin-bottom: 0; }
+.pay-content ol li::before {
   counter-increment: step;
   content: counter(step);
   position: absolute;

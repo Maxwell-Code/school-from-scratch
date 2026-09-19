@@ -23,14 +23,11 @@
       <span id="zelle-word">Zelle</span>
     </p>
 
-    <!-- How to send to the school's Zelle. -->
-    <ol class="pay-steps">
-      <li>Open your bank's app and choose Send with Zelle.</li>
-      <li>Send to the Zelle tag <strong data-setting="ZELLE_RECIPIENT" data-placeholder="[the school's Zelle tag]"></strong>. Before you send, check that the name shown is <strong data-setting="ZELLE_RECIPIENT_NAME" data-placeholder="[the school's name]"></strong>.</li>
-      <li>Enter the amount.</li>
-      <li>In the memo, write your child's name and what the payment is for.</li>
-    </ol>
+    <!-- The words on this page come from the file named in
+         PAYMENTS_TEXT_FILE (sections/payments/payments.md). -->
+    <div class="pay-content" id="pay-content"></div>
   </main>
+  <script src="markdown.js"></script>
   <script src="page.js"></script>
   <script src="payments.js"></script>
 </body>

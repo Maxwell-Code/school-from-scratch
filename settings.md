@@ -398,7 +398,6 @@ MENU_ITEMS = [
   "Logistics",
   "FAQs",
   "Cost",
-  "Payments",
 ]
 ```
 
@@ -674,6 +673,17 @@ registered to), and the name parents will see when they send to it.
 ```js
 ZELLE_RECIPIENT = "transformativeedu26"
 ZELLE_RECIPIENT_NAME = "The School From Scratch"
+```
+
+The words on the payments page are in their own text file, written in
+Markdown like the section files. Edit it, save, and reload the page.
+{ZELLE_RECIPIENT} in that file is replaced with the setting below, so the
+Zelle tag is only written in one place; any setting's name works that way.
+A numbered list in that file becomes the steps, each number in a filled
+accent circle.
+
+```js
+PAYMENTS_TEXT_FILE = "sections/payments/payments.md"
 ```
 
 The Zelle logo file, and how wide it's shown, in pixels. Its corners are
