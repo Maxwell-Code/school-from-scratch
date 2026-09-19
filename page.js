@@ -62,6 +62,33 @@ window.settingsLoaded.then(() => {
   root.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
   root.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
 
+  // The menu bar across the top, on pages that have one (payments.html).
+  // Its options lead to their section on the home page.
+  const quickNav = document.getElementById('quick-nav');
+  if (quickNav) {
+    root.setProperty('--top-menu-height', Math.max(24, setting('TOP_MENU_HEIGHT', 64)) + 'px');
+    root.setProperty('--top-menu-text-size', Math.max(8, setting('TOP_MENU_TEXT_SIZE', 17)) + 'px');
+    root.setProperty('--top-menu-slide-ms', Math.max(0, setting('TOP_MENU_SLIDE_MS', 350)) + 'ms');
+    root.setProperty('--top-menu-hover-spacing', setting('TOP_MENU_HOVER_LETTER_SPACING', 0.3) + 'em');
+    root.setProperty('--top-menu-hover-ms', Math.max(0, setting('TOP_MENU_HOVER_SPEED_MS', 250)) + 'ms');
+    root.setProperty('--menu-spacing-hover', setting('MENU_LETTER_SPACING_HOVER', 0.06) + 'em');
+    root.setProperty('--top-underline-thickness', Math.max(0, setting('TOP_MENU_UNDERLINE_THICKNESS', 2)) + 'px');
+    document.documentElement.classList.toggle('no-top-menu-animation', !setting('TOP_MENU_ANIMATION', true));
+    const quickList = quickNav.querySelector('#quick-list');
+    const home = document.createElement('a');
+    home.href = 'index.html';
+    home.textContent = String(setting('TOP_MENU_HOME_LABEL', 'Home')).trim() || 'Home';
+    quickList.replaceChildren(home, ...setting('MENU_ITEMS', [])
+      .map((item) => String(item).trim()).filter(Boolean).map((label) => {
+        const link = document.createElement('a');
+        link.href = 'index.html#' + pageSlug(label);
+        link.textContent = label;
+        return link;
+      }));
+    quickList.classList.toggle('underline', setting('TOP_MENU_UNDERLINE_ON_HOVER', true));
+    requestAnimationFrame(() => quickNav.classList.add('show'));
+  }
+
   // Which page is this? The file's own name, or (on 404.html) the address.
   const own = document.body.dataset.page;
   const slug = own ? pageSlug(own) : pageSlug(decodeURIComponent(location.pathname.split('/').pop().replace(/\.html$/i, '')));

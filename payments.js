@@ -28,6 +28,13 @@ window.settingsLoaded.then(() => {
 
   const stage = document.getElementById('pay-stage');
   const circles = [...stage.querySelectorAll('.pay-circle')];
+  // One way to pay: nothing to choose, so the circle is just a picture.
+  const single = circles.length < 2;
+  stage.classList.toggle('single', single);
+  if (single) {
+    circles[0].tabIndex = -1;
+    circles[0].setAttribute('aria-hidden', 'true');
+  }
   const change = document.getElementById('pay-change'); // missing when there's only one way
   const steps = [...document.querySelectorAll('.pay-step')];
   let stepTimer = 0, movingTimer = 0;
@@ -72,14 +79,16 @@ window.settingsLoaded.then(() => {
     }, MOVE_MS);
   }
 
-  circles.forEach((c) => c.addEventListener('click', () => {
-    if (stage.classList.contains('chosen')) {
-      // Clicking the gathered circles opens the choice again.
-      split();
-    } else {
-      choose(c);
-    }
-  }));
+  if (!single) {
+    circles.forEach((c) => c.addEventListener('click', () => {
+      if (stage.classList.contains('chosen')) {
+        // Clicking the gathered circles opens the choice again.
+        split();
+      } else {
+        choose(c);
+      }
+    }));
+  }
   if (change) change.addEventListener('click', () => {
     split();
     circles[0].focus();
@@ -105,12 +114,10 @@ window.settingsLoaded.then(() => {
     requestAnimationFrame(() => {
       markMoving();
       stage.classList.add('appear');
-      stage.classList.toggle('single', circles.length < 2);
-      // One way to pay: its steps open by themselves, with nothing to
-      // choose. Otherwise the circle splits into one per way, once it has
-      // finished appearing (starting a movement halfway through another
-      // makes a visible hitch).
-      setTimeout(() => (circles.length < 2 ? choose(circles[0]) : split()), MOVE_MS + SPLIT_DELAY);
+      // One way to pay: its steps open by themselves. Otherwise the circle
+      // splits into one per way, once it has finished appearing (starting a
+      // movement halfway through another makes a visible hitch).
+      setTimeout(() => (single ? choose(circles[0]) : split()), MOVE_MS + SPLIT_DELAY);
     });
   });
 });

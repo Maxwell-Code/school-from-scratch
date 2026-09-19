@@ -148,7 +148,7 @@ main.payments {
 .pay-stage.chosen .pay-circle.picked { z-index: 2; }
 .pay-stage.chosen .pay-circle.picked .pay-label { opacity: 1; }
 /* Only one way to pay: nothing to choose, so the circle just sits there. */
-.pay-stage.single .pay-circle { cursor: default; }
+.pay-stage.single .pay-circle { cursor: default; pointer-events: none; }
 @media (max-width: 440px) {
   .pay-stage { --gap: 12px; }
 }
@@ -233,3 +233,80 @@ main.payments {
   cursor: pointer;
 }
 .pay-button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ---- Menu bar across the top (pages that have one) ------------------------
+   The same bar as the home page's, built by page.js from MENU_ITEMS. Its
+   options lead back to their section on the home page. It slides down when
+   the page opens. */
+#quick-nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  height: var(--top-menu-height, 64px);
+  background: var(--accent, #e8f0d4);
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition: transform var(--top-menu-slide-ms, 350ms) cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear var(--top-menu-slide-ms, 350ms);
+}
+#quick-nav.show {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform var(--top-menu-slide-ms, 350ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
+}
+.no-top-menu-animation #quick-nav,
+.no-top-menu-animation #quick-nav.show { transition: none; }
+#quick-list {
+  display: flex;
+  align-items: center;
+  justify-content: safe center;
+  height: 100%;
+  padding: 0 8px;
+  box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+#quick-list::-webkit-scrollbar { display: none; }
+/* Hovering an option spreads its letters a little, which nudges the options
+   beside it aside; they slide back when the pointer leaves. */
+#quick-list a {
+  position: relative;
+  flex: none;
+  padding: 8px 14px;
+  color: var(--fg);
+  font-size: var(--top-menu-text-size, 17px);
+  letter-spacing: var(--menu-spacing-hover, 0.15em);
+  text-indent: var(--menu-spacing-hover, 0.15em);
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: letter-spacing var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1),
+    text-indent var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+#quick-list a:hover,
+#quick-list a:focus-visible {
+  letter-spacing: var(--top-menu-hover-spacing, 0.3em);
+  text-indent: var(--top-menu-hover-spacing, 0.3em);
+}
+#quick-list a:focus-visible { outline: none; }
+/* Underline: two halves that grow out from the middle of the word. */
+#quick-list.underline a::before,
+#quick-list.underline a::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: calc(50% - 14px - var(--top-menu-hover-spacing, 0.3em));
+  height: var(--top-underline-thickness, 2px);
+  background: currentColor;
+  transform: scaleX(0);
+  transition: transform var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+#quick-list.underline a::before { right: 50%; transform-origin: 100% 50%; border-radius: 99px 0 0 99px; }
+#quick-list.underline a::after { left: 50%; transform-origin: 0 50%; border-radius: 0 99px 99px 0; }
+#quick-list.underline a:hover::before,
+#quick-list.underline a:hover::after,
+#quick-list.underline a:focus-visible::before,
+#quick-list.underline a:focus-visible::after { transform: scaleX(1); }
