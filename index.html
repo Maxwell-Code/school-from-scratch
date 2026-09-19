@@ -813,13 +813,20 @@ function startGallery() {
     menuEl.classList.remove('measuring');
   }
 
+  // Menu options that open an address of their own (MENU_LINKS) instead of
+  // a section on this page: the payments page, say.
+  const OPTION_LINKS = setting('MENU_LINKS', {});
+  const optionLink = (label) => String(OPTION_LINKS[label] || '').trim();
   const items = setting('MENU_ITEMS', []).map((item) => String(item).trim()).filter(Boolean);
   if (items.length) {
     menuEl.querySelector('nav').replaceChildren(...items.map((label) => {
       const link = document.createElement('a');
       // Read mode: jump to the option's section further down this page.
       // Otherwise (explore mode, gallery off): open its own page.
-      link.href = READ_MODE && GALLERY_ON ? '#' + pageSlug(label) : pageSlug(label) + '.html';
+      // Read mode: jump to the option's section further down this page.
+      // An option with its own address in MENU_LINKS goes there instead.
+      link.href = optionLink(label) ||
+        (READ_MODE && GALLERY_ON ? '#' + pageSlug(label) : pageSlug(label) + '.html');
       link.textContent = label;
       return link;
     }));
@@ -1844,7 +1851,7 @@ function startGallery() {
 
   function buildSections(texts) {
     const contactSlugs = setting('CONTACT_PAGES', ['Cost']).map(pageSlug);
-    sectionEls = menuLinks.map((link) => {
+    sectionEls = menuLinks.filter((link) => !optionLink(link.dataset.label || link.textContent)).map((link) => {
       const label = link.dataset.label || link.textContent;
       const slug = pageSlug(label);
       const section = document.createElement('section');

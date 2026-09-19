@@ -81,7 +81,10 @@ window.settingsLoaded.then(() => {
     quickList.replaceChildren(home, ...setting('MENU_ITEMS', [])
       .map((item) => String(item).trim()).filter(Boolean).map((label) => {
         const link = document.createElement('a');
-        link.href = 'index.html#' + pageSlug(label);
+        // An option with its own address (MENU_LINKS) goes there; the rest
+        // lead to their section on the home page.
+        const own = String((setting('MENU_LINKS', {}) || {})[label] || '').trim();
+        link.href = own || 'index.html#' + pageSlug(label);
         link.textContent = label;
         return link;
       }));

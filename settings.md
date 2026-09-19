@@ -398,7 +398,21 @@ MENU_ITEMS = [
   "Logistics",
   "FAQs",
   "Cost",
+  "Payments",
 ]
+```
+
+Menu options that open an address of their own instead of scrolling to a
+section on the home page. Write the option's name exactly as in MENU_ITEMS,
+then a colon and the address in quotes: a page on this site
+("payments.html") or a full web address ("https://example.com"). An option
+listed here has no section of its own and needs no file in the sections
+folder.
+
+```js
+MENU_LINKS = {
+  "Payments": "payments.html",
+}
 ```
 
 Fonts are loaded from Google Fonts (fonts.google.com). Type the family name
