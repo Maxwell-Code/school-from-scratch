@@ -201,7 +201,7 @@ TOP_MENU_TEXT_SIZE = 17
 // options beside it. Letter spacing while hovered, as a fraction of the
 // letter size (at rest it uses MENU_LETTER_SPACING_HOVER), and how long the
 // spreading takes, in milliseconds.
-TOP_MENU_HOVER_LETTER_SPACING = 0.3
+TOP_MENU_HOVER_LETTER_SPACING = 0.5
 TOP_MENU_HOVER_SPEED_MS = 250
 
 // Fade the menu bar in and out (true), or show and hide it instantly (false).
