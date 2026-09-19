@@ -46,10 +46,20 @@ Venmo logo (relative to index.html).
 
 ```js
 PHOTO_FOLDER = "images/"
+PHOTO_SMALL_FOLDER = "images/small/"
 ```
 
 Every photo to show. Browsers can't look inside a folder on their own,
 so add each new photo's filename here, in quotes, followed by a comma.
+
+Photos are shown small (a few hundred pixels across), so the site loads
+small copies of them from the folder below instead of the originals: on a
+first visit that's about 1.4 MB instead of 20 MB. Each small copy has the
+same name with .jpg on the end. A photo with no small copy still shows,
+using its original file, so after adding photos to the images folder ask
+Claude to make the small copies (or delete the folder's contents to go back
+to the originals). Leave the folder name empty ("") to always use the
+originals.
 
 ```js
 PHOTOS = [

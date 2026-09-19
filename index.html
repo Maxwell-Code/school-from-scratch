@@ -613,6 +613,12 @@ function setting(name, fallback) {
 
 function startGallery() {
   const IMAGE_DIR = setting('PHOTO_FOLDER', 'photos/infinite_gallery/');
+  // Small copies of the photos, used instead of the originals: a photo the
+  // size of a postcard on screen doesn't need a 10 MB camera file. Each is
+  // the photo's name with .jpg on the end. A photo with no small copy falls
+  // back to the original, so a new photo still shows up straight away.
+  const SMALL_DIR = String(setting('PHOTO_SMALL_FOLDER', 'images/small/')).trim();
+  const photoSrc = (file) => (SMALL_DIR ? SMALL_DIR + file.replace(/\.[^.]+$/, '.jpg') : IMAGE_DIR + file);
   const IMAGES = setting('PHOTOS', []);
   const SIZE_MIN = setting('PHOTO_SIZE_SMALLEST', 110);
   const SIZE_MAX = Math.max(SIZE_MIN, setting('PHOTO_SIZE_LARGEST', 270));
@@ -1097,8 +1103,13 @@ function startGallery() {
         try { levels = await Promise.all(sizes.map((s) => createImageBitmap(s))); } catch {}
         resolve({ file, aspect: img.naturalWidth / img.naturalHeight, levels, color });
       };
-      img.onerror = () => resolve(null);
-      img.src = IMAGE_DIR + file;
+      let triedOriginal = false;
+      img.onerror = () => {
+        if (triedOriginal) return resolve(null);
+        triedOriginal = true;
+        img.src = IMAGE_DIR + file; // no small copy: use the original
+      };
+      img.src = photoSrc(file);
     }))).then((list) => list.filter(Boolean));
   }
 
@@ -1965,7 +1976,7 @@ function startGallery() {
       const img = new Image();
       img.className = 'venmo';
       img.alt = 'Venmo';
-      img.src = IMAGE_DIR + 'venmo_logo.svg';
+      img.src = 'images/venmo_logo.svg';
       a.appendChild(img);
       box.appendChild(a);
     }
@@ -2067,7 +2078,8 @@ function startGallery() {
     img.height = Math.round(it.h * g.s);
     img.style.borderRadius = Math.max(0, r - FRAME * g.s) + 'px';
     img.onload = () => el.classList.add('loaded');
-    img.src = IMAGE_DIR + photo.file;
+    img.onerror = () => { if (!img.src.endsWith(photo.file)) img.src = IMAGE_DIR + photo.file; };
+    img.src = photoSrc(photo.file);
     el.appendChild(img);
     return el;
   }
