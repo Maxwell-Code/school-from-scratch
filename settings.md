@@ -610,11 +610,12 @@ choosing it from the menu, in pixels.
 SECTION_SCROLL_MARGIN = 96
 ```
 
-Sections (and pages) that also show the contact details below (use the names exactly as in
-MENU_ITEMS, in quotes, separated by commas).
+Sections (and pages) that show the contact details below: the phone number,
+and the Venmo logo if it's switched on. Use the names exactly as in
+MENU_ITEMS, in quotes, separated by commas. Empty (`[]`) shows them nowhere.
 
 ```js
-CONTACT_PAGES = ["Cost"]
+CONTACT_PAGES = []
 ```
 
 Phone number shown on those pages. Tapping it on a phone starts a call.
