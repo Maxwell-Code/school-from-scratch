@@ -1,6 +1,8 @@
-[**Dr. Gopal Krishnamurthy**](https://www.antioch.edu/faculty/gopal-krishnamurthy/), Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch (Ojai, Microschool).
+**Dr. Gopal Krishnamurthy**, Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch (Ojai, Microschool).
 
 Gopal brings decades of experience in schools, universities, teacher education, and education in India, the UK, and the US. He has a PhD in education, and served as university Dept. Chair \& faculty, school director, and teacher. He sees Ojai as a crucible for wonder, not knowing, and deep inquiry.
+
+(For more information, read his [Antioch biography](https://www.antioch.edu/faculty/gopal-krishnamurthy/).)
 
 **Sunsong (Susan) Clark**, Founding Director/Teacher, The School From Scratch (Ojai, Microschool).
 

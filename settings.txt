@@ -194,7 +194,7 @@ ACCENT_COLOR = "#dfeac0"
 
 // Color the home screen's title and the line under it with the accent color
 // (true), or with TEXT_COLOR like the rest of the text (false).
-MENU_TITLE_IN_ACCENT_COLOR = true
+MENU_TITLE_IN_ACCENT_COLOR = false
 
 // The menu bar across the top appears once the main menu has been scrolled
 // off screen. Its height, and the size of its text, in pixels:
