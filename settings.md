@@ -659,7 +659,7 @@ example "images/zelle_logo.svg". While this is empty, the page shows the
 word "Zelle" instead.
 
 ```js
-ZELLE_LOGO = ""
+ZELLE_LOGO = "images/Zelle_logo.svg"
 ZELLE_LOGO_WIDTH = 170
 ```
 
