@@ -215,7 +215,7 @@ MENU_TITLE = "The School From Scratch"
 // comma. Reorder, add, or remove lines to change the menu.
 //
 // Each option opens its own page file, named after it in lowercase with
-// dashes: "Campus Location" opens campus-location.html. When you add a new
+// dashes: "Learning" opens learning.html. When you add a new
 // option, copy cost.html, rename the copy to match, and change the name in its
 // data-page="..." line. (Until you do, it still works on a web server, but not
 // when index.html is opened straight from the folder.)

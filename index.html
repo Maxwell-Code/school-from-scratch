@@ -417,10 +417,9 @@
         <h1>The School From Scratch</h1>
         <nav>
           <a href="people.html">People</a>
+          <a href="learning.html">Learning</a>
           <a href="curriculum.html">Curriculum</a>
-          <a href="teaching-learning.html">Teaching-Learning</a>
-          <a href="campus-location.html">Campus Location</a>
-          <a href="teaching-learning.html">Teaching-Learning</a>
+          <a href="location.html">Location</a>
           <a href="cost.html">Cost</a>
           <a href="faqs.html">FAQs</a>
         </nav>
@@ -469,8 +468,8 @@ function loadSettings() {
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-// Menu option name -> its page file name: "Teaching-Learning" ->
-// "teaching-learning". Must match pageSlug() in page.js.
+// Menu option name -> its page file name: "Learning" -> "learning",
+// "FAQs" -> "faqs". Must match pageSlug() in page.js.
 function pageSlug(name) {
   return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
