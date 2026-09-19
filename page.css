@@ -100,10 +100,13 @@ main.payments {
    they split apart; when one is chosen they gather again, the chosen one on
    top. Each moves by its own --x offset. */
 .pay-stage {
-  --gap: 22px;
+  --gap: 24px;
+  /* PAYMENT_CIRCLE_SIZE, shrunk if needed so all three fit across the
+     screen (phones). */
+  --size: min(var(--pay-circle, 180px), calc((100vw - 40px - 2 * var(--gap)) / 3));
   position: relative;
   width: 100%;
-  height: var(--pay-circle, 130px);
+  height: var(--size);
 }
 .pay-circle {
   --x: 0px;
@@ -111,16 +114,16 @@ main.payments {
   position: absolute;
   left: 50%;
   top: 0;
-  width: var(--pay-circle, 130px);
-  height: var(--pay-circle, 130px);
-  margin-left: calc(var(--pay-circle, 130px) / -2);
+  width: var(--size);
+  height: var(--size);
+  margin-left: calc(var(--size) / -2);
   padding: 8px;
   border: none;
   border-radius: 50%;
   background: var(--accent, #dfeac0);
   color: var(--fg);
   font: inherit;
-  font-size: calc(var(--body-size) * 0.72);
+  font-size: clamp(14px, calc(var(--size) * 0.12), 22px);
   font-weight: 700;
   line-height: 1.2;
   cursor: pointer;
@@ -132,8 +135,8 @@ main.payments {
 /* 1. One circle appears. */
 .pay-stage.appear .pay-circle { --s: 1; }
 /* 2. It splits into three, and their names show. */
-.pay-stage.split .pay-circle[data-slot="0"] { --x: calc(-1 * (var(--pay-circle, 130px) + var(--gap))); }
-.pay-stage.split .pay-circle[data-slot="2"] { --x: calc(var(--pay-circle, 130px) + var(--gap)); }
+.pay-stage.split .pay-circle[data-slot="0"] { --x: calc(-1 * (var(--size) + var(--gap))); }
+.pay-stage.split .pay-circle[data-slot="2"] { --x: calc(var(--size) + var(--gap)); }
 .pay-stage.split .pay-label { opacity: 1; transition-delay: calc(var(--pay-ms, 600ms) * 0.5); }
 .pay-stage.split .pay-circle:hover { --s: 1.05; }
 /* 3. Chosen: all gather in the middle, the chosen one on top. */
@@ -142,10 +145,6 @@ main.payments {
 .pay-stage.chosen .pay-circle.picked .pay-label { opacity: 1; }
 @media (max-width: 440px) {
   .pay-stage { --gap: 12px; }
-  .pay-circle { --pay-circle: 96px; width: 96px; height: 96px; margin-left: -48px; font-size: calc(var(--body-size) * 0.6); }
-  .pay-stage { height: 96px; }
-  .pay-stage.split .pay-circle[data-slot="0"] { --x: calc(-1 * (96px + var(--gap))); }
-  .pay-stage.split .pay-circle[data-slot="2"] { --x: calc(96px + var(--gap)); }
 }
 .pay-change {
   margin-top: 18px;

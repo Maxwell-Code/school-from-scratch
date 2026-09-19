@@ -7,11 +7,14 @@
 
 window.settingsLoaded.then(() => {
   const root = document.documentElement.style;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Devices can ask sites for less motion (on Windows, turning off
+  // "Animation effects" does this). Only honored if the setting says so.
+  const reduceMotion = setting('PAYMENT_RESPECT_REDUCED_MOTION', false) &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ANIMATE = setting('PAYMENT_ANIMATION', true) && !reduceMotion;
   const MOVE_MS = ANIMATE ? Math.max(0, setting('PAYMENT_ANIMATION_MS', 600)) : 0;
   const SPLIT_DELAY = ANIMATE ? Math.max(0, setting('PAYMENT_SPLIT_DELAY_MS', 500)) : 0;
-  root.setProperty('--pay-circle', Math.max(60, setting('PAYMENT_CIRCLE_SIZE', 130)) + 'px');
+  root.setProperty('--pay-circle', Math.max(60, setting('PAYMENT_CIRCLE_SIZE', 180)) + 'px');
   root.setProperty('--pay-ms', MOVE_MS + 'ms');
 
   // Fill in the details from settings.md, or a placeholder.

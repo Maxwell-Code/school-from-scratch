@@ -649,16 +649,25 @@ sends nothing. Real card payments need Stripe's secure card fields and a
 small piece of server code, which this site doesn't have yet.
 
 Animate the circles (true), or show them already split with no movement
-(false). Visitors whose device asks for reduced motion always get no movement.
+(false).
 
 ```js
 PAYMENT_ANIMATION = true
 ```
 
-Size of each circle, in pixels (on phones they're 96).
+Some visitors set their device to reduce motion (on Windows, turning off
+"Animation effects" does this). true = show those visitors the circles with
+no movement; false = animate for everyone.
 
 ```js
-PAYMENT_CIRCLE_SIZE = 130
+PAYMENT_RESPECT_REDUCED_MOTION = false
+```
+
+Size of each circle, in pixels. On narrow screens they shrink so all three
+fit across.
+
+```js
+PAYMENT_CIRCLE_SIZE = 180
 ```
 
 How long after the page opens the one circle splits into three, and how long
