@@ -222,11 +222,11 @@ MENU_CLICK_GLOW = false
 MENU_CLICK_GLOW_COLOR = "#ffffff"
 MENU_CLICK_GLOW_MS = 1200
 
-// When a menu option is chosen, its letters (and the same option's letters
-// in the other menu) jump to scattered heights, stay there while the page
+// When a menu option is chosen, its letters (only in the menu you clicked)
+// jump to scattered heights, stay there while the page
 // glides to its section, and drop back into line once it arrives.
 // On or off (true or false, no quotes):
-MENU_CLICK_NUDGE = true
+MENU_CLICK_NUDGE = false
 // How far the letters jump, as a fraction of the letter size:
 MENU_CLICK_NUDGE_AMOUNT = 0.25
 // How long they take to jump and to drop back, in milliseconds:

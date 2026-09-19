@@ -2158,7 +2158,7 @@ function startGallery() {
   }));
 
   // ---- Nudge on click --------------------------------------------------------
-  // The chosen option (and the same option in the other menu) changes until
+  // The chosen option (only the one clicked, not its twin in the other menu) changes until
   // the page arrives at its section: its letters jump to scattered heights
   // (NUDGE), spread apart (EXPAND), and the whole word leans the way the page
   // is heading (MOVE). Each can be switched on or off.
@@ -2305,8 +2305,7 @@ function startGallery() {
       e.preventDefault();
       if (location.hash !== hash) history.pushState(null, '', hash);
       const target = sectionEls.find((el) => '#' + el.id === hash);
-      nudge([...document.querySelectorAll('#menu a, #quick-list a')].filter((a) => a.getAttribute('href') === hash),
-        target ? Math.sign(sectionTop(target) - window.scrollY) : 0);
+      nudge([link], target ? Math.sign(sectionTop(target) - window.scrollY) : 0);
       scrollToHash(true, settleNudge);
     });
     // Back and Forward move between the sections visited from the menu.
