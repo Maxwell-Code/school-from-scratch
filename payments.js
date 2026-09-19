@@ -1,7 +1,8 @@
-// The payments page. One accent-colored circle appears, then splits into
-// three: Zelle, Card, and Bank billing. Choosing one gathers the circles
-// back together with the chosen one on top, and that way's step appears
-// below. "Choose a different way to pay" splits them again.
+// The payments page. An accent-colored circle appears with the way to pay.
+// With only one way (Zelle), its steps open by themselves. With more than
+// one, the circle splits into one per way; choosing one gathers them back
+// together with the chosen one on top, and "Choose a different way to pay"
+// splits them again.
 // Details (Zelle recipient, bill pay address) come from settings.md; any
 // that are still empty show a [bracketed placeholder].
 
@@ -25,12 +26,9 @@ window.settingsLoaded.then(() => {
     el.classList.toggle('placeholder', !value);
   });
 
-  // The card form never sends anything (it's a preview).
-  document.getElementById('card-form').addEventListener('submit', (e) => e.preventDefault());
-
   const stage = document.getElementById('pay-stage');
   const circles = [...stage.querySelectorAll('.pay-circle')];
-  const change = document.getElementById('pay-change');
+  const change = document.getElementById('pay-change'); // missing when there's only one way
   const steps = [...document.querySelectorAll('.pay-step')];
   let stepTimer = 0, movingTimer = 0;
   // While the circles move, hovering them does nothing (see page.css).
@@ -51,7 +49,7 @@ window.settingsLoaded.then(() => {
       c.tabIndex = 0;
     });
     steps.forEach((s) => { s.hidden = true; s.classList.remove('shown'); });
-    change.hidden = true;
+    if (change) change.hidden = true;
   }
 
   function choose(circle) {
@@ -69,7 +67,7 @@ window.settingsLoaded.then(() => {
     stepTimer = setTimeout(() => {
       const step = document.getElementById('step-' + circle.dataset.method);
       steps.forEach((s) => { s.hidden = s !== step; });
-      change.hidden = false;
+      if (change) change.hidden = false;
       requestAnimationFrame(() => step.classList.add('shown'));
     }, MOVE_MS);
   }
@@ -82,7 +80,7 @@ window.settingsLoaded.then(() => {
       choose(c);
     }
   }));
-  change.addEventListener('click', () => {
+  if (change) change.addEventListener('click', () => {
     split();
     circles[0].focus();
   });
@@ -107,9 +105,12 @@ window.settingsLoaded.then(() => {
     requestAnimationFrame(() => {
       markMoving();
       stage.classList.add('appear');
-      // Split only once the circle has finished appearing: starting a new
-      // movement halfway through another makes a visible hitch.
-      setTimeout(split, MOVE_MS + SPLIT_DELAY);
+      stage.classList.toggle('single', circles.length < 2);
+      // One way to pay: its steps open by themselves, with nothing to
+      // choose. Otherwise the circle splits into one per way, once it has
+      // finished appearing (starting a movement halfway through another
+      // makes a visible hitch).
+      setTimeout(() => (circles.length < 2 ? choose(circles[0]) : split()), MOVE_MS + SPLIT_DELAY);
     });
   });
 });

@@ -12,77 +12,27 @@
   <a class="back" href="index.html#cost">&larr; Back</a>
   <main class="payments">
     <h1 id="title">Payments</h1>
-    <p class="intro" id="pay-prompt">Choose how you'd like to pay.</p>
+    <p class="intro" id="pay-prompt">Payments are made with Zelle.</p>
 
-    <!-- The ways to pay, as circles. They start as one circle that splits
-         into three; choosing one gathers them back together with the chosen
-         one on top. payments.js runs the steps. -->
-    <div class="pay-stage" id="pay-stage" role="radiogroup" aria-labelledby="pay-prompt">
-      <button class="pay-circle" type="button" role="radio" aria-checked="false" data-method="zelle" data-slot="0"><span class="pay-label">Zelle</span></button>
-      <button class="pay-circle" type="button" role="radio" aria-checked="false" data-method="card" data-slot="1"><span class="pay-label">Card</span></button>
-      <button class="pay-circle" type="button" role="radio" aria-checked="false" data-method="bank" data-slot="2"><span class="pay-label">Bank billing</span></button>
+    <!-- The ways to pay, as circles: only Zelle for now. The circle
+         appears, then the steps below it. payments.js runs the steps.
+         Adding another <button class="pay-circle" data-method="..."> here
+         with a matching step below brings the split-and-choose back. -->
+    <div class="pay-stage" id="pay-stage">
+      <button class="pay-circle" type="button" data-method="zelle" data-slot="1"><span class="pay-label">Zelle</span></button>
     </div>
-    <button class="pay-change" id="pay-change" type="button" hidden>Choose a different way to pay</button>
-
-    <!-- Card: a preview of the card form. It isn't connected to a payment
-         service yet, so every field is switched off and nothing is sent. -->
-    <section class="pay-step" id="step-card" hidden>
-      <h2>Card details</h2>
-      <p class="pay-note">Card payments aren't set up yet. This is a preview of the form; its fields are switched off, so nothing can be typed or sent.</p>
-      <form class="card-form" id="card-form" novalidate>
-        <label class="field field-wide">
-          <span>Name on card</span>
-          <input type="text" autocomplete="cc-name" placeholder="Full name" disabled>
-        </label>
-        <label class="field field-wide">
-          <span>Card number</span>
-          <input type="text" inputmode="numeric" autocomplete="cc-number" placeholder="1234 1234 1234 1234" disabled>
-        </label>
-        <label class="field">
-          <span>Expiry</span>
-          <input type="text" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" disabled>
-        </label>
-        <label class="field">
-          <span>Security code</span>
-          <input type="text" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" disabled>
-        </label>
-        <label class="field">
-          <span>ZIP code</span>
-          <input type="text" inputmode="numeric" autocomplete="postal-code" placeholder="93023" disabled>
-        </label>
-        <label class="field">
-          <span>Amount</span>
-          <input type="text" inputmode="decimal" placeholder="$0.00" disabled>
-        </label>
-        <label class="field field-wide">
-          <span>Email for your receipt</span>
-          <input type="email" autocomplete="email" placeholder="you@example.com" disabled>
-        </label>
-        <button class="pay-button field-wide" type="submit" disabled>Pay</button>
-      </form>
-    </section>
 
     <!-- Zelle: how to send to the school's Zelle. -->
     <section class="pay-step" id="step-zelle" hidden>
       <h2>Paying with Zelle</h2>
       <ol>
         <li>Open your bank's app and choose Send with Zelle.</li>
-        <li>Send to <strong data-setting="ZELLE_RECIPIENT" data-placeholder="[the school's Zelle email or phone number]"></strong>. Before you send, check that the name shown is <strong data-setting="ZELLE_RECIPIENT_NAME" data-placeholder="[the school's name]"></strong>.</li>
+        <li>Send to the Zelle tag <strong data-setting="ZELLE_RECIPIENT" data-placeholder="[the school's Zelle tag]"></strong>. Before you send, check that the name shown is <strong data-setting="ZELLE_RECIPIENT_NAME" data-placeholder="[the school's name]"></strong>.</li>
         <li>Enter the amount.</li>
         <li>In the memo, write your child's name and what the payment is for.</li>
       </ol>
     </section>
 
-    <!-- Bank billing: online bill pay from the parent's own bank. -->
-    <section class="pay-step" id="step-bank" hidden>
-      <h2>Paying with bank billing</h2>
-      <ol>
-        <li>Sign in to your bank's website or app and open Bill Pay.</li>
-        <li>Add a new payee: <strong data-setting="BANK_BILL_PAY_PAYEE" data-placeholder="[the school's name]"></strong>, <span data-setting="BANK_BILL_PAY_ADDRESS" data-placeholder="[the school's mailing address]"></span>.</li>
-        <li>Where it asks for an account number, enter your child's name.</li>
-        <li>Choose the amount and date. You can set it to repeat each month.</li>
-      </ol>
-    </section>
   </main>
   <script src="page.js"></script>
   <script src="payments.js"></script>

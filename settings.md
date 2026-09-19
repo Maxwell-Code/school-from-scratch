@@ -386,8 +386,8 @@ MENU_ITEMS = [
   "People",
   "Parent-Learning",
   "Logistics",
-  "Cost",
   "FAQs",
+  "Cost",
 ]
 ```
 
@@ -640,14 +640,15 @@ VENMO_LINK = ""
 
 ## Payments page (payments.html)
 
-The payments page shows one accent-colored circle that splits into three:
-Zelle, Card, and Bank billing. Choosing one gathers the circles back together
-with the chosen one on top, and the steps for that way to pay appear below.
-Details that are still empty below show as a [bracketed placeholder].
+The payments page shows an accent-colored circle with the way to pay. Zelle
+is the only way at the moment, so its steps open by themselves once the
+circle has appeared. Details that are still empty below show as a [bracketed
+placeholder].
 
-The card form is only a preview for now: its fields are switched off and it
-sends nothing. Real card payments need Stripe's secure card fields and a
-small piece of server code, which this site doesn't have yet.
+More ways to pay (a card, say) live in payments.html: each is a circle and a
+step. With more than one, the circle splits into one per way, choosing one
+gathers them back with the chosen one on top, and "Choose a different way to
+pay" opens the choice again.
 
 Animate the circles (true), or show them already split with no movement
 (false).
@@ -664,45 +665,28 @@ no movement; false = animate for everyone.
 PAYMENT_RESPECT_REDUCED_MOTION = false
 ```
 
-Size of each circle, in pixels. On narrow screens they shrink so all three
-fit across.
+Size of the circle, in pixels. On narrow screens the circles shrink so they
+all fit across.
 
 ```js
 PAYMENT_CIRCLE_SIZE = 180
 ```
 
-How long the one circle waits, once it has appeared, before splitting into
-three, and how long the circles take to appear, split apart, or gather
-together, in milliseconds.
+How long the circle waits, once it has appeared, before the steps open (or,
+with more than one way to pay, before it splits), and how long the circles
+take to appear, split apart, or gather together, in milliseconds.
 
 ```js
 PAYMENT_SPLIT_DELAY_MS = 150
 PAYMENT_ANIMATION_MS = 600
 ```
 
-Zelle: the email or US phone number the school's Zelle is registered to,
-and the name parents will see when they send to it.
+Zelle: the school's Zelle tag (or the email or US phone number its Zelle is
+registered to), and the name parents will see when they send to it.
 
 ```js
-ZELLE_RECIPIENT = ""
+ZELLE_RECIPIENT = "transformativeedu26"
 ZELLE_RECIPIENT_NAME = "The School From Scratch"
-```
-
-Stripe: the Payment Link from the school's Stripe account (starts with
-https://buy.stripe.com/). Not used by the page yet; kept for when card
-payments are set up.
-
-```js
-STRIPE_PAYMENT_LINK = ""
-```
-
-Bank billing (online bill pay): parents add the school as a payee in their
-own bank's online bill pay, and their bank sends the payment. They need
-the payee name and the mailing address payments are sent to.
-
-```js
-BANK_BILL_PAY_PAYEE = "The School From Scratch"
-BANK_BILL_PAY_ADDRESS = ""
 ```
 
 ## Background grid

@@ -147,6 +147,8 @@ main.payments {
 .pay-stage.chosen .pay-circle { z-index: 1; }
 .pay-stage.chosen .pay-circle.picked { z-index: 2; }
 .pay-stage.chosen .pay-circle.picked .pay-label { opacity: 1; }
+/* Only one way to pay: nothing to choose, so the circle just sits there. */
+.pay-stage.single .pay-circle { cursor: default; }
 @media (max-width: 440px) {
   .pay-stage { --gap: 12px; }
 }
