@@ -20,9 +20,9 @@
 // -----------------------------------------------------------------------------
 
 // true  = the photo landscape: photos all around the menu, drag to move,
-//         zoom in and out, and the menu button (three bars).
+//         zoom in and out, and the menu bar across the top.
 // false = a plain, normal webpage: just the title and menu, centered, with no
-//         photos, no dragging, no zooming, and no menu button.
+//         photos, no dragging, no zooming, and no menu bar.
 // (Type true or false with no quotes.)
 GALLERY_ENABLED = true
 
@@ -176,7 +176,7 @@ GLIDE_AFTER_DRAG = 0.90
 // How far the arrow keys move the view per press.
 KEYBOARD_MOVE_STEP = 120
 
-// How long the dropdown's Home option takes to glide back to the main menu,
+// How long the menu bar's Home option takes to glide back to the main menu,
 // in milliseconds.
 HOME_TRAVEL_MS = 800
 
@@ -189,19 +189,18 @@ HOME_TRAVEL_MS = 800
 BACKGROUND_COLOR = "#fffef7"
 TEXT_COLOR = "#0b1105"
 
-// Accent color: fills the menu square in the top-left corner and the sidebar
-// it opens. #e8f0d4
+// Accent color: fills the menu bar across the top of the screen. #e8f0d4
 ACCENT_COLOR = "#dfeac0"
 
-// Width of the sidebar the menu square opens, in pixels.
-DROPDOWN_WIDTH = 300
+// The menu bar across the top appears once the main menu has been scrolled
+// off screen. Its height, in pixels:
+TOP_MENU_HEIGHT = 56
 
-// Animate the menu: the three bars turning into an X, and the sidebar sliding
-// in from the left (true or false, no quotes).
-DROPDOWN_ANIMATION = true
+// Fade the menu bar in and out (true), or show and hide it instantly (false).
+TOP_MENU_ANIMATION = true
 
-// The sidebar's first option, which takes you back to the main menu.
-DROPDOWN_HOME_LABEL = "Home"
+// The menu bar's first option, which takes you back to the main menu.
+TOP_MENU_HOME_LABEL = "Home"
 
 
 // -----------------------------------------------------------------------------
@@ -236,7 +235,7 @@ MENU_ITEMS = [
 HEADING_FONT = "Lora"
 HEADING_FONT_WEIGHT = 600
 
-// Everything else: the menu options and the dropdown menu.
+// Everything else: the menu options and the menu bar across the top.
 BODY_FONT = "Quicksand"
 BODY_FONT_WEIGHT = 500
 
@@ -301,7 +300,7 @@ MENU_LETTER_STAGGER_MS = 0
 //  PAGES
 // -----------------------------------------------------------------------------
 
-// In read mode, each menu option (on the home screen and in the sidebar)
+// In read mode, each menu option (on the home screen and in the menu bar)
 // scrolls down to that option's section on the same page.
 //
 // Each section's text is its own file in the "sections" folder, named after
@@ -350,7 +349,7 @@ SECTION_TEXT_SIZE = 19
 
 // When a menu option is chosen, the page glides down to the section (true)
 // or jumps straight there (false). No quotes. The same goes for the
-// sidebar's Home option.
+// menu bar's Home option.
 SECTION_LINKS_SCROLL_SMOOTHLY = true
 
 // How long that glide takes, in milliseconds, however far the section is.

@@ -357,16 +357,17 @@
     margin-left: calc((var(--word-width, 0px) + 2 * var(--spread-room, 0px)) / -2);
   }
 
-  /* Menu: a square in the top-left corner. Pressing it slides a sidebar in
-     from the left, and the square's three bars turn into an X that closes it.
-     Shown only once the main menu has been scrolled out of view. */
+  /* Menu bar across the top of the screen: Home and the menu options in a
+     row. Shown only once the main menu has been scrolled out of view. On
+     screens too narrow for every option, the bar scrolls sideways. */
   #quick-nav {
-    --square: 64px;
-    --slide-ms: 320ms;
     position: fixed;
     left: 0;
     top: 0;
+    right: 0;
     z-index: 2;
+    height: var(--top-menu-height, 56px);
+    background: var(--accent, #e8f0d4);
     opacity: 0;
     visibility: hidden;
     transition: opacity 250ms ease, visibility 0s linear 250ms;
@@ -376,70 +377,26 @@
     visibility: visible;
     transition: opacity 250ms ease, visibility 0s;
   }
-  #quick-toggle {
-    position: fixed;
-    left: 0;
-    top: 0;
-    z-index: 1;
+  /* TOP_MENU_ANIMATION = false: appear and disappear instantly. */
+  .no-top-menu-animation #quick-nav,
+  .no-top-menu-animation #quick-nav.show { transition: none; }
+  #quick-list {
     display: flex;
     align-items: center;
-    justify-content: center;
-    width: var(--square);
-    height: var(--square);
-    padding: 0;
-    background: var(--accent, #e8f0d4);
-    color: var(--fg);
-    border: none;
-    cursor: pointer;
-  }
-  #quick-toggle:focus-visible { outline: 2px solid var(--fg); outline-offset: -4px; }
-  #quick-toggle svg { width: 36px; height: 36px; overflow: visible; }
-  /* Three bars -> X: the middle bar fades while the outer two meet in the
-     middle and turn into a cross. Closing plays it back. */
-  #quick-toggle .bar {
-    transform-box: view-box;
-    transform-origin: 12px 12px;
-    transition: transform var(--slide-ms) cubic-bezier(0.65, 0, 0.35, 1), opacity 160ms ease;
-  }
-  #quick-toggle.open .bar-top { transform: rotate(45deg) translateY(6px); }
-  #quick-toggle.open .bar-bottom { transform: rotate(-45deg) translateY(-6px); }
-  #quick-toggle.open .bar-mid { transform: scaleX(0); opacity: 0; }
-  /* The sidebar slides in from the left, full height, behind the square. */
-  #quick-list {
-    position: fixed;
-    left: 0;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    width: var(--dropdown-width, 300px);
-    min-width: max-content;
-    height: 100vh;
-    height: 100dvh;
+    justify-content: safe center;
+    height: 100%;
+    padding: 0 8px;
     box-sizing: border-box;
-    padding: calc(var(--square) + 8px) 0 24px;
-    overflow-y: auto;
-    background: var(--accent, #e8f0d4);
-    transform: translateX(-100%);
-    visibility: hidden;
-    transition: transform var(--slide-ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear var(--slide-ms);
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
   }
-  #quick-nav.open #quick-list {
-    transform: translateX(0);
-    visibility: visible;
-    transition: transform var(--slide-ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
-  }
-  /* DROPDOWN_ANIMATION = false: open and close instantly. */
-  .no-dropdown-animation #quick-nav,
-  .no-dropdown-animation #quick-nav.show,
-  .no-dropdown-animation #quick-list,
-  .no-dropdown-animation #quick-nav.open #quick-list,
-  .no-dropdown-animation #quick-toggle .bar {
-    transition: none;
-  }
+  #quick-list::-webkit-scrollbar { display: none; }
   #quick-list a {
-    padding: 10px 16px;
+    flex: none;
+    padding: 8px 12px;
     color: var(--fg);
-    font-size: calc(var(--body-size) * 0.7);
+    font-size: calc(var(--body-size) * 0.6);
     letter-spacing: var(--menu-spacing-hover);
     text-transform: uppercase;
     text-decoration: none;
@@ -500,13 +457,6 @@
   </div>
 
   <nav id="quick-nav" aria-label="Menu">
-    <button id="quick-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="quick-list">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-        <line class="bar bar-top" x1="4" y1="6" x2="20" y2="6"/>
-        <line class="bar bar-mid" x1="4" y1="12" x2="20" y2="12"/>
-        <line class="bar bar-bottom" x1="4" y1="18" x2="20" y2="18"/>
-      </svg>
-    </button>
     <div id="quick-list"></div>
   </nav>
 
@@ -600,7 +550,7 @@ function startGallery() {
   const SMOOTH_LINKS = setting('SECTION_LINKS_SCROLL_SMOOTHLY', true);
   const SECTION_SCROLL_MS = Math.max(0, setting('SECTION_SCROLL_MS', 1000));
   const SECTION_MARGIN = Math.max(0, setting('SECTION_SCROLL_MARGIN', 96));
-  document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
+  document.documentElement.classList.toggle('no-top-menu-animation', !setting('TOP_MENU_ANIMATION', true));
   // Rounded photo corners: a size in pixels, or a percentage of each photo's
   // shorter side.
   const CORNERS_ON = setting('PHOTO_ROUNDED_CORNERS', true);
@@ -609,7 +559,7 @@ function startGallery() {
 
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--accent', setting('ACCENT_COLOR', '#e8f0d4'));
-  rootStyle.setProperty('--dropdown-width', Math.max(120, setting('DROPDOWN_WIDTH', 300)) + 'px');
+  rootStyle.setProperty('--top-menu-height', Math.max(24, setting('TOP_MENU_HEIGHT', 56)) + 'px');
   rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
   rootStyle.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
 
@@ -668,6 +618,10 @@ function startGallery() {
   // spacing) keeps the option exactly the same size at all times, so it stays
   // centered and can't flicker under the pointer.
   let farthestTravel = 1;
+  // Optional limit (in letters' widths from the middle) on how far a word's
+  // outer letters move. The top menu bar uses it so every option spreads by
+  // the same amount and the gaps between options stay even.
+  let spreadCap = Infinity;
   function letterTravel(chars, spread, jitter) {
     return Math.hypot(((chars - 1) / 2) * spread, jitter);
   }
@@ -677,7 +631,9 @@ function startGallery() {
     link.dataset.label = label;
     const chars = [...label];
     const size = parseFloat(getComputedStyle(link).fontSize) || 18;
-    const spread = LETTER_SPREAD * size;   // extra gap per letter, at rest
+    // Extra gap per letter, at rest (capped so the outer letters move at most
+    // spreadCap letter-spreads from the middle).
+    const spread = LETTER_SPREAD * size * Math.min(1, spreadCap / Math.max(1e-6, (chars.length - 1) / 2));
     const jitter = LETTER_OFFSET * size;   // how far up or down each letter starts
 
     // Deterministic per letter, so a page never redraws differently.
@@ -752,7 +708,7 @@ function startGallery() {
     if (!links.length) return;
     const size = parseFloat(getComputedStyle(links[0]).fontSize) || 18;
     const longest = Math.max(...links.map((a) => (a.dataset.label || a.textContent).length), 1);
-    farthestTravel = Math.max(1, letterTravel(longest, LETTER_SPREAD * size, LETTER_OFFSET * size));
+    farthestTravel = Math.max(1, letterTravel(Math.min(longest, 2 * spreadCap + 1), LETTER_SPREAD * size, LETTER_OFFSET * size));
     links.forEach((link, i) => layOutLetters(link, i + seedOffset));
   }
   const layOutMenu = () => {
@@ -881,7 +837,6 @@ function startGallery() {
   const world = document.getElementById('world');
   const menu = document.getElementById('menu');
   const quickNav = document.getElementById('quick-nav');
-  const quickToggle = document.getElementById('quick-toggle');
   const quickList = document.getElementById('quick-list');
   const photoCanvas = document.getElementById('photos');
   const photoCtx = photoCanvas.getContext('2d');
@@ -2093,52 +2048,38 @@ function startGallery() {
     if (dragDistance > 4) e.preventDefault();
   }));
 
-  // ---- Menu button and dropdown ---------------------------------------------
-  // The dropdown lists the same options as the main menu (built from
-  // MENU_ITEMS), and the button only appears once the main menu is off screen.
-  // First option: Home, which glides back to the main menu.
+  // ---- Menu bar across the top ----------------------------------------------
+  // The bar lists the same options as the main menu (built from MENU_ITEMS)
+  // and only appears once the main menu is off screen. First option: Home,
+  // which glides back to the main menu.
   const homeLink = document.createElement('a');
   homeLink.href = '#';
-  homeLink.textContent = String(setting('DROPDOWN_HOME_LABEL', 'Home')).trim() || 'Home';
+  homeLink.textContent = String(setting('TOP_MENU_HOME_LABEL', 'Home')).trim() || 'Home';
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
-    setQuickOpen(false);
     goHome();
   });
   quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
     const copy = document.createElement('a');
     copy.href = link.getAttribute('href');
     copy.textContent = link.dataset.label || link.textContent;
-    copy.addEventListener('click', () => setQuickOpen(false));
     return copy;
   }));
-  // Same letter hover as the main menu (without the underline). Every option
-  // gets the same side padding, sized for the longest one, so they stay
-  // lined up on the left and the list never changes width.
+  // Same letter hover as the main menu (without the underline). Each option
+  // has room for its spread-out letters, so the bar never shifts.
   quickList.classList.toggle('hover-expands', menu.classList.contains('hover-expands'));
   const quickLinks = [...quickList.querySelectorAll('a')];
   const layOutQuick = () => {
+    // Every option spreads as far as a 6-letter word would, and gets the
+    // same room for it, so the gaps between options are all the same.
+    spreadCap = 2.5;
     layOutGroup(quickLinks, 100);
+    spreadCap = Infinity;
     const room = Math.max(0, ...quickLinks.map((a) => parseFloat(a.style.getPropertyValue('--spread-room')) || 0));
-    quickLinks.forEach((a) => { a.style.paddingLeft = a.style.paddingRight = (16 + room).toFixed(1) + 'px'; });
+    quickLinks.forEach((a) => { a.style.paddingLeft = a.style.paddingRight = (12 + room).toFixed(1) + 'px'; });
   };
   layOutQuick();
   if (document.fonts) document.fonts.ready.then(layOutQuick);
-  let quickOpen = false;
-  function setQuickOpen(open) {
-    quickOpen = open;
-    quickNav.classList.toggle('open', open);
-    quickToggle.classList.toggle('open', open);
-    quickToggle.setAttribute('aria-expanded', String(open));
-    quickToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
-  }
-  quickToggle.addEventListener('click', () => setQuickOpen(!quickOpen));
-  document.addEventListener('pointerdown', (e) => {
-    if (quickOpen && !quickNav.contains(e.target)) setQuickOpen(false);
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && quickOpen) { setQuickOpen(false); quickToggle.focus(); }
-  });
   let quickShown = false;
   // originX/originY: where the menu's centre is on screen; scale: the zoom.
   function updateQuickNav(originX, originY, scale, W, H) {
@@ -2147,7 +2088,6 @@ function startGallery() {
     if (menuOnScreen === !quickShown) return;
     quickShown = !menuOnScreen;
     quickNav.classList.toggle('show', quickShown);
-    if (!quickShown) setQuickOpen(false);
   }
 
   // The menu's size decides where photos can't go; rebuild if it changes.
@@ -2193,7 +2133,7 @@ function startGallery() {
       if (location.hash && window.scrollY > readHomeTop() + 1) scrollToHash();
     });
     // Back and Forward move between the sections visited from the menu.
-    // Menu options (home screen and sidebar) glide to their section. Ctrl-,
+    // Menu options (home screen and top bar) glide to their section. Ctrl-,
     // Shift- or middle-clicks are left alone so "open in new tab" still works.
     document.addEventListener('click', (e) => {
       const link = e.target.closest('#menu a, #quick-list a');
