@@ -1,4 +1,4 @@
-// Shared by every menu page (operations.html, cost.html, ...) and 404.html.
+// Shared by every menu page (people.html, cost.html, ...) and 404.html.
 // Each page file names itself in <body data-page="...">; 404.html works it out
 // from the address instead, so an option added in settings.txt still gets a
 // working page on a web server before its own file exists.
@@ -30,7 +30,7 @@ function setting(name, fallback) {
   return value;
 }
 
-// "Learning" -> "learning", "FAQs" -> "faqs". Must match
+// "Parenting-Learning" -> "parenting-learning", "FAQs" -> "faqs". Must match
 // pageSlug() in index.html.
 function pageSlug(name) {
   return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
