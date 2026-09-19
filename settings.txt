@@ -204,8 +204,12 @@ TOP_MENU_TEXT_SIZE = 17
 TOP_MENU_HOVER_LETTER_SPACING = 0.5
 TOP_MENU_HOVER_SPEED_MS = 250
 
-// Fade the menu bar in and out (true), or show and hide it instantly (false).
+// Slide the menu bar down from the top of the screen when it appears, and
+// back up when it goes (true), or show and hide it instantly (false).
 TOP_MENU_ANIMATION = true
+
+// How long that slide takes, in milliseconds.
+TOP_MENU_SLIDE_MS = 350
 
 // The menu bar's first option, which takes you back to the main menu.
 TOP_MENU_HOME_LABEL = "Home"
@@ -222,14 +226,14 @@ MENU_TITLE = "The School From Scratch"
 // comma. Reorder, add, or remove lines to change the menu.
 //
 // Each option opens its own page file, named after it in lowercase with
-// dashes: "Parenting-Learning" opens parenting-learning.html. When you add a new
+// dashes: "People" opens people.html. When you add a new
 // option, copy cost.html, rename the copy to match, and change the name in its
 // data-page="..." line. (Until you do, it still works on a web server, but not
 // when index.html is opened straight from the folder.)
 MENU_ITEMS = [
   "Approach",
   "People",
-  "Parenting-Learning",
+  "Parent-Learning",
   "Logistics",
   "Cost",
   "FAQs",
@@ -313,7 +317,7 @@ MENU_LETTER_STAGGER_MS = 0
 //
 // Each section's text is its own file in the "sections" folder, named after
 // the menu option in lowercase with dashes: People -> sections/people.md,
-// Parenting-Learning -> sections/parenting-learning.md. Edit a file, save it,
+// Parent-Learning -> sections/parent-learning.md. Edit a file, save it,
 // and reload the page. A missing or empty file shows "Under Development".
 // The section's heading is the menu option's name, so don't repeat it.
 //

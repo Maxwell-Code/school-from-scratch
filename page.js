@@ -30,7 +30,7 @@ function setting(name, fallback) {
   return value;
 }
 
-// "Parenting-Learning" -> "parenting-learning", "FAQs" -> "faqs". Must match
+// "Parent-Learning" -> "parent-learning", "FAQs" -> "faqs". Must match
 // pageSlug() in index.html.
 function pageSlug(name) {
   return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');

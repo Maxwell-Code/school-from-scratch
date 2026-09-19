@@ -363,14 +363,17 @@
     z-index: 2;
     height: var(--top-menu-height, 56px);
     background: var(--accent, #e8f0d4);
-    opacity: 0;
+    /* Hidden above the top of the screen; slides down when shown and back
+       up when the main menu comes back into view. */
+    transform: translateY(-100%);
     visibility: hidden;
-    transition: opacity 250ms ease, visibility 0s linear 250ms;
+    transition: transform var(--top-menu-slide-ms, 350ms) cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear var(--top-menu-slide-ms, 350ms);
   }
   #quick-nav.show {
-    opacity: 1;
+    transform: translateY(0);
     visibility: visible;
-    transition: opacity 250ms ease, visibility 0s;
+    transition: transform var(--top-menu-slide-ms, 350ms) cubic-bezier(0.22, 1, 0.36, 1), visibility 0s;
   }
   /* TOP_MENU_ANIMATION = false: appear and disappear instantly. */
   .no-top-menu-animation #quick-nav,
@@ -452,7 +455,7 @@
         <nav>
           <a href="people.html">People</a>
           <a href="approach.html">Approach</a>
-          <a href="parenting-learning.html">Parenting-Learning</a>
+          <a href="parent-learning.html">Parent-Learning</a>
           <a href="logistics.html">Logistics</a>
           <a href="cost.html">Cost</a>
           <a href="faqs.html">FAQs</a>
@@ -495,8 +498,8 @@ function loadSettings() {
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-// Menu option name -> its page file name: "Parenting-Learning" ->
-// "parenting-learning", "FAQs" -> "faqs". Must match pageSlug() in page.js.
+// Menu option name -> its page file name: "Parent-Learning" ->
+// "parent-learning", "FAQs" -> "faqs". Must match pageSlug() in page.js.
 function pageSlug(name) {
   return String(name).trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 }
@@ -564,6 +567,7 @@ function startGallery() {
 
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--accent', setting('ACCENT_COLOR', '#e8f0d4'));
+  rootStyle.setProperty('--top-menu-slide-ms', Math.max(0, setting('TOP_MENU_SLIDE_MS', 350)) + 'ms');
   rootStyle.setProperty('--top-menu-height', Math.max(24, setting('TOP_MENU_HEIGHT', 64)) + 'px');
   rootStyle.setProperty('--top-menu-text-size', Math.max(8, setting('TOP_MENU_TEXT_SIZE', 17)) + 'px');
   rootStyle.setProperty('--top-menu-hover-spacing', setting('TOP_MENU_HOVER_LETTER_SPACING', 0.3) + 'em');
