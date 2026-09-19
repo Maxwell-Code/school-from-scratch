@@ -193,8 +193,16 @@ TEXT_COLOR = "#0b1105"
 ACCENT_COLOR = "#dfeac0"
 
 // The menu bar across the top appears once the main menu has been scrolled
-// off screen. Its height, in pixels:
-TOP_MENU_HEIGHT = 56
+// off screen. Its height, and the size of its text, in pixels:
+TOP_MENU_HEIGHT = 64
+TOP_MENU_TEXT_SIZE = 17
+
+// Hovering an option in the menu bar spreads its letters apart, nudging the
+// options beside it. Letter spacing while hovered, as a fraction of the
+// letter size (at rest it uses MENU_LETTER_SPACING_HOVER), and how long the
+// spreading takes, in milliseconds.
+TOP_MENU_HOVER_LETTER_SPACING = 0.3
+TOP_MENU_HOVER_SPEED_MS = 250
 
 // Fade the menu bar in and out (true), or show and hide it instantly (false).
 TOP_MENU_ANIMATION = true

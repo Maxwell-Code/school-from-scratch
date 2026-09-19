@@ -335,20 +335,15 @@
   }
   #menu a:hover .menu-letter,
   #menu a:focus-visible .menu-letter,
-  #quick-list a:hover .menu-letter,
-  #quick-list a:focus-visible .menu-letter,
   #menu.measuring .menu-letter {
     /* Settled: letters draw together and line up. */
     transform: translate(0, 0);
   }
   #menu.measuring .menu-letter { transition: none; }
   /* Reversed (MENU_HOVER_EXPANDS): letters rest tidy and spread out on hover. */
-  #menu.hover-expands .menu-letter,
-  #quick-list.hover-expands .menu-letter { transform: translate(0, 0); }
+  #menu.hover-expands .menu-letter { transform: translate(0, 0); }
   #menu.hover-expands a:hover .menu-letter,
-  #menu.hover-expands a:focus-visible .menu-letter,
-  #quick-list.hover-expands a:hover .menu-letter,
-  #quick-list.hover-expands a:focus-visible .menu-letter {
+  #menu.hover-expands a:focus-visible .menu-letter {
     transform: translate(var(--dx, 0px), var(--dy, 0px));
   }
   /* ...and the underline stretches to the spread-out word. */
@@ -392,15 +387,25 @@
     scrollbar-width: none;
   }
   #quick-list::-webkit-scrollbar { display: none; }
+  /* Hovering an option spreads its letters a little, which nudges the
+     options beside it aside; they slide back when the pointer leaves. */
   #quick-list a {
     flex: none;
-    padding: 8px 12px;
+    padding: 8px 14px;
     color: var(--fg);
-    font-size: calc(var(--body-size) * 0.6);
+    font-size: var(--top-menu-text-size, 17px);
     letter-spacing: var(--menu-spacing-hover);
+    text-indent: var(--menu-spacing-hover);
     text-transform: uppercase;
     text-decoration: none;
     white-space: nowrap;
+    transition: letter-spacing var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1),
+      text-indent var(--top-menu-hover-ms, 250ms) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  #quick-list a:hover,
+  #quick-list a:focus-visible {
+    letter-spacing: var(--top-menu-hover-spacing, 0.3em);
+    text-indent: var(--top-menu-hover-spacing, 0.3em);
   }
   #quick-list a:focus-visible { outline: none; }
 
@@ -559,7 +564,10 @@ function startGallery() {
 
   const rootStyle = document.documentElement.style;
   rootStyle.setProperty('--accent', setting('ACCENT_COLOR', '#e8f0d4'));
-  rootStyle.setProperty('--top-menu-height', Math.max(24, setting('TOP_MENU_HEIGHT', 56)) + 'px');
+  rootStyle.setProperty('--top-menu-height', Math.max(24, setting('TOP_MENU_HEIGHT', 64)) + 'px');
+  rootStyle.setProperty('--top-menu-text-size', Math.max(8, setting('TOP_MENU_TEXT_SIZE', 17)) + 'px');
+  rootStyle.setProperty('--top-menu-hover-spacing', setting('TOP_MENU_HOVER_LETTER_SPACING', 0.3) + 'em');
+  rootStyle.setProperty('--top-menu-hover-ms', Math.max(0, setting('TOP_MENU_HOVER_SPEED_MS', 250)) + 'ms');
   rootStyle.setProperty('--bg', setting('BACKGROUND_COLOR', '#000000'));
   rootStyle.setProperty('--fg', setting('TEXT_COLOR', '#ffffff'));
 
@@ -618,10 +626,6 @@ function startGallery() {
   // spacing) keeps the option exactly the same size at all times, so it stays
   // centered and can't flicker under the pointer.
   let farthestTravel = 1;
-  // Optional limit (in letters' widths from the middle) on how far a word's
-  // outer letters move. The top menu bar uses it so every option spreads by
-  // the same amount and the gaps between options stay even.
-  let spreadCap = Infinity;
   function letterTravel(chars, spread, jitter) {
     return Math.hypot(((chars - 1) / 2) * spread, jitter);
   }
@@ -631,9 +635,7 @@ function startGallery() {
     link.dataset.label = label;
     const chars = [...label];
     const size = parseFloat(getComputedStyle(link).fontSize) || 18;
-    // Extra gap per letter, at rest (capped so the outer letters move at most
-    // spreadCap letter-spreads from the middle).
-    const spread = LETTER_SPREAD * size * Math.min(1, spreadCap / Math.max(1e-6, (chars.length - 1) / 2));
+    const spread = LETTER_SPREAD * size;   // extra gap per letter, at rest
     const jitter = LETTER_OFFSET * size;   // how far up or down each letter starts
 
     // Deterministic per letter, so a page never redraws differently.
@@ -708,7 +710,7 @@ function startGallery() {
     if (!links.length) return;
     const size = parseFloat(getComputedStyle(links[0]).fontSize) || 18;
     const longest = Math.max(...links.map((a) => (a.dataset.label || a.textContent).length), 1);
-    farthestTravel = Math.max(1, letterTravel(Math.min(longest, 2 * spreadCap + 1), LETTER_SPREAD * size, LETTER_OFFSET * size));
+    farthestTravel = Math.max(1, letterTravel(longest, LETTER_SPREAD * size, LETTER_OFFSET * size));
     links.forEach((link, i) => layOutLetters(link, i + seedOffset));
   }
   const layOutMenu = () => {
@@ -2065,21 +2067,6 @@ function startGallery() {
     copy.textContent = link.dataset.label || link.textContent;
     return copy;
   }));
-  // Same letter hover as the main menu (without the underline). Each option
-  // has room for its spread-out letters, so the bar never shifts.
-  quickList.classList.toggle('hover-expands', menu.classList.contains('hover-expands'));
-  const quickLinks = [...quickList.querySelectorAll('a')];
-  const layOutQuick = () => {
-    // Every option spreads as far as a 6-letter word would, and gets the
-    // same room for it, so the gaps between options are all the same.
-    spreadCap = 2.5;
-    layOutGroup(quickLinks, 100);
-    spreadCap = Infinity;
-    const room = Math.max(0, ...quickLinks.map((a) => parseFloat(a.style.getPropertyValue('--spread-room')) || 0));
-    quickLinks.forEach((a) => { a.style.paddingLeft = a.style.paddingRight = (12 + room).toFixed(1) + 'px'; });
-  };
-  layOutQuick();
-  if (document.fonts) document.fonts.ready.then(layOutQuick);
   let quickShown = false;
   // originX/originY: where the menu's centre is on screen; scale: the zoom.
   function updateQuickNav(originX, originY, scale, W, H) {
