@@ -27,9 +27,10 @@
 GALLERY_ENABLED = true
 
 // How visitors move around the photo landscape:
-//   "read"    = like a normal website: scroll up and down only (mouse wheel,
-//               arrow keys, Page Up/Down, or swiping on a phone). No dragging,
-//               no sideways movement, no zooming.
+//   "read"    = a normal scrolling webpage: the browser scrolls it like any
+//               other site (mouse wheel, middle-click, scrollbar, keys,
+//               swiping on a phone). No dragging, no sideways movement, no
+//               zooming.
 //   "explore" = move in any direction by dragging, arrow keys, or swiping, and
 //               zoom in and out with the mouse wheel or a pinch.
 GALLERY_MODE = "read"
@@ -38,12 +39,6 @@ GALLERY_MODE = "read"
 // 0 = the top of the page is where Home takes you.
 READ_MODE_SCROLL_ABOVE_HOME = 0
 
-// Middle-click scrolling: click the mouse wheel and move the mouse away from
-// the marker to scroll (farther = faster); click again to stop. Or hold it,
-// drag, and let go. (true or false, no quotes)
-MIDDLE_CLICK_SCROLL = true
-// How fast it scrolls. 1 = normal, 2 = twice as fast, 0.5 = half.
-MIDDLE_CLICK_SCROLL_SPEED = 1
 
 
 // -----------------------------------------------------------------------------
@@ -191,8 +186,8 @@ HOME_TRAVEL_MS = 800
 //  COLORS
 // -----------------------------------------------------------------------------
 
-BACKGROUND_COLOR = "#fffcee"
-TEXT_COLOR = "#283c12"
+BACKGROUND_COLOR = "#fffef7"
+TEXT_COLOR = "#0b1105"
 
 // Accent color: fills the menu square in the top-left corner and the sidebar
 // it opens. #e8f0d4

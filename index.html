@@ -44,26 +44,37 @@
     -webkit-user-select: none;
   }
   #viewport.dragging { cursor: grabbing; }
-  /* Middle-click scrolling: a marker where the button was pressed. */
-  #autoscroll-mark {
-    position: fixed;
-    z-index: 3;
-    display: none;
-    width: 30px;
-    height: 30px;
-    margin: -15px 0 0 -15px;
-    border-radius: 50%;
-    background: var(--bg);
-    color: var(--fg);
-    box-shadow: 0 0 0 1.5px var(--fg);
+  /* Read mode is an ordinary scrolling page: the browser scrolls it, and the
+     photos are normal images laid out down the page. */
+  html.read-mode,
+  html.read-mode body {
+    height: auto;
+    overflow-x: hidden;
+  }
+  html.read-mode { overflow-y: auto; }
+  html.read-mode body { overflow: visible; }
+  .read-mode #viewport {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    cursor: default;
+    touch-action: auto;
+  }
+  .read-mode #photos { display: none; }
+  .read-mode #grid { position: fixed; width: 100vw; height: 100vh; }
+  #read-photos {
+    position: absolute;
+    inset: 0;
     pointer-events: none;
   }
-  #autoscroll-mark.on { display: block; }
-  #autoscroll-mark svg { display: block; width: 100%; height: 100%; }
-  #viewport.autoscrolling { cursor: all-scroll; }
-  .read-mode #viewport.autoscrolling { cursor: ns-resize; }
-  .read-mode #viewport,
-  .read-mode #viewport.dragging { cursor: default; }
+  .read-photo {
+    position: absolute;
+    line-height: 0;
+    opacity: 0;
+    transition: opacity var(--photo-fade-in, 500ms) ease;
+  }
+  .read-photo.loaded { opacity: 1; }
+  .read-photo img { display: block; }
 
   /* Faint background grid (drawn by the script), optionally fading out
      toward the screen edges. */
@@ -510,8 +521,6 @@ function startGallery() {
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
   const HOME_MS = Math.max(1, setting('HOME_TRAVEL_MS', 800));
   const ABOVE_HOME = Math.max(0, setting('READ_MODE_SCROLL_ABOVE_HOME', 0));
-  const AUTOSCROLL_ON = setting('MIDDLE_CLICK_SCROLL', true);
-  const AUTOSCROLL_SPEED = Math.max(0, setting('MIDDLE_CLICK_SCROLL_SPEED', 1));
   document.documentElement.classList.toggle('no-dropdown-animation', !setting('DROPDOWN_ANIMATION', true));
   // Rounded photo corners: a size in pixels, or a percentage of each photo's
   // shorter side.
@@ -1127,16 +1136,8 @@ function startGallery() {
   let lastCam = {}, moving = false, settleTimer = 0;
   // In read mode the view stays centered sideways at normal zoom, and only
   // scrolls as far up and down as there are photos.
-  let readScale = 1;
-  function keepReadView() {
-    if (!READ_MODE) return;
-    cam.x = 0;
-    cam.s = readScale;
-    cam.y = clamp(cam.y, -Math.min(ABOVE_HOME, END_DISTANCE), END_DISTANCE);
-  }
-
   function render() {
-    keepReadView();
+    if (READ_MODE) return readFrame();
     if (!perfOn) return drawFrame();
     const t0 = performance.now();
     drawFrame();
@@ -1546,6 +1547,10 @@ function startGallery() {
 
   // Glide back to the main menu at normal zoom.
   function goHome() {
+    if (READ_MODE) {
+      window.scrollTo({ top: readHomeTop(), behavior: 'smooth' });
+      return;
+    }
     stopAnim();
     const from = { ...cam };
     const to = { x: 0, y: 0, s: homeScale() };
@@ -1563,83 +1568,103 @@ function startGallery() {
     animFrame = requestAnimationFrame(step);
   }
 
-  // ---- Middle-click scrolling ----------------------------------------------
-  // Works like the browser's own: click the middle button and move the mouse
-  // away from the marker to scroll (farther = faster), then click to stop. Or
-  // hold the button, drag, and let go to stop. Read mode scrolls up and down
-  // only. (The browser can't do it itself because this page draws its own view.)
-  const AUTOSCROLL_DEAD = 12; // pixels around the marker that don't scroll
-  const autoMark = document.createElement('div');
-  autoMark.id = 'autoscroll-mark';
-  autoMark.innerHTML = READ_MODE
-    ? '<svg viewBox="0 0 30 30" fill="currentColor" aria-hidden="true"><path d="M15 6l4 5h-8zM15 24l4-5h-8z"/><circle cx="15" cy="15" r="1.6"/></svg>'
-    : '<svg viewBox="0 0 30 30" fill="currentColor" aria-hidden="true"><path d="M15 5l3.5 4.5h-7zM15 25l3.5-4.5h-7zM5 15l4.5-3.5v7zM25 15l-4.5-3.5v7z"/><circle cx="15" cy="15" r="1.6"/></svg>';
-  document.body.appendChild(autoMark);
-  let auto = null;
-  let swallowClick = false;
-  function stopAutoscroll() {
-    if (!auto) return;
-    cancelAnimationFrame(auto.frame);
-    auto = null;
-    autoMark.classList.remove('on');
-    viewport.classList.remove('autoscrolling');
+  // ---- Read mode: an ordinary scrolling page -------------------------------
+  // The page is as tall as the photo landscape, the menu sits near the top,
+  // and every photo in a screen-wide column is a normal image placed down the
+  // page. The browser does all the scrolling (wheel, middle-click, scrollbar,
+  // keys, touch), so the rest of this file only runs in explore mode.
+  const readLayer = document.createElement('div');
+  readLayer.id = 'read-photos';
+  let readGeo = null; // { W, H, s, top } where top = page position of the menu's centre
+  function readGeometry() {
+    const W = window.innerWidth, H = window.innerHeight, s = homeScale();
+    return { W, H, s, top: H / 2 + Math.min(ABOVE_HOME, END_DISTANCE) * s };
   }
-  function startAutoscroll(e) {
-    stopAnim();
-    auto = { ax: e.clientX, ay: e.clientY, x: e.clientX, y: e.clientY, moved: false, last: performance.now(), frame: 0 };
-    autoMark.style.left = e.clientX + 'px';
-    autoMark.style.top = e.clientY + 'px';
-    autoMark.classList.add('on');
-    viewport.classList.add('autoscrolling');
-    const rate = (d) => {
-      const past = Math.abs(d) - AUTOSCROLL_DEAD;
-      return past > 0 ? Math.sign(d) * past * 5 * AUTOSCROLL_SPEED : 0; // screen px per second
-    };
-    const step = (now) => {
-      if (!auto) return;
-      const dt = Math.min(50, now - auto.last) / 1000;
-      auto.last = now;
-      const vx = READ_MODE ? 0 : rate(auto.x - auto.ax), vy = rate(auto.y - auto.ay);
-      if (vx || vy) {
-        cam.x += (vx * dt) / cam.s;
-        cam.y += (vy * dt) / cam.s;
-        render();
+  // Scroll position that puts the main menu in the middle of the screen.
+  function readHomeTop() {
+    return readGeo ? readGeo.top - readGeo.H / 2 : 0;
+  }
+
+  function buildReadPage() {
+    const before = readGeo;
+    const worldAtTop = before ? (window.scrollY - before.top) / before.s : null;
+    const g = readGeo = readGeometry();
+    cam.s = g.s;
+    cam.x = 0;
+    world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
+    viewport.style.height = Math.ceil(g.top + END_DISTANCE * g.s + g.H / 2) + 'px';
+    if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
+
+    if (photos.length) {
+      // Every photo that falls in the screen-wide column, top to bottom.
+      const halfW = g.W / 2 / g.s;
+      const worldTop = -g.top / g.s, worldBottom = END_DISTANCE + g.H / 2 / g.s;
+      const cx0 = Math.floor((-halfW - PAD) / CHUNK), cx1 = Math.floor((halfW + PAD) / CHUNK);
+      const cy0 = Math.floor((worldTop - PAD) / CHUNK), cy1 = Math.floor((worldBottom + PAD) / CHUNK);
+      const els = [];
+      for (let cy = cy0; cy <= cy1; cy++) {
+        for (let cx = cx0; cx <= cx1; cx++) {
+          for (const it of chunkLayout(cx, cy)) {
+            if (!it.kept || Math.abs(it.x) - it.hw > halfW || it.y + it.hh < worldTop) continue;
+            els.push(readPhoto(it, g));
+          }
+        }
       }
-      auto.frame = requestAnimationFrame(step);
-    };
-    auto.frame = requestAnimationFrame(step);
-  }
-  window.addEventListener('pointerdown', (e) => {
-    if (auto) {
-      // Any click while scrolling just stops it.
-      stopAutoscroll();
-      e.preventDefault();
-      e.stopPropagation();
-      swallowClick = true;
-      return;
+      readLayer.replaceChildren(...els);
+      stats.photos = els.length;
     }
-    if (!AUTOSCROLL_ON || e.pointerType !== 'mouse' || e.button !== 1) return;
-    if (!viewport.contains(e.target) || e.target.closest('a')) return; // middle-click on a link opens it in a new tab
-    e.preventDefault();
-    startAutoscroll(e);
-  }, true);
-  window.addEventListener('mousedown', (e) => { if (e.button === 1 && viewport.contains(e.target) && !e.target.closest('a')) e.preventDefault(); });
-  window.addEventListener('pointermove', (e) => {
-    if (!auto) return;
-    auto.x = e.clientX;
-    auto.y = e.clientY;
-    if (Math.hypot(auto.x - auto.ax, auto.y - auto.ay) > AUTOSCROLL_DEAD) auto.moved = true;
-  });
-  window.addEventListener('pointerup', (e) => {
-    // Held and dragged: letting go stops. A plain click keeps scrolling.
-    if (auto && e.button === 1 && auto.moved) stopAutoscroll();
-  });
-  window.addEventListener('click', (e) => {
-    if (swallowClick) { swallowClick = false; e.preventDefault(); e.stopPropagation(); }
-  }, true);
-  window.addEventListener('wheel', stopAutoscroll, { passive: true });
-  window.addEventListener('keydown', stopAutoscroll);
-  window.addEventListener('blur', stopAutoscroll);
+    stats.mode = 'read mode: normal page scrolling';
+    // Keep the same part of the page on screen when the window is resized.
+    if (worldAtTop !== null) window.scrollTo(0, g.top + worldAtTop * g.s);
+    readFrame();
+  }
+
+  function readPhoto(it, g) {
+    const photo = photos[it.index];
+    const el = document.createElement('div');
+    el.className = 'read-photo';
+    const r = cornerRadius(it) * g.s;
+    Object.assign(el.style, {
+      left: (g.W / 2 + (it.x - it.hw) * g.s).toFixed(1) + 'px',
+      top: (g.top + (it.y - it.hh) * g.s).toFixed(1) + 'px',
+      padding: FRAME_PADDING * g.s + 'px',
+      border: FRAME_BORDER > 0 ? `${FRAME_BORDER * g.s}px solid ${FRAME_COLOR}` : 'none',
+      background: FRAME_FILL,
+      borderRadius: r + 'px',
+    });
+    const img = new Image();
+    img.alt = '';
+    img.decoding = 'async';
+    img.loading = 'lazy';
+    img.draggable = false;
+    img.width = Math.round(it.w * g.s);
+    img.height = Math.round(it.h * g.s);
+    img.style.borderRadius = Math.max(0, r - FRAME * g.s) + 'px';
+    img.onload = () => el.classList.add('loaded');
+    img.src = IMAGE_DIR + photo.file;
+    el.appendChild(img);
+    return el;
+  }
+
+  // Runs on scroll: shows the menu button once the main menu is off screen,
+  // keeps the (optional) grid lined up, and feeds the performance panel.
+  function readFrame() {
+    if (!readGeo) return;
+    const g = readGeo;
+    const originY = g.top - window.scrollY;
+    cam.y = (window.scrollY + g.H / 2 - g.top) / g.s;
+    updateQuickNav(g.W / 2, originY, g.s, g.W, g.H);
+    if (GRID_ON) {
+      const c = prepareCanvas(gridCanvas, gridCtx, window.devicePixelRatio || 1);
+      paintGrid(gridCtx, c.w, c.h, g.W / 2, originY, g.s);
+    }
+    if (perfOn) {
+      const t = performance.now();
+      stats.log.push({ t, js: 0, gap: stats.lastFrameAt && t - stats.lastFrameAt < 250 ? t - stats.lastFrameAt : 0 });
+      stats.lastFrameAt = t;
+      stats.totalFrames++;
+    }
+  }
 
   // ---- Input: drag, pinch, wheel, keys ------------------------------------
   const pointers = new Map();
@@ -1650,7 +1675,7 @@ function startGallery() {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     // Read mode: no dragging with a mouse or pen; a finger can still swipe
     // the page up and down, like scrolling on a phone.
-    if (READ_MODE && e.pointerType !== 'touch') return;
+    if (READ_MODE) return;
     stopAnim();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     samples = [];
@@ -1706,16 +1731,7 @@ function startGallery() {
   viewport.addEventListener('pointercancel', endPointer);
 
   viewport.addEventListener('wheel', (e) => {
-    if (READ_MODE) {
-      // Ctrl + wheel is left to the browser's own zoom (for readability).
-      if (e.ctrlKey) return;
-      e.preventDefault();
-      stopAnim();
-      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1;
-      cam.y += (e.deltaY * unit) / cam.s;
-      requestRender();
-      return;
-    }
+    if (READ_MODE) return; // the browser scrolls the page itself
     // Explore mode: scrolling zooms in and out around the pointer.
     e.preventDefault();
     stopAnim();
@@ -1728,19 +1744,10 @@ function startGallery() {
   }, { passive: false });
 
   // Safari trackpad gestures would otherwise zoom the whole page.
-  document.addEventListener('gesturestart', (e) => e.preventDefault());
+  document.addEventListener('gesturestart', (e) => { if (!READ_MODE) e.preventDefault(); });
 
   window.addEventListener('keydown', (e) => {
-    if (READ_MODE) {
-      const page = window.innerHeight * 0.85 / cam.s;
-      const moves = { ArrowUp: -KEY_STEP / cam.s, ArrowDown: KEY_STEP / cam.s, PageUp: -page, PageDown: page, ' ': e.shiftKey ? -page : page };
-      if (moves[e.key] === undefined || e.ctrlKey || e.metaKey || e.altKey) return;
-      e.preventDefault();
-      stopAnim();
-      cam.y += moves[e.key];
-      requestRender();
-      return;
-    }
+    if (READ_MODE) return; // the browser handles the keys
     const step = KEY_STEP / cam.s;
     const moves = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] };
     if (moves[e.key]) {
@@ -1829,17 +1836,37 @@ function startGallery() {
     revealed.clear();
   }
 
-  window.addEventListener('resize', () => { measureMenu(); readScale = homeScale(); requestRender(); });
-
   // ---- Start --------------------------------------------------------------
   measureMenu();
-  if (document.fonts) document.fonts.ready.then(() => { measureMenu(); readScale = homeScale(); requestRender(); });
-  cam.s = readScale = homeScale();
-  render();
-  loadPhotos().then((list) => {
-    photos = list;
+  if (READ_MODE) {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    document.documentElement.classList.remove('grid-merged'); // grid gets its own layer here
+    rootStyle.setProperty('--photo-fade-in', FADE_IN_MS + 'ms');
+    let scrollQueued = false;
+    window.addEventListener('scroll', () => {
+      if (scrollQueued) return;
+      scrollQueued = true;
+      requestAnimationFrame(() => { scrollQueued = false; readFrame(); });
+    }, { passive: true });
+    let resizeTimer = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { measureMenu(); buildReadPage(); }, 150);
+    });
+    buildReadPage();
+    window.scrollTo(0, readHomeTop());
+    if (document.fonts) document.fonts.ready.then(() => { measureMenu(); buildReadPage(); });
+    loadPhotos().then((list) => { photos = list; buildReadPage(); });
+  } else {
+    window.addEventListener('resize', () => { measureMenu(); requestRender(); });
+    if (document.fonts) document.fonts.ready.then(() => { measureMenu(); requestRender(); });
+    cam.s = homeScale();
     render();
-  });
+    loadPhotos().then((list) => {
+      photos = list;
+      render();
+    });
+  }
 }
 
 loadSettings().then(startGallery);
