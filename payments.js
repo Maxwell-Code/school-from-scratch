@@ -1,45 +1,83 @@
-// The payments page: pick a way to pay, see how to pay that way. Details
-// (Zelle recipient, Stripe link, bill pay address) come from settings.md;
-// a way whose details are still empty says they're coming soon.
+// The payments page. One accent-colored circle appears, then splits into
+// three: Zelle, Card, and Bank billing. Choosing one gathers the circles
+// back together with the chosen one on top, and that way's step appears
+// below. "Choose a different way to pay" splits them again.
+// Details (Zelle recipient, bill pay address) come from settings.md; any
+// that are still empty show a [bracketed placeholder].
 
 window.settingsLoaded.then(() => {
-  const text = (name) => String(setting(name, '')).trim();
-  const phone = text('PHONE_NUMBER');
+  const root = document.documentElement.style;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ANIMATE = setting('PAYMENT_ANIMATION', true) && !reduceMotion;
+  const MOVE_MS = ANIMATE ? Math.max(0, setting('PAYMENT_ANIMATION_MS', 600)) : 0;
+  const SPLIT_DELAY = ANIMATE ? Math.max(0, setting('PAYMENT_SPLIT_DELAY_MS', 500)) : 0;
+  root.setProperty('--pay-circle', Math.max(60, setting('PAYMENT_CIRCLE_SIZE', 130)) + 'px');
+  root.setProperty('--pay-ms', MOVE_MS + 'ms');
 
-  // Fill in the details from settings.md.
+  // Fill in the details from settings.md, or a placeholder.
   document.querySelectorAll('[data-setting]').forEach((el) => {
-    el.textContent = text(el.dataset.setting);
+    const value = String(setting(el.dataset.setting, '')).trim();
+    el.textContent = value || el.dataset.placeholder;
+    el.classList.toggle('placeholder', !value);
   });
-  const stripeLink = text('STRIPE_PAYMENT_LINK');
-  document.querySelectorAll('[data-setting-href]').forEach((el) => {
-    // Only a secure web address; anything else leaves the button unused.
-    if (/^https:\/\//i.test(stripeLink)) el.href = stripeLink;
-  });
-  const phoneEl = document.getElementById('coming-soon-phone');
-  if (phone) {
-    phoneEl.textContent = phone;
-    phoneEl.href = 'tel:' + phone.replace(/[^\d+]/g, '');
-  }
 
-  // Which ways to pay have their details filled in.
-  const ready = {
-    zelle: !!text('ZELLE_RECIPIENT'),
-    stripe: /^https:\/\//i.test(stripeLink),
-    bank: !!text('BANK_BILL_PAY_ADDRESS'),
-  };
+  // The card form never sends anything (it's a preview).
+  document.getElementById('card-form').addEventListener('submit', (e) => e.preventDefault());
 
-  const comingSoon = document.getElementById('coming-soon');
-  const radios = [...document.querySelectorAll('input[name="method"]')];
-  function show(method) {
-    document.querySelectorAll('.method-details').forEach((el) => {
-      el.hidden = el.id !== 'details-' + method;
+  const stage = document.getElementById('pay-stage');
+  const circles = [...stage.querySelectorAll('.pay-circle')];
+  const change = document.getElementById('pay-change');
+  const steps = [...document.querySelectorAll('.pay-step')];
+  let stepTimer = 0;
+
+  function split() {
+    clearTimeout(stepTimer);
+    stage.classList.remove('chosen');
+    stage.classList.add('split');
+    circles.forEach((c) => {
+      c.classList.remove('picked');
+      c.setAttribute('aria-checked', 'false');
+      c.tabIndex = 0;
     });
-    const details = document.getElementById('details-' + method);
-    if (details) details.querySelector('.ready').hidden = !ready[method];
-    comingSoon.hidden = !method || ready[method];
-    if (details && !ready[method]) details.appendChild(comingSoon);
+    steps.forEach((s) => { s.hidden = true; s.classList.remove('shown'); });
+    change.hidden = true;
   }
-  radios.forEach((radio) => radio.addEventListener('change', () => show(radio.value)));
-  const chosen = radios.find((r) => r.checked);
-  if (chosen) show(chosen.value);
+
+  function choose(circle) {
+    clearTimeout(stepTimer);
+    stage.classList.remove('split');
+    stage.classList.add('chosen');
+    circles.forEach((c) => {
+      const picked = c === circle;
+      c.classList.toggle('picked', picked);
+      c.setAttribute('aria-checked', String(picked));
+      c.tabIndex = picked ? 0 : -1;
+    });
+    // Once the circles have gathered, show that way's step.
+    stepTimer = setTimeout(() => {
+      const step = document.getElementById('step-' + circle.dataset.method);
+      steps.forEach((s) => { s.hidden = s !== step; });
+      change.hidden = false;
+      requestAnimationFrame(() => step.classList.add('shown'));
+    }, MOVE_MS);
+  }
+
+  circles.forEach((c) => c.addEventListener('click', () => {
+    if (stage.classList.contains('chosen')) {
+      // Clicking the gathered circles opens the choice again.
+      split();
+    } else {
+      choose(c);
+    }
+  }));
+  change.addEventListener('click', () => {
+    split();
+    circles[0].focus();
+  });
+
+  // One circle appears almost straight away, then splits into three.
+  requestAnimationFrame(() => {
+    stage.classList.add('appear');
+    setTimeout(split, SPLIT_DELAY);
+  });
 });

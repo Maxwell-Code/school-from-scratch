@@ -639,9 +639,35 @@ VENMO_LINK = ""
 
 ## Payments page (payments.html)
 
-The payments page lists these ways to pay. Visitors pick one and see how
-to pay that way. Until a way's details are filled in below, it says the
-details are coming soon and shows PHONE_NUMBER to call instead.
+The payments page shows one accent-colored circle that splits into three:
+Zelle, Card, and Bank billing. Choosing one gathers the circles back together
+with the chosen one on top, and the steps for that way to pay appear below.
+Details that are still empty below show as a [bracketed placeholder].
+
+The card form is only a preview for now: its fields are switched off and it
+sends nothing. Real card payments need Stripe's secure card fields and a
+small piece of server code, which this site doesn't have yet.
+
+Animate the circles (true), or show them already split with no movement
+(false). Visitors whose device asks for reduced motion always get no movement.
+
+```js
+PAYMENT_ANIMATION = true
+```
+
+Size of each circle, in pixels (on phones they're 96).
+
+```js
+PAYMENT_CIRCLE_SIZE = 130
+```
+
+How long after the page opens the one circle splits into three, and how long
+the circles take to split apart or gather together, in milliseconds.
+
+```js
+PAYMENT_SPLIT_DELAY_MS = 500
+PAYMENT_ANIMATION_MS = 600
+```
 
 Zelle: the email or US phone number the school's Zelle is registered to,
 and the name parents will see when they send to it.
@@ -652,8 +678,8 @@ ZELLE_RECIPIENT_NAME = "The School From Scratch"
 ```
 
 Stripe: the Payment Link from the school's Stripe account (starts with
-https://buy.stripe.com/). Parents pay by card, Apple Pay, Google Pay, or
-bank account on Stripe's own secure page.
+https://buy.stripe.com/). Not used by the page yet; kept for when card
+payments are set up.
 
 ```js
 STRIPE_PAYMENT_LINK = ""
