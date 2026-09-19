@@ -1,27 +1,27 @@
 // Shared by every menu page (people.html, cost.html, ...) and 404.html.
 // Each page file names itself in <body data-page="...">; 404.html works it out
-// from the address instead, so an option added in settings.txt still gets a
+// from the address instead, so an option added in settings.md still gets a
 // working page on a web server before its own file exists.
 
-// A word settings.txt can use: LAYOUT_SEED = random
+// A word settings.md can use: LAYOUT_SEED = random
 window.random = 'random';
 
 function loadSettings() {
-  const viaScriptTag = () => new Promise((resolve) => {
-    const s = document.createElement('script');
-    s.src = 'settings.txt';
-    s.onload = s.onerror = resolve;
-    document.head.appendChild(s);
-  });
-  if (location.protocol === 'file:') return viaScriptTag();
-  return fetch('settings.txt', { cache: 'no-cache' })
-    .then((r) => (r.ok ? r.text() : Promise.reject()))
+  return fetch('settings.md', { cache: 'no-cache' })
+    .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
     .then((text) => {
-      const s = document.createElement('script');
-      s.textContent = text;
-      document.head.appendChild(s);
+      // Only the ``` code blocks are settings; the rest is notes. Each block
+      // runs on its own, so a mistake in one only skips that block.
+      const blocks = [...text.replace(/\r\n?/g, '\n').matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)];
+      for (const [, code] of blocks) {
+        try {
+          (0, eval)(code); // runs as plain page-wide code: NAME = value sets NAME
+        } catch (err) {
+          console.error('settings.md: skipped a code block with a mistake (' + err.message + '):\n' + code);
+        }
+      }
     })
-    .catch(viaScriptTag);
+    .catch((err) => console.warn('settings.md could not be loaded (' + err.message + '); using the built-in defaults.'));
 }
 
 function setting(name, fallback) {

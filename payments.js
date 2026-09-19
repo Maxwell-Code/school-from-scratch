@@ -1,12 +1,12 @@
 // The payments page: pick a way to pay, see how to pay that way. Details
-// (Zelle recipient, Stripe link, bill pay address) come from settings.txt;
+// (Zelle recipient, Stripe link, bill pay address) come from settings.md;
 // a way whose details are still empty says they're coming soon.
 
 window.settingsLoaded.then(() => {
   const text = (name) => String(setting(name, '')).trim();
   const phone = text('PHONE_NUMBER');
 
-  // Fill in the details from settings.txt.
+  // Fill in the details from settings.md.
   document.querySelectorAll('[data-setting]').forEach((el) => {
     el.textContent = text(el.dataset.setting);
   });
