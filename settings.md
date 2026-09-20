@@ -622,6 +622,16 @@ the same rounded corners as the gallery photos.
 SECTION_PICTURE_WIDTH = 200
 ```
 
+How tall a picture in a section is, in pixels. 0 lets each picture be as
+tall as it comes out at its width, keeping its shape. Any other number makes
+every picture that tall: it fills the width and the height, taking the
+middle of the picture if the two don't match, so a row of headshots all line
+up.
+
+```js
+SECTION_PICTURE_HEIGHT = 0
+```
+
 When a menu option is chosen, the page glides down to the section (true)
 or jumps straight there (false). No quotes. The same goes for the
 menu bar's Home option.

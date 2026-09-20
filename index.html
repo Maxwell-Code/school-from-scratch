@@ -130,6 +130,15 @@
     height: auto;
     border-radius: var(--section-image-radius, 15px);
   }
+  /* SECTION_PICTURE_HEIGHT: every picture the same height. It fills that
+     height and its width, taking the middle of the picture if the two
+     don't match, so a row of headshots lines up. */
+  .section.set-picture-height .md-image {
+    width: min(var(--section-image-width, 200px), 100%);
+    height: var(--section-image-height);
+    object-fit: cover;
+    object-position: center;
+  }
   .section p { margin: 0 0 1em; }
   /* An extra empty line in a section file. */
   .section .md-space { height: 1em; margin: 0; }
@@ -708,6 +717,9 @@ function startGallery() {
   rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
   rootStyle.setProperty('--section-image-width', Math.max(20, setting('SECTION_PICTURE_WIDTH', 200)) + 'px');
+  // 0 = as tall as the picture works out; any other number sets the height.
+  const PICTURE_HEIGHT = Math.max(0, setting('SECTION_PICTURE_HEIGHT', 0));
+  rootStyle.setProperty('--section-image-height', PICTURE_HEIGHT + 'px');
   rootStyle.setProperty('--section-image-radius', (setting('PHOTO_ROUNDED_CORNERS', true) ? Math.max(0, setting('PHOTO_CORNER_RADIUS', 12)) : 0) +
     (String(setting('PHOTO_CORNER_RADIUS_UNIT', 'pixels')).trim().toLowerCase().startsWith('percent') ? '%' : 'px'));
   rootStyle.setProperty('--section-scroll-margin', Math.max(0, setting('SECTION_SCROLL_MARGIN', 96)) + 'px');
@@ -1861,7 +1873,7 @@ function startGallery() {
       const label = link.dataset.label || link.textContent;
       const slug = pageSlug(label);
       const section = document.createElement('section');
-      section.className = 'section';
+      section.className = 'section' + (PICTURE_HEIGHT ? ' set-picture-height' : '');
       section.id = slug;
       const heading = document.createElement('h2');
       heading.textContent = label;
