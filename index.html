@@ -142,6 +142,21 @@
   .section p { margin: 0 0 1em; }
   /* An extra empty line in a section file. */
   .section .md-space { height: 1em; margin: 0; }
+  /* The quote at the end of the page (END_QUOTE). */
+  .end-quote {
+    position: absolute;
+    left: 50%;
+    width: min(var(--section-width, 720px), 100% - 32px);
+    margin: 0;
+    transform: translateX(-50%);
+    font-size: min(var(--end-quote-size, 24px), 6vw);
+    font-style: italic;
+    line-height: 1.5;
+    text-align: center;
+    pointer-events: auto;
+    user-select: text;
+    -webkit-user-select: text;
+  }
   /* A list with empty lines between its items sits a little further apart. */
   .section ul.spaced li,
   .section ol.spaced li { margin-bottom: 1em; }
@@ -669,6 +684,9 @@ function startGallery() {
   // How far below the last section the page may be scrolled. The photos
   // carry on fading out below it, but the page stops here.
   const BELOW_END = Math.max(0, setting('READ_MODE_SCROLL_BELOW_SECTIONS', 1200));
+  // A line of words at the very end of the page, in italics.
+  const END_QUOTE = String(setting('END_QUOTE', '')).trim();
+  const END_QUOTE_ABOVE = Math.max(0, setting('END_QUOTE_ABOVE_BOTTOM', 200));
   // Read mode's sections of text, and the room for photos between them.
   const SECTION_SPACE = Math.max(0, setting('SPACE_BETWEEN_SECTIONS', 400));
   const SECTION_CLEARANCE = Math.max(0, setting('SECTION_PHOTO_CLEARANCE', 40));
@@ -719,6 +737,7 @@ function startGallery() {
   rootStyle.setProperty('--section-width', Math.max(200, setting('SECTION_TEXT_WIDTH', 720)) + 'px');
   rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
+  rootStyle.setProperty('--end-quote-size', Math.max(8, setting('END_QUOTE_SIZE', 24)) + 'px');
   rootStyle.setProperty('--section-image-width', Math.max(20, setting('SECTION_PICTURE_WIDTH', 200)) + 'px');
   // 0 = as tall as the picture works out; any other number sets the height.
   const PICTURE_HEIGHT = Math.max(0, setting('SECTION_PICTURE_HEIGHT', 0));
@@ -1820,12 +1839,7 @@ function startGallery() {
     world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
     if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
     layOutSections(g);
-    // Where the page stops: after the last section plus the run-on set in
-    // settings, or where the photos run out, whichever comes first.
-    // (Without sections: END_DISTANCE from the menu.)
-    const photosEnd = textBands.length
-      ? Math.min(fadeStart + fadeLength, contentBottom + BELOW_END)
-      : END_DISTANCE;
+    const photosEnd = pageEnd;
     viewport.style.height = Math.ceil(g.top + photosEnd * g.s + g.H / 2) + 'px';
 
     if (photos.length) {
@@ -1945,6 +1959,13 @@ function startGallery() {
   // Stack the sections down the page below the menu, SECTION_SPACE apart,
   // and record where photos must stay clear of them. The photo layout is
   // rebuilt whenever that changes.
+  // The quote at the end of the page (END_QUOTE), sitting a little above
+  // the bottom of the scroll.
+  const quoteEl = document.createElement('p');
+  quoteEl.className = 'end-quote';
+  quoteEl.textContent = END_QUOTE;
+  let pageEnd = 0; // how far down the page goes, in landscape units
+
   function layOutSections(g) {
     let y = menuHalfH + SECTION_SPACE;
     const bands = [];
@@ -1960,6 +1981,32 @@ function startGallery() {
     if (bands.length) {
       fadeStart = bands[0].y0;
       fadeLength = Math.max(SECTION_THIN, (contentBottom - fadeStart) / 0.7);
+    }
+    // Where the page stops: after the last section plus the run-on set in
+    // settings, or where the photos run out, whichever comes first.
+    // (Without sections: END_DISTANCE from the menu.)
+    pageEnd = bands.length
+      ? Math.min(fadeStart + fadeLength, contentBottom + BELOW_END)
+      : END_DISTANCE;
+
+    // The quote sits just above the bottom of the page, and photos keep
+    // clear of it as they do of the sections.
+    if (END_QUOTE) {
+      if (!quoteEl.parentNode) sectionsLayer.appendChild(quoteEl);
+      // Where the page itself ends, in screen pixels (the scroll runs half a
+      // screen past the last photos).
+      const bottomOfPage = g.top + pageEnd * g.s + g.H / 2;
+      quoteEl.style.top = '0px'; // measured unrotated, before it's placed
+      const highEnough = g.top + (contentBottom + SECTION_CLEARANCE) * g.s;
+      const top = Math.max(highEnough, bottomOfPage - END_QUOTE_ABOVE * g.s - quoteEl.offsetHeight);
+      quoteEl.style.top = top.toFixed(1) + 'px';
+      const at = (top - g.top) / g.s;
+      const h = quoteEl.offsetHeight / g.s;
+      bands.push({
+        hx: quoteEl.offsetWidth / 2 / g.s + SECTION_CLEARANCE,
+        y0: at - SECTION_CLEARANCE,
+        y1: at + h + SECTION_CLEARANCE,
+      });
     }
     if (JSON.stringify(bands) !== JSON.stringify(textBands)) {
       textBands = bands;

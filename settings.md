@@ -45,7 +45,18 @@ screenful or so of thinning photos after it. The page never runs on past
 the point where the photos have faded out altogether.
 
 ```js
-READ_MODE_SCROLL_BELOW_SECTIONS = 1200
+READ_MODE_SCROLL_BELOW_SECTIONS = 400
+```
+
+A line of words to end the page with, shown in italics a little above the
+bottom of the scroll, after the last section and the photos. Leave it empty
+("") for none. Its size is in pixels, and so is how far above the bottom of
+the page it sits.
+
+```js
+END_QUOTE = ""
+END_QUOTE_SIZE = 24
+END_QUOTE_ABOVE_BOTTOM = 200
 ```
 
 ## Photos
