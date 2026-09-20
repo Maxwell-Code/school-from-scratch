@@ -39,6 +39,15 @@ Read mode: how far above the Home position you can scroll, in pixels.
 READ_MODE_SCROLL_ABOVE_HOME = 0
 ```
 
+Read mode: how far below the last section the page may be scrolled, in
+pixels. 0 stops the page as soon as the last section ends; 1200 leaves a
+screenful or so of thinning photos after it. The page never runs on past
+the point where the photos have faded out altogether.
+
+```js
+READ_MODE_SCROLL_BELOW_SECTIONS = 1200
+```
+
 ## Photos
 
 Folder holding every image the site uses: the gallery photos and the
@@ -619,7 +628,7 @@ Widest a picture in a section (a headshot, say) can be, in pixels. It uses
 the same rounded corners as the gallery photos.
 
 ```js
-SECTION_PICTURE_WIDTH = 200
+SECTION_PICTURE_WIDTH = 250
 ```
 
 How tall a picture in a section is, in pixels. 0 lets each picture be as

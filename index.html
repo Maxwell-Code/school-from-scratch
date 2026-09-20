@@ -666,6 +666,9 @@ function startGallery() {
   const KEY_STEP = setting('KEYBOARD_MOVE_STEP', 120);
   const HOME_MS = Math.max(1, setting('HOME_TRAVEL_MS', 800));
   const ABOVE_HOME = Math.max(0, setting('READ_MODE_SCROLL_ABOVE_HOME', 0));
+  // How far below the last section the page may be scrolled. The photos
+  // carry on fading out below it, but the page stops here.
+  const BELOW_END = Math.max(0, setting('READ_MODE_SCROLL_BELOW_SECTIONS', 1200));
   // Read mode's sections of text, and the room for photos between them.
   const SECTION_SPACE = Math.max(0, setting('SPACE_BETWEEN_SECTIONS', 400));
   const SECTION_CLEARANCE = Math.max(0, setting('SECTION_PHOTO_CLEARANCE', 40));
@@ -1817,9 +1820,12 @@ function startGallery() {
     world.style.transform = `translate(${g.W / 2}px, ${g.top}px) scale(${g.s})`;
     if (!readLayer.parentNode) viewport.insertBefore(readLayer, world);
     layOutSections(g);
-    // Where the photos run out (END_DISTANCE from the menu when there are no
-    // sections).
-    const photosEnd = textBands.length ? fadeStart + fadeLength : END_DISTANCE;
+    // Where the page stops: after the last section plus the run-on set in
+    // settings, or where the photos run out, whichever comes first.
+    // (Without sections: END_DISTANCE from the menu.)
+    const photosEnd = textBands.length
+      ? Math.min(fadeStart + fadeLength, contentBottom + BELOW_END)
+      : END_DISTANCE;
     viewport.style.height = Math.ceil(g.top + photosEnd * g.s + g.H / 2) + 'px';
 
     if (photos.length) {

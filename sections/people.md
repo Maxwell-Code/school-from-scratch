@@ -1,4 +1,4 @@
-## Dr. Gopal Krishnamurthy
+## Gopal Krishnamurthy, PhD
 ![Headshot of Gopal Krishnamurthy](images/gopal_headshot.jpeg)
 Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch.
 
