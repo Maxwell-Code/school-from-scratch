@@ -266,8 +266,17 @@ main.payments {
   touch-action: none;
 }
 .digits span:active { cursor: grabbing; }
-/* Once they're loose, each number is placed on the page by itself. */
-.digits.loose {
+/* Every character of the heading is its own piece too, so it can be pushed
+   and can spin on its own. */
+#title span {
+  display: inline-block;
+  cursor: grab;
+  touch-action: none;
+}
+#title span:active { cursor: grabbing; }
+/* Once they're loose, each character is placed on the page by itself. */
+.digits.loose,
+#title.loose {
   position: fixed;
   left: 0;
   top: 0;
@@ -276,7 +285,11 @@ main.payments {
   margin: 0;
   pointer-events: none;
 }
-.digits.loose span {
+#title.loose { height: 0; overflow: visible; }
+.digits.loose span canvas,
+#title.loose span canvas { display: block; }
+.digits.loose span,
+#title.loose span {
   position: fixed;
   left: 0;
   top: 0;

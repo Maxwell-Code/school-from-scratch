@@ -717,10 +717,12 @@ PAYMENT_STEP_SPACING = 28
 ## Page not found (404.html)
 
 When someone follows a broken link they get this page: the menu bar, a big
-404, and "Page not found". Pushing one of the numbers sets all three loose,
-and they fall, bounce off the edges of the page and off each other, and
-settle. A push sends a number away from the spot it was pushed, so a push
-from below sends it up. true or false, no quotes:
+404, and "Page not found". Pushing any character sets the whole page of text
+loose: every letter and number becomes an object of its own, shaped like the
+character itself, and they fall, spin, bounce off the edges of the page and
+off each other, and settle in a heap. A push sends a character away from the
+spot it was pushed, so a push from below sends it up, and a push off-centre
+sets it spinning. true or false, no quotes:
 
 ```js
 NOT_FOUND_PUSHABLE_NUMBERS = true
@@ -754,8 +756,17 @@ like ice) to 1 (stops almost at once).
 NOT_FOUND_FLOOR_GRIP = 0.6
 ```
 
-The gap kept between the numbers and the edges of the page (and the menu
-bar), in pixels, so a number at rest is never flush against an edge.
+Each character's shape is built from the character itself, in squares this
+many pixels across: smaller numbers follow the letter more closely but give
+the page more to think about (5 is finely detailed, 7 is the middle, 12 is
+blocky).
+
+```js
+NOT_FOUND_SHAPE_DETAIL = 7
+```
+
+The gap kept between the characters and the edges of the page (and the menu
+bar), in pixels, so a character at rest is never flush against an edge.
 
 ```js
 NOT_FOUND_EDGE_SPACE = 10
