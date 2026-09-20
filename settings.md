@@ -687,6 +687,13 @@ accent circle.
 PAYMENTS_TEXT_FILE = "sections/payments/payments.md"
 ```
 
+Show the Zelle logo on the payments page at all (true or false, no quotes).
+false hides it, leaving the heading and the steps.
+
+```js
+SHOW_ZELLE_LOGO = true
+```
+
 The Zelle logo file, and how wide it's shown, in pixels. Its corners are
 rounded like the gallery photos' (PHOTO_CORNER_RADIUS). Download the
 official logo from Zelle's brand page (zellepay.com has a "Brand guidelines"

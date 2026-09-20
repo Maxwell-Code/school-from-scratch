@@ -85,6 +85,7 @@ main.payments {
 }
 /* The Zelle logo under the heading (or the word Zelle until the logo file
    is there). */
+.zelle-mark[hidden] { display: none; }
 .zelle-mark {
   width: 100%;
   margin: 8px 0 40px;

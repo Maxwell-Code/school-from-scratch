@@ -13,9 +13,11 @@ window.settingsLoaded.then(() => {
   root.setProperty('--step-gap', Math.max(0, setting('PAYMENT_STEP_SPACING', 28)) + 'px');
 
   // The logo replaces the word "Zelle" once it has loaded. If the file is
-  // missing, the word stays.
+  // missing, the word stays. SHOW_ZELLE_LOGO = false hides both.
   const file = String(setting('ZELLE_LOGO', '')).trim();
-  if (file) {
+  if (!setting('SHOW_ZELLE_LOGO', true)) {
+    document.querySelector('.zelle-mark').hidden = true;
+  } else if (file) {
     const logo = document.getElementById('zelle-logo');
     logo.onload = () => {
       logo.hidden = false;
