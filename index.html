@@ -139,7 +139,10 @@
     object-fit: cover;
     object-position: center;
   }
-  .section p { margin: 0 0 1em; }
+  /* Paragraphs and lists can be kept narrower than the section itself
+     (SECTION_PARAGRAPH_WIDTH), which makes them easier to read; headings,
+     names and pictures still use the section's full width. */
+  .section p { margin: 0 auto 1em; max-width: var(--paragraph-width, none); }
   /* An extra empty line in a section file. */
   .section .md-space { height: 1em; margin: 0; }
   /* The quote at the end of the page (END_QUOTE). */
@@ -161,7 +164,7 @@
   .section ul.spaced li,
   .section ol.spaced li { margin-bottom: 1em; }
   .section ul,
-  .section ol { margin: 0 0 1em; padding-left: 1.3em; }
+  .section ol { margin: 0 auto 1em; padding-left: 1.3em; max-width: var(--paragraph-width, none); }
   .section li { margin-bottom: 0.35em; }
   .section strong { font-weight: 700; }
   .section a { color: inherit; text-underline-offset: 3px; }
@@ -738,6 +741,9 @@ function startGallery() {
   rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');
   rootStyle.setProperty('--end-quote-size', Math.max(8, setting('END_QUOTE_SIZE', 24)) + 'px');
+  // 0 = paragraphs are as wide as the section; anything else narrows them.
+  const PARAGRAPH_WIDTH = Math.max(0, setting('SECTION_PARAGRAPH_WIDTH', 0));
+  rootStyle.setProperty('--paragraph-width', PARAGRAPH_WIDTH ? PARAGRAPH_WIDTH + 'px' : 'none');
   rootStyle.setProperty('--section-image-width', Math.max(20, setting('SECTION_PICTURE_WIDTH', 200)) + 'px');
   // 0 = as tall as the picture works out; any other number sets the height.
   const PICTURE_HEIGHT = Math.max(0, setting('SECTION_PICTURE_HEIGHT', 0));

@@ -54,7 +54,7 @@ bottom of the scroll, after the last section and the photos. Leave it empty
 the page it sits.
 
 ```js
-END_QUOTE = ""
+END_QUOTE = "There is no end to education is it not that you read a book. Pass an examination, and finish with education. The whole of life from the moment you are born to the moment you die is a process of learning."
 END_QUOTE_SIZE = 24
 END_QUOTE_ABOVE_BOTTOM = 200
 ```
@@ -418,6 +418,7 @@ MENU_ITEMS = [
   "Logistics",
   "FAQs",
   "Cost",
+  "test",
 ]
 ```
 
@@ -625,6 +626,16 @@ the screen, less a small margin on each side.
 
 ```js
 SECTION_TEXT_WIDTH = 720
+```
+
+How wide the paragraphs and lists inside a section may be, in pixels. 0
+lets them fill the width above. A smaller number keeps the lines short,
+which is easier to read: around 60 to 75 letters a line is comfortable, so
+480 to 620 at the text size below. Headings, names and pictures still use
+the full width.
+
+```js
+SECTION_PARAGRAPH_WIDTH = 0
 ```
 
 Text sizes in the sections, in pixels: each section's heading (it shrinks
