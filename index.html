@@ -2230,7 +2230,17 @@ function startGallery() {
     e.preventDefault();
     goHome(nudge([homeLink], Math.sign(readHomeTop() - window.scrollY)));
   });
-  quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a')].map((link) => {
+  // Options shown only in the bar (TOP_MENU_EXTRA_ITEMS), after the ones
+  // from the main menu. Their addresses come from MENU_LINKS, the same as
+  // any other option's.
+  const extras = setting('TOP_MENU_EXTRA_ITEMS', []).map((item) => String(item).trim()).filter(Boolean)
+    .map((label) => {
+      const link = document.createElement('a');
+      link.href = optionLink(label) || pageSlug(label) + '.html';
+      link.dataset.label = label;
+      return link;
+    });
+  quickList.replaceChildren(homeLink, ...[...menu.querySelectorAll('nav a'), ...extras].map((link) => {
     const copy = document.createElement('a');
     copy.href = link.getAttribute('href');
     const label = link.dataset.label || link.textContent;

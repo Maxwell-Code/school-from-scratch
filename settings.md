@@ -414,6 +414,16 @@ MENU_LINKS = {
 }
 ```
 
+Options that belong only to the menu bar across the top, not to the menu on
+the home screen. They come after the menu's own options, and their addresses
+come from MENU_LINKS above, the same as any other option's.
+
+```js
+TOP_MENU_EXTRA_ITEMS = [
+  "Payments",
+]
+```
+
 Fonts are loaded from Google Fonts (fonts.google.com). Type the family name
 exactly as it appears there, in quotes. Weight: 400 = regular, 500 = medium,
 600 = semi-bold, 700 = bold (the font must offer that weight).

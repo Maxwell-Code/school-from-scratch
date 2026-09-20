@@ -78,7 +78,9 @@ window.settingsLoaded.then(() => {
     const home = document.createElement('a');
     home.href = 'index.html';
     home.textContent = String(setting('TOP_MENU_HOME_LABEL', 'Home')).trim() || 'Home';
-    quickList.replaceChildren(home, ...setting('MENU_ITEMS', [])
+    // The menu's options, then any that belong only to the bar.
+    const inBar = [...setting('MENU_ITEMS', []), ...setting('TOP_MENU_EXTRA_ITEMS', [])];
+    quickList.replaceChildren(home, ...inBar
       .map((item) => String(item).trim()).filter(Boolean).map((label) => {
         const link = document.createElement('a');
         // An option with its own address (MENU_LINKS) goes there; the rest
