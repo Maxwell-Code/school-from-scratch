@@ -18,11 +18,11 @@ window.settingsLoaded.then(() => {
   const clamp01 = (v) => Math.min(1, Math.max(0, Number(v) || 0));
   const GRAVITY = setting('NOT_FOUND_GRAVITY', 2600);
   const BOUNCE = clamp01(setting('NOT_FOUND_BOUNCE', 0.45));
-  const PUSH = Math.max(0, setting('NOT_FOUND_PUSH', 950));
+  const PUSH = Math.max(0, setting('NOT_FOUND_PUSH', 700)); // pixels a second
   const GRIP = clamp01(setting('NOT_FOUND_FLOOR_GRIP', 0.6));
   const EDGE = Math.max(0, setting('NOT_FOUND_EDGE_SPACE', 10));
   const DETAIL = Math.max(2, setting('NOT_FOUND_SHAPE_DETAIL', 7)); // how finely a shape follows the character
-  const TOP_SPEED = 2600; // pixels a second: fast enough to fly, slow enough to stay in
+  const TOP_SPEED = 1800; // pixels a second: fast enough to fly, slow enough to stay in
 
   // ---- The characters -------------------------------------------------------
   // Every character of the heading gets its own span, like the numbers already
@@ -116,8 +116,10 @@ window.settingsLoaded.then(() => {
   const { Engine, Bodies, Body, Composite, Vector, Sleeping } = Matter;
   const engine = Engine.create({ enableSleeping: true });
   engine.gravity.y = GRAVITY / 2600;
-  engine.positionIterations = 10;
-  engine.velocityIterations = 10;
+  // Worked over several times each frame, so characters rest against each
+  // other rather than sinking in.
+  engine.positionIterations = 14;
+  engine.velocityIterations = 12;
   // Handy when looking at the shapes from the browser's console.
   window.notFoundPhysics = { engine, parts: [] };
 
@@ -174,6 +176,7 @@ window.settingsLoaded.then(() => {
         frictionAir: 0.008,
         frictionStatic: 0.6,
         sleepThreshold: 45,
+        slop: 0.02, // how deeply things may rest into each other
       };
       let body;
       if (drawn.blocks) {
@@ -206,11 +209,21 @@ window.settingsLoaded.then(() => {
   // A push sends the character away from the spot it was pushed. Because the
   // push lands on that spot rather than in the middle, it also sets it
   // spinning, the way shoving the corner of something spins it.
-  function push(body, pointX, pointY) {
+  //
+  // NOT_FOUND_PUSH is how fast a push sends a character off, in pixels a
+  // second. The physics works in pixels per frame and takes a force rather
+  // than a speed, so the force is worked back from the character's weight:
+  // a frame is 1/60 of a second, and the physics multiplies a force by the
+  // square of the frame's length in milliseconds (16.7 x 16.7 = 278).
+  const FORCE_FOR_ONE_PIXEL_A_SECOND = 1 / (60 * 278);
+  function push(body, pointX, pointY, share) {
     const away = Vector.sub(body.position, { x: pointX, y: pointY });
     const len = Math.hypot(away.x, away.y) || 1;
     const dir = { x: away.x / len, y: away.y / len };
-    const strength = (PUSH / 1000) * body.mass * (0.6 + 0.4 * Math.min(1, len / 60));
+    // A push near the edge of a character is a little stronger than one in
+    // its middle, and sets it spinning more.
+    const speed = PUSH * (share || 1) * (0.6 + 0.4 * Math.min(1, len / 60));
+    const strength = body.mass * speed * FORCE_FOR_ONE_PIXEL_A_SECOND;
     Sleeping.set(body, false);
     Body.applyForce(body, { x: pointX, y: pointY }, { x: dir.x * strength, y: dir.y * strength });
   }
@@ -221,8 +234,9 @@ window.settingsLoaded.then(() => {
     comeLoose();
     const hit = parts.find((p) => p.el === el);
     if (hit) push(hit.body, e.clientX, e.clientY);
-    // The first push wakes everything, so the whole page comes apart at once.
-    if (first) for (const p of parts) if (p !== hit) push(p.body, e.clientX, e.clientY);
+    // The first push wakes everything, so the whole page comes apart at
+    // once, though the rest only get a nudge.
+    if (first) for (const p of parts) if (p !== hit) push(p.body, e.clientX, e.clientY, 0.35);
     if (!frame) frame = requestAnimationFrame(step);
   }));
 
@@ -255,7 +269,10 @@ window.settingsLoaded.then(() => {
         Body.setVelocity(p.body, { x: v.x * scale, y: v.y * scale });
       }
     }
-    Engine.update(engine, 1000 / 60);
+    // Two smaller steps a frame: characters meet each other halfway through
+    // a movement instead of arriving already inside one another.
+    Engine.update(engine, 1000 / 120);
+    Engine.update(engine, 1000 / 120);
     keepInside();
     draw();
     const moving = parts.some((p) => !p.body.isSleeping);

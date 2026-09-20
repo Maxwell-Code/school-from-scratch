@@ -742,11 +742,14 @@ bounces, 0.9 = very lively.
 NOT_FOUND_BOUNCE = 0.55
 ```
 
-How hard a push is, in pixels per second. A push near the edge of a number
-is stronger than one in its middle.
+How fast a push sends a character off, in pixels a second (700 is a firm
+shove across a laptop screen; 300 is gentle). A push near the edge of a
+character is a little stronger than one in its middle, and sets it spinning
+more. The first push also nudges every other character, at about a third of
+this.
 
 ```js
-NOT_FOUND_PUSH = 950
+NOT_FOUND_PUSH = 700
 ```
 
 How quickly they stop sliding along the bottom of the page, from 0 (slides
