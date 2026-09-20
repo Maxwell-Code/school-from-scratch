@@ -349,6 +349,30 @@
     line-height: 1.4;
   }
   #menu.has-subtitle h1 { margin-bottom: var(--subtitle-gap, 16px); }
+  /* A small notice under the title (HOME_NOTICE): a rounded patch of the
+     accent color, with a few words in it. It can lead somewhere, or just
+     say something. */
+  #menu .notice-line { margin: 0 0 var(--title-gap); line-height: 0; }
+  #menu .notice-line[hidden] { display: none; }
+  #menu.has-notice .subtitle { margin-bottom: var(--notice-gap, 20px); }
+  #menu .notice {
+    display: inline-block;
+    padding: var(--notice-padding, 10px 20px);
+    border-radius: var(--notice-radius, 999px);
+    background: var(--accent, #e8f0d4);
+    color: var(--fg);
+    font-size: min(var(--notice-size, 18px), 5vw);
+    line-height: 1.35;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    white-space: normal;
+  }
+  #menu .notice[href] { cursor: pointer; transition: filter 180ms ease; }
+  #menu .notice[href]:hover,
+  #menu .notice[href]:focus-visible { filter: brightness(0.94); }
+  #menu .notice em { font-style: italic; }
+  #menu .notice strong { font-weight: 700; }
   /* MENU_TITLE_IN_ACCENT_COLOR: the title and the line under it take the
      accent color. */
   #menu.title-accent h1,
@@ -580,6 +604,7 @@
       <div id="menu">
         <h1>The School From Scratch</h1>
         <p class="subtitle" hidden></p>
+        <p class="notice-line" hidden><a class="notice" id="notice"></a></p>
         <nav>
           <a href="people.html">People</a>
           <a href="approach.html">Approach</a>
@@ -770,6 +795,31 @@ function startGallery() {
   subtitleEl.textContent = subtitle;
   subtitleEl.hidden = !subtitle;
   menuEl.classList.toggle('has-subtitle', !!subtitle);
+
+  // The notice under the title: its words, where it leads, and its size.
+  const noticeText = String(setting('HOME_NOTICE', '')).trim();
+  const noticeLink = String(setting('HOME_NOTICE_LINK', '')).trim();
+  const noticeEl = document.getElementById('notice');
+  rootStyle.setProperty('--notice-size', Math.max(8, setting('HOME_NOTICE_TEXT_SIZE', 18)) + 'px');
+  rootStyle.setProperty('--notice-gap', Math.max(0, setting('HOME_NOTICE_GAP', 20)) + 'px');
+  if (noticeText) {
+    // Written like the section files, so **bold** and *italic* work; it's
+    // one line, so the paragraph it comes back in is unwrapped.
+    noticeEl.innerHTML = typeof markdownToHtml === 'function'
+      ? markdownToHtml(noticeText).replace(/^<p>|<\/p>$/g, '')
+      : noticeText;
+    if (noticeLink) {
+      noticeEl.href = noticeLink;
+      if (/^https?:/i.test(noticeLink)) {
+        noticeEl.target = '_blank';
+        noticeEl.rel = 'noopener';
+      }
+    } else {
+      noticeEl.removeAttribute('href');
+    }
+    noticeEl.parentNode.hidden = false;
+  }
+  menuEl.classList.toggle('has-notice', !!noticeText);
   menuEl.classList.toggle('title-accent', setting('MENU_TITLE_IN_ACCENT_COLOR', true));
   const LETTER_SPREAD = setting('MENU_LETTERS_SPREAD_SIDEWAYS', true)
     ? Math.max(0, setting('MENU_LETTER_SPACING', 0.3) - setting('MENU_LETTER_SPACING_HOVER', 0.06)) : 0;
@@ -878,7 +928,7 @@ function startGallery() {
       return link;
     }));
   }
-  const menuLinks = [...menuEl.querySelectorAll('a')];
+  const menuLinks = [...menuEl.querySelectorAll('nav a')];
   // Split a group of options into moving letters. Each group measures its own
   // longest option, so even speed works within the group.
   function layOutGroup(links, seedOffset) {

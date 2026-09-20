@@ -54,8 +54,10 @@ It's written like the section files, so the wording is yours to shape:
 *italic*, **bold**, ***both***. Its size is in pixels, and so is how far
 above the bottom of the page it sits.
 
+//I removed the quote but if anyone wants to add it back this is the one I chose: '*There is no end to education. It isn’t that you read a book and pass an examination, and then finish with education. You think you have finished with it. You have not. The whole of life—from now, from the moment you are born till the moment you die, it’s a process of learning.*' —Jiddu Krishnamurti, Rishi Valley, 1 February 1966
+
 ```js
-END_QUOTE = "'*There is no end to education. It isn’t that you read a book and pass an examination, and then finish with education. You think you have finished with it. You have not. The whole of life—from now, from the moment you are born till the moment you die, it’s a process of learning.*' —Jiddu Krishnamurti"
+END_QUOTE = ""
 END_QUOTE_SIZE = 24
 END_QUOTE_ABOVE_BOTTOM = 200
 ```
@@ -400,6 +402,29 @@ A line of text under the title. Leave empty ("") for none.
 
 ```js
 MENU_SUBTITLE = "An Educational Commons for students, teachers, parents, and other learners."
+```
+
+A small notice under the title and the line below it: a rounded patch of the
+accent color with a few words in it, for something passing, like a play or
+an open day. Leave the words empty ("") to hide it altogether.
+
+The words are written like the section files, so **bold** and *italic*
+work. The link is where it leads: a page on this site ("play.html"), a
+section of the home page ("#cost"), a full web address, or an email
+("mailto:hello@example.org"). Leave the link empty for a notice that just
+says something without leading anywhere.
+
+```js
+HOME_NOTICE = ""
+HOME_NOTICE_LINK = ""
+```
+
+The size of its words, in pixels, and the space between the line above it
+and the notice.
+
+```js
+HOME_NOTICE_TEXT_SIZE = 18
+HOME_NOTICE_GAP = 20
 ```
 
 The menu options, top to bottom. Each one goes in quotes, followed by a
