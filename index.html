@@ -145,6 +145,8 @@
   .section p { margin: 0 auto 1em; max-width: var(--paragraph-width, none); }
   /* An extra empty line in a section file. */
   .section .md-space { height: 1em; margin: 0; }
+  .end-quote p { margin: 0; }
+  .end-quote p + p { margin-top: 0.8em; }
   /* The quote at the end of the page (END_QUOTE). */
   .end-quote {
     position: absolute;
@@ -153,7 +155,6 @@
     margin: 0;
     transform: translateX(-50%);
     font-size: min(var(--end-quote-size, 24px), 6vw);
-    font-style: italic;
     line-height: 1.5;
     text-align: center;
     pointer-events: auto;
@@ -1967,9 +1968,11 @@ function startGallery() {
   // rebuilt whenever that changes.
   // The quote at the end of the page (END_QUOTE), sitting a little above
   // the bottom of the scroll.
-  const quoteEl = document.createElement('p');
+  const quoteEl = document.createElement('div');
   quoteEl.className = 'end-quote';
-  quoteEl.textContent = END_QUOTE;
+  // Written the same way as the section files, so *italic*, **bold** and
+  // ***both*** are up to whoever writes the quote.
+  quoteEl.innerHTML = END_QUOTE ? markdownToHtml(END_QUOTE) : '';
   let pageEnd = 0; // how far down the page goes, in landscape units
 
   function layOutSections(g) {

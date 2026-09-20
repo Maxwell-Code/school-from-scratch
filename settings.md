@@ -48,13 +48,14 @@ the point where the photos have faded out altogether.
 READ_MODE_SCROLL_BELOW_SECTIONS = 400
 ```
 
-A line of words to end the page with, shown in italics a little above the
-bottom of the scroll, after the last section and the photos. Leave it empty
-("") for none. Its size is in pixels, and so is how far above the bottom of
-the page it sits.
+A line of words to end the page with, a little above the bottom of the
+scroll, after the last section and the photos. Leave it empty ("") for none.
+It's written like the section files, so the wording is yours to shape:
+*italic*, **bold**, ***both***. Its size is in pixels, and so is how far
+above the bottom of the page it sits.
 
 ```js
-END_QUOTE = "There is no end to education is it not that you read a book. Pass an examination, and finish with education. The whole of life from the moment you are born to the moment you die is a process of learning."
+END_QUOTE = "'There is no end to education is it not that you read a book. Pass an examination, and finish with education. The whole of life from the moment you are born to the moment you die is a process of learning.'"
 END_QUOTE_SIZE = 24
 END_QUOTE_ABOVE_BOTTOM = 200
 ```
@@ -418,7 +419,7 @@ MENU_ITEMS = [
   "Logistics",
   "FAQs",
   "Cost",
-  "test",
+  "Contact",
 ]
 ```
 
