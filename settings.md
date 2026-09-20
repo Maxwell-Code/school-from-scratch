@@ -415,8 +415,8 @@ section of the home page ("#cost"), a full web address, or an email
 says something without leading anywhere.
 
 ```js
-HOME_NOTICE = ""
-HOME_NOTICE_LINK = ""
+HOME_NOTICE = "The School From Scratch is producing the play *Is Nirmal Normal?* Click to learn more!"
+HOME_NOTICE_LINK = "is_nirmal_normal.html"
 ```
 
 The size of its words, in pixels, and the space between the line above it
