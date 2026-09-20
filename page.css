@@ -242,3 +242,44 @@ main.payments {
 #quick-list.underline a:hover::after,
 #quick-list.underline a:focus-visible::before,
 #quick-list.underline a:focus-visible::after { transform: scaleX(1); }
+
+/* ---- The numbers on the "page not found" page ----------------------------
+   They sit under the heading until one is pushed; then notfound.js takes
+   over, placing each one wherever it has bounced to. */
+.digits {
+  display: flex;
+  gap: 0.04em;
+  margin: 0 0 8px;
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+  font-size: min(calc(var(--heading-size) * 2.2), 34vw);
+  line-height: 1;
+  letter-spacing: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.digits[hidden] { display: none; }
+.digits span {
+  display: block;
+  color: var(--accent, #dfeac0);
+  cursor: grab;
+  touch-action: none;
+}
+.digits span:active { cursor: grabbing; }
+/* Once they're loose, each number is placed on the page by itself. */
+.digits.loose {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  display: block;
+  margin: 0;
+  pointer-events: none;
+}
+.digits.loose span {
+  position: fixed;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  will-change: transform;
+}

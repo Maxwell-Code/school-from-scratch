@@ -9,8 +9,14 @@
 <link rel="stylesheet" href="page.css">
 </head>
 <body>
-  <a class="back" href="index.html">&larr; Back</a>
+  <!-- The same menu bar as the home page's; page.js fills it in. -->
+  <nav id="quick-nav" aria-label="Menu">
+    <div id="quick-list"></div>
+  </nav>
   <main>
+    <!-- Shown only when the address really is nowhere. Pushing a number
+         sends it bouncing around the page (notfound.js). -->
+    <p class="digits" id="digits" aria-hidden="true" hidden><span>4</span><span>0</span><span>4</span></p>
     <h1 id="title"></h1>
     <p class="status" id="status">Under Development</p>
     <div class="contact" id="contact" hidden>
@@ -19,5 +25,6 @@
     </div>
   </main>
   <script src="page.js"></script>
+  <script src="notfound.js"></script>
 </body>
 </html>

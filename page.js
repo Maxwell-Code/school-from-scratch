@@ -103,6 +103,9 @@ window.settingsLoaded.then(() => {
   if (!name) {
     titleEl.textContent = 'Page not found';
     statusEl.textContent = '';
+    const digits = document.getElementById('digits');
+    if (digits) digits.hidden = false; // notfound.js makes them pushable
+
     document.title = 'Page not found · ' + setting('MENU_TITLE', 'The School From Scratch');
     return;
   }

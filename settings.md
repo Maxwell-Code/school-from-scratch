@@ -714,6 +714,53 @@ PAYMENT_STEP_CIRCLE_SIZE = 36
 PAYMENT_STEP_SPACING = 28
 ```
 
+## Page not found (404.html)
+
+When someone follows a broken link they get this page: the menu bar, a big
+404, and "Page not found". Pushing one of the numbers sets all three loose,
+and they fall, bounce off the edges of the page and off each other, and
+settle. A push sends a number away from the spot it was pushed, so a push
+from below sends it up. true or false, no quotes:
+
+```js
+NOT_FOUND_PUSHABLE_NUMBERS = true
+```
+
+How strongly they're pulled downward, in pixels per second, per second
+(2600 feels about like real weight; 0 leaves them floating).
+
+```js
+NOT_FOUND_GRAVITY = 2600
+```
+
+How bouncy they are, from 0 to 1: 0 = they land with a thud, 0.55 = a few
+bounces, 0.9 = very lively.
+
+```js
+NOT_FOUND_BOUNCE = 0.55
+```
+
+How hard a push is, in pixels per second. A push near the edge of a number
+is stronger than one in its middle.
+
+```js
+NOT_FOUND_PUSH = 950
+```
+
+How quickly they stop sliding along the bottom of the page, from 0 (slides
+like ice) to 1 (stops almost at once).
+
+```js
+NOT_FOUND_FLOOR_GRIP = 0.6
+```
+
+The gap kept between the numbers and the edges of the page (and the menu
+bar), in pixels, so a number at rest is never flush against an edge.
+
+```js
+NOT_FOUND_EDGE_SPACE = 10
+```
+
 ## Background grid
 
 Show a faint grid behind everything (true or false, no quotes).

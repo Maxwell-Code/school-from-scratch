@@ -1,7 +1,8 @@
 **The curriculum is curiosity.**
 
-- **The curriculum is uncovered rather than covered** - sustaining attention, engagement, and inquiry.
-- **The curriculum is emergent** in its meticulous attention to materials, phenomena, and the learning of the children and the educators. The curriculum and 'lessons' include **intentionally planned and unplanned** experiences and activities.
+**The curriculum is uncovered rather than covered** - sustaining attention, engagement, and inquiry.
+
+**The curriculum is emergent** in its meticulous attention to materials, phenomena, and the learning of the children and the educators. The curriculum and 'lessons' include **intentionally planned and unplanned** experiences and activities.
 
 We learn deeply when we are genuinely curious about the world. Rather than dividing learning into separate subjects, we co-create an environment where explorations naturally arise from observations, questions, conversations, play, collaboration, silence, and a deep sense of connection with the world and with one another. These experiences may continue for days, weeks, months, or even a lifetime as explorations grow.
 
