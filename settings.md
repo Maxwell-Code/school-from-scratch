@@ -55,7 +55,7 @@ It's written like the section files, so the wording is yours to shape:
 above the bottom of the page it sits.
 
 ```js
-END_QUOTE = "'There is no end to education is it not that you read a book. Pass an examination, and finish with education. The whole of life from the moment you are born to the moment you die is a process of learning.'"
+END_QUOTE = "'*There is no end to education. It isn’t that you read a book and pass an examination, and then finish with education. You think you have finished with it. You have not. The whole of life—from now, from the moment you are born till the moment you die, it’s a process of learning.*' —Jiddu Krishnamurti"
 END_QUOTE_SIZE = 24
 END_QUOTE_ABOVE_BOTTOM = 200
 ```
@@ -419,7 +419,6 @@ MENU_ITEMS = [
   "Logistics",
   "FAQs",
   "Cost",
-  "Contact",
 ]
 ```
 
@@ -433,6 +432,7 @@ folder.
 ```js
 MENU_LINKS = {
   "Payments": "payments.html",
+  "Contact": "contact.html",
 }
 ```
 
@@ -443,6 +443,7 @@ come from MENU_LINKS above, the same as any other option's.
 ```js
 TOP_MENU_EXTRA_ITEMS = [
   "Payments",
+  "Contact",
 ]
 ```
 
