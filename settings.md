@@ -732,24 +732,51 @@ How strongly they're pulled downward, in pixels per second, per second
 (2600 feels about like real weight; 0 leaves them floating).
 
 ```js
-NOT_FOUND_GRAVITY = 2600
+NOT_FOUND_GRAVITY = 2200
 ```
 
 How bouncy they are, from 0 to 1: 0 = they land with a thud, 0.55 = a few
 bounces, 0.9 = very lively.
 
 ```js
-NOT_FOUND_BOUNCE = 0.55
+NOT_FOUND_BOUNCE = 0.35
 ```
 
 How fast a push sends a character off, in pixels a second (700 is a firm
 shove across a laptop screen; 300 is gentle). A push near the edge of a
 character is a little stronger than one in its middle, and sets it spinning
-more. The first push also nudges every other character, at about a third of
-this.
+more.
 
 ```js
 NOT_FOUND_PUSH = 700
+```
+
+A push isn't felt by one character alone. It spreads out from the spot
+pushed and fades with distance: characters right next to it are shoved hard,
+those further off drift, and those beyond this reach (in pixels) stay put.
+Once the characters are loose, a push anywhere on the page counts, not only
+one that lands on a character.
+
+```js
+NOT_FOUND_PUSH_REACH = 260
+```
+
+The very first push is a burst that reaches the whole page, this many times
+the usual strength (1 = the same as any other push).
+
+```js
+NOT_FOUND_FIRST_BLAST = 1.25
+```
+
+Holding a click on a character (or dragging it) picks it up instead of
+pushing it: it hangs from the pointer, swinging under its own weight, and is
+thrown when the click ends. How long a click has to be held before it counts
+as picking up, in milliseconds, and how closely the character follows the
+pointer, from 0.01 (loose and swingy) to 1 (stuck to it).
+
+```js
+NOT_FOUND_HOLD_TO_PICK_UP_MS = 150
+NOT_FOUND_DRAG_GRIP = 0.2
 ```
 
 How quickly they stop sliding along the bottom of the page, from 0 (slides

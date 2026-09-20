@@ -22,6 +22,10 @@ window.settingsLoaded.then(() => {
   const GRIP = clamp01(setting('NOT_FOUND_FLOOR_GRIP', 0.6));
   const EDGE = Math.max(0, setting('NOT_FOUND_EDGE_SPACE', 10));
   const DETAIL = Math.max(2, setting('NOT_FOUND_SHAPE_DETAIL', 7)); // how finely a shape follows the character
+  const REACH = Math.max(1, setting('NOT_FOUND_PUSH_REACH', 260));  // how far a push is felt
+  const FIRST_BLAST = Math.max(0, setting('NOT_FOUND_FIRST_BLAST', 2.2)); // the opening burst
+  const HOLD_MS = Math.max(0, setting('NOT_FOUND_HOLD_TO_PICK_UP_MS', 150)); // hold this long to pick one up
+  const GRIP_ON_HAND = Math.min(1, Math.max(0.01, setting('NOT_FOUND_DRAG_GRIP', 0.2))); // how closely it follows
   const TOP_SPEED = 1800; // pixels a second: fast enough to fly, slow enough to stay in
 
   // ---- The characters -------------------------------------------------------
@@ -113,7 +117,7 @@ window.settingsLoaded.then(() => {
   }
 
   // ---- The physics ----------------------------------------------------------
-  const { Engine, Bodies, Body, Composite, Vector, Sleeping } = Matter;
+  const { Engine, Bodies, Body, Composite, Constraint, Vector, Sleeping } = Matter;
   const engine = Engine.create({ enableSleeping: true });
   engine.gravity.y = GRAVITY / 2600;
   // Worked over several times each frame, so characters rest against each
@@ -206,39 +210,144 @@ window.settingsLoaded.then(() => {
     }
   };
 
-  // A push sends the character away from the spot it was pushed. Because the
-  // push lands on that spot rather than in the middle, it also sets it
-  // spinning, the way shoving the corner of something spins it.
+  // A push sends the character away from the spot it was pushed, and
+  // because the push lands on that spot rather than in the middle, it also
+  // sets it spinning, the way shoving the corner of something spins it.
   //
   // NOT_FOUND_PUSH is how fast a push sends a character off, in pixels a
-  // second. The physics works in pixels per frame and takes a force rather
-  // than a speed, so the force is worked back from the character's weight:
-  // a frame is 1/60 of a second, and the physics multiplies a force by the
-  // square of the frame's length in milliseconds (16.7 x 16.7 = 278).
-  const FORCE_FOR_ONE_PIXEL_A_SECOND = 1 / (60 * 278);
+  // second, so the speed is given to the character directly rather than as a
+  // force: a force would depend on how the physics chops up its time.
+  const TOP_SPIN = 0.5; // turns of a character per frame, at most
   function push(body, pointX, pointY, share) {
     const away = Vector.sub(body.position, { x: pointX, y: pointY });
     const len = Math.hypot(away.x, away.y) || 1;
     const dir = { x: away.x / len, y: away.y / len };
     // A push near the edge of a character is a little stronger than one in
-    // its middle, and sets it spinning more.
-    const speed = PUSH * (share || 1) * (0.6 + 0.4 * Math.min(1, len / 60));
-    const strength = body.mass * speed * FORCE_FOR_ONE_PIXEL_A_SECOND;
+    // its middle.
+    const speed = (PUSH * (share || 1) * (0.6 + 0.4 * Math.min(1, len / 60))) / 60; // pixels a frame
     Sleeping.set(body, false);
-    Body.applyForce(body, { x: pointX, y: pointY }, { x: dir.x * strength, y: dir.y * strength });
+    Body.setVelocity(body, { x: body.velocity.x + dir.x * speed, y: body.velocity.y + dir.y * speed });
+    // The spin a shove off the middle gives it: how far the push landed from
+    // the middle, against how hard the character is to turn.
+    const arm = { x: pointX - body.position.x, y: pointY - body.position.y };
+    const shove = { x: dir.x * speed * body.mass, y: dir.y * speed * body.mass };
+    const spin = (arm.x * shove.y - arm.y * shove.x) / body.inertia;
+    Body.setAngularVelocity(body, Math.max(-TOP_SPIN, Math.min(TOP_SPIN, body.angularVelocity + spin)));
+  }
+
+  // A push isn't felt by one character alone: it spreads out from the spot
+  // that was pushed and fades with distance, so the characters nearby are
+  // shoved hard, those further off drift, and those beyond its reach stay
+  // put. The very first push is a burst that reaches the whole page.
+  function blast(pointX, pointY, reach, force) {
+    for (const p of parts) {
+      const b = p.body;
+      // How far the push has to travel to reach the character: measured to
+      // its edge, so a big character is pushed as its nearest part feels it.
+      const toX = Math.max(b.bounds.min.x - pointX, 0, pointX - b.bounds.max.x);
+      const toY = Math.max(b.bounds.min.y - pointY, 0, pointY - b.bounds.max.y);
+      const away = Math.hypot(toX, toY);
+      if (away >= reach) continue;
+      // Full strength where it was pushed, fading off to nothing at the edge
+      // of its reach.
+      const share = (1 - away / reach) ** 1.6;
+      if (share > 0.01) push(b, pointX, pointY, share * force);
+    }
+    if (!frame) frame = requestAnimationFrame(step);
+  }
+
+  function pushedAt(e, wasFirst) {
+    const wholePage = Math.hypot(document.documentElement.clientWidth, document.documentElement.clientHeight);
+    if (wasFirst) blast(e.clientX, e.clientY, wholePage, FIRST_BLAST);
+    else blast(e.clientX, e.clientY, REACH, 1);
+  }
+
+  // ---- Pushing, and picking one up -----------------------------------------
+  // A quick click pushes. Holding the click on a character, or dragging it,
+  // picks it up instead: it hangs from the pointer, swinging under its own
+  // weight, and is let go (and thrown) when the click ends.
+  let held = null;      // { part, constraint }
+  let waiting = null;   // a click that hasn't decided yet: push or pick up
+
+  function pickUp(part, x, y) {
+    const body = part.body;
+    Sleeping.set(body, false);
+    // Where on the character it was taken hold of, in the character's own
+    // terms, so it hangs from that very spot however it turns.
+    const grip = Vector.rotate({ x: x - body.position.x, y: y - body.position.y }, -body.angle);
+    const constraint = Constraint.create({
+      pointA: { x, y },
+      bodyB: body,
+      pointB: grip,
+      length: 0,
+      stiffness: GRIP_ON_HAND,
+      damping: 0.2,
+    });
+    Composite.add(engine.world, constraint);
+    held = { part, constraint };
+    part.el.classList.add('held');
+    if (!frame) frame = requestAnimationFrame(step);
+  }
+
+  function letGo() {
+    if (!held) return;
+    Composite.remove(engine.world, held.constraint);
+    held.part.el.classList.remove('held');
+    held = null;
   }
 
   pieces.forEach((el) => el.addEventListener('pointerdown', (e) => {
+    if (e.button && e.button !== 0) return;
     e.preventDefault();
     const first = !loose;
     comeLoose();
-    const hit = parts.find((p) => p.el === el);
-    if (hit) push(hit.body, e.clientX, e.clientY);
-    // The first push wakes everything, so the whole page comes apart at
-    // once, though the rest only get a nudge.
-    if (first) for (const p of parts) if (p !== hit) push(p.body, e.clientX, e.clientY, 0.35);
-    if (!frame) frame = requestAnimationFrame(step);
+    const part = parts.find((p) => p.el === el);
+    if (!part) return;
+    // Wait a moment: a quick click is a push, a held one picks the
+    // character up.
+    waiting = {
+      part, first, x: e.clientX, y: e.clientY, pointerId: e.pointerId,
+      timer: setTimeout(() => {
+        if (waiting) { pickUp(waiting.part, waiting.x, waiting.y); waiting = null; }
+      }, HOLD_MS),
+    };
   }));
+
+  window.addEventListener('pointermove', (e) => {
+    if (held) {
+      held.constraint.pointA = { x: e.clientX, y: e.clientY };
+      Sleeping.set(held.part.body, false);
+      if (!frame) frame = requestAnimationFrame(step);
+      return;
+    }
+    // Moving the pointer while the click is still down means a drag, so the
+    // character is picked up straight away.
+    if (waiting && Math.hypot(e.clientX - waiting.x, e.clientY - waiting.y) > 5) {
+      clearTimeout(waiting.timer);
+      pickUp(waiting.part, waiting.x, waiting.y);
+      waiting = null;
+    }
+  });
+
+  function ended(e) {
+    if (held) { letGo(); return; }
+    if (!waiting) return;
+    clearTimeout(waiting.timer);
+    const { first, x, y } = waiting;
+    waiting = null;
+    pushedAt({ clientX: x, clientY: y }, first); // it was a quick click: a push
+  }
+  window.addEventListener('pointerup', ended);
+  window.addEventListener('pointercancel', ended);
+
+  // Once the characters are loose, a push anywhere on the page is felt by
+  // whatever is near it, not only by a character that was hit.
+  document.addEventListener('pointerdown', (e) => {
+    if (!loose || held || waiting) return;
+    if (e.target.closest('#quick-nav')) return; // the menu is for using, not shoving
+    if (pieces.some((el) => el === e.target || el.contains(e.target))) return; // already handled
+    pushedAt(e, false);
+  });
 
   // Nothing may leave the page, however hard it's pushed: anything that ends
   // up past an edge is put back against it.
@@ -275,7 +384,7 @@ window.settingsLoaded.then(() => {
     Engine.update(engine, 1000 / 120);
     keepInside();
     draw();
-    const moving = parts.some((p) => !p.body.isSleeping);
+    const moving = held || parts.some((p) => !p.body.isSleeping);
     frame = moving ? requestAnimationFrame(step) : 0;
   }
 

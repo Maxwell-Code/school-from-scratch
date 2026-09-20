@@ -273,7 +273,9 @@ main.payments {
   cursor: grab;
   touch-action: none;
 }
-#title span:active { cursor: grabbing; }
+#title span:active,
+.digits.loose span.held,
+#title.loose span.held { cursor: grabbing; }
 /* Once they're loose, each character is placed on the page by itself. */
 .digits.loose,
 #title.loose {
