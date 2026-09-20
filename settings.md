@@ -691,7 +691,7 @@ Show the Zelle logo on the payments page at all (true or false, no quotes).
 false hides it, leaving the heading and the steps.
 
 ```js
-SHOW_ZELLE_LOGO = true
+SHOW_ZELLE_LOGO = false
 ```
 
 The Zelle logo file, and how wide it's shown, in pixels. Its corners are

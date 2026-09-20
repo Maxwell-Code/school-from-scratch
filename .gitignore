@@ -3,3 +3,6 @@ private/
 
 # Notes app (Obsidian) settings, created when a folder is opened in it.
 .obsidian/
+
+# Installed only to run tools/make-small-photos.js
+node_modules/

@@ -1,59 +1,88 @@
 // Makes the small copies of the gallery photos that the site loads
 // (images/small/). Photos come off a camera at several megabytes each, but
-// they're only ever shown a few hundred pixels across.
+// they're only ever shown a few hundred pixels across, so the site loads
+// these instead: about 1.4 MB for the whole gallery instead of 20 MB.
 //
-// To run it: have the site running on localhost:5000, then from a folder
-// with playwright-core installed (npm install playwright-core):
-//   node make-small-photos.js "C:/path/to/the_school_from_scratch_website" 900 0.72
-// The last two are the longest side in pixels and the JPEG quality.
-// Originals in images/ are never touched.
-const { chromium } = require('playwright-core');
+// This normally runs by itself: GitHub makes any missing copies whenever
+// photos are pushed (.github/workflows/small-photos.yml). To run it here:
+//   npm install sharp
+//   node tools/make-small-photos.js
+//
+// It reads PHOTOS and PHOTO_SMALL_FOLDER from settings.md, makes a copy for
+// any photo that hasn't got one (or whose photo has changed), and deletes
+// copies of photos that are no longer listed. Originals are never touched.
+
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const vm = require('vm');
+const sharp = require('sharp');
 
-const SITE = process.argv[2] || 'C:/Users/maxwe/Projects/The School From Scratch/the_school_from_scratch_website';
-const MAX = Number(process.argv[3] || 900);   // longest side, in pixels
-const QUALITY = Number(process.argv[4] || 0.72);
+const SITE = path.resolve(__dirname, '..');
+const MAX = Number(process.env.PHOTO_MAX_SIDE || 900);   // longest side, pixels
+const QUALITY = Number(process.env.PHOTO_QUALITY || 72);
+
+// The settings are the `NAME = value` lines in settings.md's code blocks.
+function readSettings() {
+  const text = fs.readFileSync(path.join(SITE, 'settings.md'), 'utf8');
+  const box = { random: 'random' };
+  vm.createContext(box);
+  for (const [, code] of text.replace(/\r\n?/g, '\n').matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)) {
+    try { vm.runInContext(code, box); } catch { /* a broken block is skipped, as on the site */ }
+  }
+  return box;
+}
+
+const hash = (file) => crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex').slice(0, 16);
+const smallName = (file) => file.replace(/\.[^.]+$/, '.jpg');
 
 (async () => {
-  const settings = fs.readFileSync(path.join(SITE, 'settings.md'), 'utf8');
-  const code = [...settings.matchAll(/^```[^\n]*\n([\s\S]*?)^```/gm)].map((m) => m[1]).join('\n');
-  const ctx = { random: 'random' };
-  require('vm').createContext(ctx);
-  require('vm').runInContext(code, ctx);
-  const files = ctx.PHOTOS;
-  const outDir = path.join(SITE, 'images', 'small');
+  const settings = readSettings();
+  const photos = (settings.PHOTOS || []).map(String);
+  const fromDir = path.join(SITE, settings.PHOTO_FOLDER || 'images/');
+  const outDir = path.join(SITE, settings.PHOTO_SMALL_FOLDER || 'images/small/');
+  if (!settings.PHOTO_SMALL_FOLDER) {
+    console.log('PHOTO_SMALL_FOLDER is empty in settings.md: nothing to do.');
+    return;
+  }
   fs.mkdirSync(outDir, { recursive: true });
 
-  const browser = await chromium.launch({ channel: 'chrome' });
-  const page = await browser.newPage();
-  await page.goto('http://localhost:5000/');
-  let before = 0, after = 0;
-  for (const file of files) {
-    const src = path.join(SITE, 'images', file);
-    const bytes = fs.statSync(src).size;
-    const data = await page.evaluate(async ({ file, MAX, QUALITY }) => {
-      const img = new Image();
-      img.src = 'images/' + encodeURIComponent(file);
-      await img.decode();
-      const scale = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight));
-      const w = Math.round(img.naturalWidth * scale), h = Math.round(img.naturalHeight * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const c = canvas.getContext('2d');
-      c.imageSmoothingQuality = 'high';
-      c.drawImage(img, 0, 0, w, h);
-      return { url: canvas.toDataURL('image/jpeg', QUALITY), w, h, ow: img.naturalWidth, oh: img.naturalHeight };
-    }, { file, MAX, QUALITY });
-    const buf = Buffer.from(data.url.split(',')[1], 'base64');
-    // Keep the original name, but always a .jpg now.
-    const out = path.join(outDir, file.replace(/\.[^.]+$/, '.jpg'));
-    fs.writeFileSync(out, buf);
-    before += bytes;
-    after += buf.length;
-    console.log(`${file}: ${data.ow}x${data.oh} ${(bytes / 1e6).toFixed(2)}MB -> ${data.w}x${data.h} ${(buf.length / 1e3).toFixed(0)}KB`);
+  // What each copy was made from, so a replaced photo gets a new copy.
+  const listFile = path.join(outDir, 'made-from.json');
+  const madeFrom = fs.existsSync(listFile) ? JSON.parse(fs.readFileSync(listFile, 'utf8')) : {};
+  const nowMadeFrom = {};
+  let made = 0, removed = 0;
+
+  for (const file of photos) {
+    const src = path.join(fromDir, file);
+    if (!fs.existsSync(src)) {
+      console.warn(`! ${file} is listed in PHOTOS but isn't in the images folder`);
+      continue;
+    }
+    const out = path.join(outDir, smallName(file));
+    const stamp = hash(src);
+    nowMadeFrom[smallName(file)] = stamp;
+    if (fs.existsSync(out) && madeFrom[smallName(file)] === stamp) continue;
+    const image = sharp(src, { failOn: 'none' }).rotate(); // rotate: honour the camera's orientation
+    const meta = await image.metadata();
+    await image
+      .resize({ width: MAX, height: MAX, fit: 'inside', withoutEnlargement: true })
+      .jpeg({ quality: QUALITY, mozjpeg: true })
+      .toFile(out);
+    const before = fs.statSync(src).size, after = fs.statSync(out).size;
+    console.log(`${file}: ${meta.width}x${meta.height} ${(before / 1e6).toFixed(2)}MB -> ${(after / 1e3).toFixed(0)}KB`);
+    made++;
   }
-  console.log(`total ${(before / 1e6).toFixed(1)}MB -> ${(after / 1e6).toFixed(2)}MB`);
-  await browser.close();
+
+  // Copies of photos that are no longer listed.
+  const wanted = new Set(photos.map(smallName));
+  for (const name of fs.readdirSync(outDir)) {
+    if (name === 'made-from.json' || wanted.has(name)) continue;
+    fs.unlinkSync(path.join(outDir, name));
+    console.log(`removed ${name} (no longer in PHOTOS)`);
+    removed++;
+  }
+
+  fs.writeFileSync(listFile, JSON.stringify(nowMadeFrom, null, 1) + '\n');
+  console.log(`${made} made, ${removed} removed, ${photos.length} photos in all.`);
 })();
