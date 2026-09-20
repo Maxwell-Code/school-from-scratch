@@ -131,6 +131,11 @@
     border-radius: var(--section-image-radius, 15px);
   }
   .section p { margin: 0 0 1em; }
+  /* An extra empty line in a section file. */
+  .section .md-space { height: 1em; margin: 0; }
+  /* A list with empty lines between its items sits a little further apart. */
+  .section ul.spaced li,
+  .section ol.spaced li { margin-bottom: 1em; }
   .section ul,
   .section ol { margin: 0 0 1em; padding-left: 1.3em; }
   .section li { margin-bottom: 0.35em; }

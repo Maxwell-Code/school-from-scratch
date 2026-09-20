@@ -122,6 +122,10 @@ main.payments {
   text-align: center;
 }
 .pay-content p { margin: 0 0 1em; }
+/* An extra empty line in the text file. */
+.pay-content .md-space { height: 1em; margin: 0; }
+/* A list with empty lines between its items sits a little further apart. */
+.pay-content ul.spaced li { margin-bottom: 1em; }
 .pay-content p.centered { text-align: center; }
 .pay-content a { color: inherit; text-underline-offset: 3px; }
 .pay-content .md-image { display: block; max-width: 100%; height: auto; margin: 0 auto 1em; border-radius: var(--zelle-logo-radius, 15px); }

@@ -550,7 +550,8 @@ The section's heading is the menu option's name, so don't repeat it.
 
 The files are Markdown, like this one:
 
-- A blank line starts a new paragraph.
+- An empty line starts a new paragraph. Each further empty line adds a blank line's worth of space, so pressing Enter a few times spaces things out the way it looks in the file.
+- An empty line between list items is fine: the list carries on (numbers keep counting) and its items sit a little further apart.
 - A line starting with `#` is a small heading: `# Our questions`
 - A line starting with `##` is a centered name: `## Dr. Gopal Krishnamurthy`. The lines right under it (before the next blank line) are centered too, for a picture and a title.
 - A picture: `![Headshot of Gopal](images/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in images/.
