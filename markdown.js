@@ -88,3 +88,17 @@ function markdownToHtml(md) {
   flushList();
   return out.join('\n');
 }
+
+// A line of its own written as !name! (in a section or page file) stands for
+// something built separately: a drawing, a wheel, a map. The name is looked
+// up in the EMBEDS setting, and what comes back is shown in a frame of its
+// own, so whatever styling it carries can't reach the rest of the page.
+function withEmbeds(html, embeds, height) {
+  return html.replace(/<p>!([A-Za-z0-9_-]+)!<\/p>/g, (all, name) => {
+    const file = embeds && embeds[name];
+    if (!file) return all; // no such name: leave the words as they are
+    return '<iframe class="embed" src="' + String(file).replace(/"/g, '&quot;') +
+      '" title="' + name + '" loading="lazy" scrolling="no" sandbox="allow-scripts"' +
+      ' style="height: ' + Number(height || 420) + 'px"></iframe>';
+  });
+}

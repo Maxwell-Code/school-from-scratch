@@ -145,6 +145,17 @@
   .section p { margin: 0 auto 1em; max-width: var(--paragraph-width, none); }
   /* An extra empty line in a section file. */
   .section .md-space { height: 1em; margin: 0; }
+  /* Something built separately, dropped into a section by name (!wheel!).
+     It sits in a frame of its own, so its own styling stays inside it. */
+  .section .embed,
+  .pay-content .embed {
+    display: block;
+    width: 100%;
+    margin: 1.2em 0;
+    border: none;
+    background: transparent;
+    color-scheme: normal;
+  }
   .end-quote p { margin: 0; }
   .end-quote p + p { margin-top: 0.8em; }
   /* The quote at the end of the page (END_QUOTE). */
@@ -1931,6 +1942,9 @@ function startGallery() {
   // sections/<option name>.md (People -> sections/people.md), written in
   // Markdown. A missing or empty file shows "Under Development".
   const SECTION_DIR = 'sections/';
+  // Things built separately that a section can drop in by name (!wheel!).
+  const EMBEDS = setting('EMBEDS', {});
+  const EMBED_HEIGHT = Math.max(40, setting('EMBED_HEIGHT', 420));
   const sectionsLayer = document.createElement('div');
   sectionsLayer.id = 'sections';
   let sectionEls = [];
@@ -1940,7 +1954,7 @@ function startGallery() {
       fetch(SECTION_DIR + slug + '.md', { cache: 'no-cache' })
         .then((r) => (r.ok ? r.text() : ''))
         .catch(() => '')
-        .then((text) => [slug, text.trim() ? markdownToHtml(text) : ''])))
+        .then((text) => [slug, text.trim() ? withEmbeds(markdownToHtml(text), EMBEDS, EMBED_HEIGHT) : ''])))
       .then((pairs) => new Map(pairs));
   }
 

@@ -14,7 +14,10 @@ window.settingsLoaded.then(() => {
 
   fetch(file, { cache: 'no-cache' })
     .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
-    .then((text) => { box.innerHTML = markdownToHtml(fillIn(text)); })
+    .then((text) => {
+      box.innerHTML = withEmbeds(markdownToHtml(fillIn(text)),
+        setting('EMBEDS', {}), setting('EMBED_HEIGHT', 420));
+    })
     .catch((err) => {
       console.warn(file + ' could not be loaded (' + err.message + ').');
       box.innerHTML = '<p>Coming soon.</p>';

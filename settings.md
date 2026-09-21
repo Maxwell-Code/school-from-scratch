@@ -269,6 +269,32 @@ in milliseconds.
 HOME_TRAVEL_MS = 800
 ```
 
+## Things built separately
+
+Some things are built on their own and dropped into a section or a page: the
+explorations wheel, for instance. Each one gets a name here and the file it
+lives in. To show it, write its name between exclamation marks on a line of
+its own in a section file:
+
+`!wheel!`
+
+Anything shown this way keeps to its own frame, so whatever colours, fonts
+or movement it carries can't reach the rest of the page. A name that isn't
+listed here is left alone as ordinary words.
+
+```js
+EMBEDS = {
+  "wheel": "embeds/explorations_wheel.html",
+}
+```
+
+How tall the frame is, in pixels. It is always as wide as the words around
+it.
+
+```js
+EMBED_HEIGHT = 420
+```
+
 ## Colors
 
 ```js

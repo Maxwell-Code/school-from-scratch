@@ -6,6 +6,8 @@
 
 We learn deeply when we are genuinely curious about the world. Rather than dividing learning into separate subjects, we co-create an environment where explorations naturally arise from observations, questions, conversations, play, collaboration, silence, and a deep sense of connection with the world and with one another. These experiences may continue for days, weeks, months, or even a lifetime as explorations grow.
 
+!wheel!
+
 The teacher's focus is to: 
 1. Be learning themselves.
 2. Make available and co-create environments for direct engagement with phenomena, materials, and the world.
