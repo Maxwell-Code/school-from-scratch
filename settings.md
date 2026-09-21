@@ -88,14 +88,15 @@ originals.
 PHOTOS = [
   "children_on_an_oak_tree.jpg",
   "children_playing_in_the_mud.jpg",
-  "Collaborating on building a school model.jpg",
+  "collaborating_on_building_a_school_model.jpg",
   "forest_camp_comfort.jpeg",
   "libby_bowl_writing.jpg",
-  "sfs_kids_at_work.jpeg",
-  "sfs_tent_with_kids.jpeg",
+  "kids_at_work.jpeg",
+  "tent_with_kids.jpeg",
   "tent_kids.jpg",
   "wood_sawing.jpg",
   "wooden_airplane.jpg",
+  "kids_crafting_under_tent.jpeg"
 ]
 ```
 
@@ -416,7 +417,7 @@ says something without leading anywhere.
 
 ```js
 HOME_NOTICE = "The School From Scratch is producing the play *Is Nirmal Normal?* Click to learn more!"
-HOME_NOTICE_LINK = "is_nirmal_normal.html"
+HOME_NOTICE_LINK = "is_nirmal_normal.html.404"
 ```
 
 The size of its words, in pixels, and the space between the line above it
