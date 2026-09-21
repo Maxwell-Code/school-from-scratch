@@ -155,6 +155,10 @@
     border: none;
     background: transparent;
     color-scheme: normal;
+    /* Something shown this way is to look at, not to touch: the pointer and
+       a finger go straight through to the page, so scrolling over it
+       scrolls the page as anywhere else. */
+    pointer-events: none;
   }
   .end-quote p { margin: 0; }
   .end-quote p + p { margin-top: 0.8em; }

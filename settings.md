@@ -292,7 +292,7 @@ How tall the frame is, in pixels. It is always as wide as the words around
 it.
 
 ```js
-EMBED_HEIGHT = 420
+EMBED_HEIGHT = 500
 ```
 
 ## Colors
