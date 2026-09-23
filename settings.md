@@ -316,11 +316,14 @@ Where the figure stands:
 PLAY_TITLE_FIGURE_PLACE = "between"
 ```
 
-How many whole rows of figures stand above the heading. The heading is
-pushed down the page far enough to leave room for them, each spaced from the
-next as everywhere else. 0 leaves the heading where the page puts it.
+Whether whole rows of figures stand above the heading, and how many. The
+heading is pushed down the page far enough to leave room for them, each
+spaced from the next as everywhere else, and the last of them spaced off the
+heading by PLAY_TEXT_CLEARANCE below, so it isn't hidden for standing too
+close. `false` (or 0 rows) leaves the heading where the page puts it.
 
 ```js
+PLAY_SPACE_ABOVE_HEADING = true
 PLAY_ROWS_ABOVE_HEADING = 1
 ```
 

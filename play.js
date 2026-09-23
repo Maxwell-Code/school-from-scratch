@@ -50,6 +50,7 @@ window.settingsLoaded.then(() => {
   const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
   const TITLE_FIGURE = Math.max(0, setting('PLAY_TITLE_FIGURE_HEIGHT', 200));
   const TITLE_FIGURE_PLACE = String(setting('PLAY_TITLE_FIGURE_PLACE', 'between')).trim().toLowerCase();
+  const SPACE_ABOVE_HEADING = setting('PLAY_SPACE_ABOVE_HEADING', true) !== false;
   const ROWS_ABOVE_HEADING = Math.max(0, setting('PLAY_ROWS_ABOVE_HEADING', 1)); // rows left above the heading
   const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
@@ -162,15 +163,20 @@ window.settingsLoaded.then(() => {
 
   // The heading is pushed far enough down the page for whole rows of figures
   // to stand above it, each row spaced from the one before it as everywhere
-  // else. 0 rows leaves the heading where the page puts it.
+  // else. The last of those rows needs the space the words keep around them
+  // as well, or the row would stand there and then be hidden for coming too
+  // close to the heading — a row with its middle missing.
   function spaceAboveHeading(startY, step) {
     const heading = document.getElementById('title');
-    if (!heading || !main || !ROWS_ABOVE_HEADING) return;
+    if (!heading || !main || !SPACE_ABOVE_HEADING || !ROWS_ABOVE_HEADING) return;
     const padding = parseFloat(getComputedStyle(main).paddingTop) || 0;
     const now = heading.getBoundingClientRect().top + window.scrollY;
-    const wanted = startY + ROWS_ABOVE_HEADING * step;
-    const next = Math.max(0, padding + (wanted - now));
-    if (Math.abs(next - padding) > 0.5) main.style.paddingTop = next.toFixed(1) + 'px';
+    const wanted = startY + ROWS_ABOVE_HEADING * step + Math.max(0, TEXT_CLEARANCE - GAP);
+    // Rounded up and left alone once it's within a pixel, so it settles
+    // instead of creeping down the page a fraction at a time.
+    if (Math.abs(wanted - now) > 1) {
+      main.style.paddingTop = Math.max(0, Math.ceil(padding + (wanted - now))) + 'px';
+    }
   }
 
   function fillField() {
