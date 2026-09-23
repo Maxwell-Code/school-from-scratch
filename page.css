@@ -312,24 +312,28 @@ main.payments {
 }
 #icon-field .person {
   position: absolute;
-  height: var(--icon-height, 84px);
-  width: auto;
-  aspect-ratio: 340 / 621;
+  display: block;
 }
-/* The filled ones: the drawing used as a stencil, so they take their color
-   from the setting. */
-#icon-field div.person {
-  background: var(--icon-color, #dfeac0);
-  -webkit-mask-image: var(--icon-file);
-  mask-image: var(--icon-file);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-size: contain;
-  mask-size: contain;
+/* Both kinds are copies of the same drawing: these two rules are the whole
+   difference between them. The rules reach the shapes themselves, since a
+   drawing may carry colors of its own that would otherwise win. */
+svg.person.filled * {
+  fill: var(--icon-color, #000);
+  stroke: none;
 }
-/* The odd one out: the same drawing with only the band around its outside
-   left, which play.js works out from the whole silhouette. */
-#icon-field svg.person.outline { overflow: visible; }
+/* The odd one out: the shape drawn with a pen instead of filled in. The line
+   is measured on the screen, so it stays the set thickness at any size. */
+svg.person.outline {
+  overflow: visible; /* room for the line, which sits astride the edge */
+}
+svg.person.outline * {
+  fill: none;
+  stroke: var(--icon-color, #000);
+  stroke-width: var(--icon-outline, 3px);
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 /* The title in two lines, with the outlined figure standing between them. */
 h1.split-by-figure {
   display: flex;

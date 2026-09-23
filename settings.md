@@ -277,7 +277,9 @@ are in sections/is_nirmal_normal/is_nirmal_normal.md, like the other pages.
 
 The drawing that's repeated, how tall each one is, and the space left
 between them, in pixels. Every other row is stepped half a place across, so
-each figure stands between the two in the row below.
+each figure stands between the two in the row below. Any empty margin around
+the figure in the drawing is trimmed off first, so the gap set here is the
+gap that shows on the page.
 
 ```js
 PLAY_BACKGROUND_ICON = "assets/person_icon.svg"
@@ -311,9 +313,9 @@ text steps aside, leaving this much space around them, in pixels.
 PLAY_TEXT_CLEARANCE = 24
 ```
 
-One of them is drawn as an outline: the whole figure's edge, not the edge of
-each piece it's drawn from. How thick that edge is, in pixels, and which one
-it is:
+One of them is drawn as an outline: the same figure traced with a pen
+instead of filled in. How thick that line is, in pixels, and which one it
+is:
 
 - "random" picks a different one each visit, away from the very edges.
 - "middle" is the one in the middle of the page, which on a short page sits

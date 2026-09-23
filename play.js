@@ -50,76 +50,22 @@ window.settingsLoaded.then(() => {
   const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
 
-  root.setProperty('--icon-height', HEIGHT + 'px');
-  root.setProperty('--icon-gap', GAP + 'px');
   root.setProperty('--icon-color', COLOR);
   root.setProperty('--icon-outline', THICKNESS + 'px');
-  root.setProperty('--icon-file', `url("${file}")`);
 
-  // The outlined one is the same drawing with only its edge drawn. The
-  // drawing is made of separate pieces (head, arms, body, legs) which
-  // overlap, so drawing the edge of each piece would leave lines criss-
-  // crossing inside it. Instead the whole silhouette is taken as one shape:
-  // a copy of it is shrunk from every side and cut out of the original,
-  // which leaves just the band around the outside, however the pieces
-  // happen to be arranged.
+  // Every figure on the page, filled or outlined, is a copy of the drawing's
+  // own shapes. The outlined one is simply that shape drawn with a pen
+  // instead of filled in, so its line is even the whole way round and stays
+  // sharp however large the figure is. Which of the two a figure is, is left
+  // to the stylesheet.
   const NS = 'http://www.w3.org/2000/svg';
-  let outlineCount = 0;
-  function outlinePiece() {
+  function piece(kind) {
     const svg = document.createElementNS(NS, 'svg');
-    svg.setAttribute('class', 'person outline');
+    svg.setAttribute('class', 'person ' + kind);
     svg.setAttribute('viewBox', sourceViewBox);
-    if (!outlineSvg) return svg; // the drawing hasn't arrived
-
-    // The outline is drawn from the shapes themselves rather than from a
-    // picture of them, so its line is even all the way round and stays
-    // sharp however large the figure is.
-    //
-    // Two copies of the figure make the line: the first is drawn with a
-    // thick pen, which puts a band of colour around the whole outside; the
-    // second is the figure as it is, which hides everything inside that
-    // band. What's left is the outline.
-    const id = 'nirmal-edge-' + (++outlineCount);
-    const shapes = () => {
-      const group = document.createElementNS(NS, 'g');
-      for (const child of outlineSvg.children) {
-        if (child.tagName.toLowerCase() === 'defs') continue;
-        group.appendChild(child.cloneNode(true));
-      }
-      // Whatever colours the drawing carries are dropped: the mask only
-      // cares about what is covered and what isn't.
-      group.querySelectorAll('[fill], [stroke]').forEach((el) => {
-        el.removeAttribute('fill');
-        el.removeAttribute('stroke');
-      });
-      return group;
-    };
-
-    const mask = document.createElementNS(NS, 'mask');
-    mask.setAttribute('id', id);
-    const outer = shapes();                       // the figure, drawn with a thick pen
-    outer.setAttribute('fill', '#fff');
-    outer.setAttribute('stroke', '#fff');
-    outer.setAttribute('stroke-width', THICKNESS * 2);
-    outer.setAttribute('stroke-linejoin', 'round');
-    outer.setAttribute('stroke-linecap', 'round');
-    outer.setAttribute('vector-effect', 'non-scaling-stroke');
-    const inner = shapes();                       // the figure as it is
-    inner.setAttribute('fill', '#000');
-    inner.setAttribute('stroke', 'none');
-    mask.append(outer, inner);
-
-    const paint = document.createElementNS(NS, 'rect');
-    paint.setAttribute('x', '-50%');
-    paint.setAttribute('y', '-50%');
-    paint.setAttribute('width', '200%');
-    paint.setAttribute('height', '200%');
-    paint.setAttribute('fill', COLOR);
-    paint.setAttribute('mask', 'url(#' + id + ')');
-
-    const defs = document.createElementNS(NS, 'defs');
-    defs.appendChild(mask);
-    svg.append(defs, paint);
+    if (sourceSvg) {
+      for (const child of sourceSvg.children) svg.appendChild(child.cloneNode(true));
+    }
     return svg;
   }
 
@@ -137,7 +83,7 @@ window.settingsLoaded.then(() => {
     const last = document.createElement('span');
     last.className = 'title-line';
     last.textContent = TITLE_LINES.slice(1).join(' ');
-    const figure = outlinePiece();
+    const figure = piece('outline');
     figure.classList.add('in-title');
     figure.style.height = TITLE_FIGURE + 'px';
     figure.style.width = (TITLE_FIGURE * ratio).toFixed(1) + 'px';
@@ -145,20 +91,51 @@ window.settingsLoaded.then(() => {
     figureInTitle = true;
   }
 
-  // The drawing's own proportions, read once from the file.
-  let outlineSvg = null;
-  const outlineReady = fetch(file, { cache: 'force-cache' })
+  // The drawing itself, read once from the file, along with the proportions
+  // and coordinates every copy of it is cut to.
+  let sourceSvg = null;
+  let ratio = 1;                      // the figure's width against its height
+  let sourceViewBox = '0 0 100 100';
+  const drawingReady = fetch(file)
     .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
     .then((text) => {
       const holder = document.createElement('div');
       holder.innerHTML = text;
-      outlineSvg = holder.querySelector('svg');
+      sourceSvg = holder.querySelector('svg');
+      if (sourceSvg) measureDrawing();
     })
     .catch((err) => console.warn(file + ' could not be read (' + err.message + ').'));
 
-  // The drawing's own proportions and coordinates, read once from the file.
-  let ratio = 340 / 621; // the drawing's width against its height
-  let sourceViewBox = '0 0 340 621';
+  // A drawing often carries empty margin around the figure, which would show
+  // up as extra space between the figures on the page. So the figure's own
+  // bounds are measured and used instead: the gap set in settings.md is then
+  // the gap that actually shows.
+  function measureDrawing() {
+    const box = (sourceSvg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number);
+    if (box.length === 4 && box[2] && box[3]) {
+      sourceViewBox = box.join(' ');
+      ratio = box[2] / box[3];
+    }
+    // Measuring means asking the browser, which means the drawing has to be
+    // on the page: it goes somewhere out of sight and is taken away again.
+    const hidden = document.createElement('div');
+    hidden.style.cssText = 'position:fixed;left:-9999px;top:0;width:300px;height:300px;visibility:hidden';
+    const copy = sourceSvg.cloneNode(true);
+    hidden.appendChild(copy);
+    document.body.appendChild(hidden);
+    try {
+      const bounds = copy.getBBox();
+      if (bounds.width > 0 && bounds.height > 0) {
+        sourceViewBox = [bounds.x, bounds.y, bounds.width, bounds.height]
+          .map((n) => Number(n.toFixed(3))).join(' ');
+        ratio = bounds.width / bounds.height;
+      }
+    } catch (err) {
+      // No matter: the drawing's own box will do.
+    }
+    hidden.remove();
+  }
+
   function fillField() {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
@@ -218,18 +195,14 @@ window.settingsLoaded.then(() => {
     const pieces = [];
     for (let i = 0; i < total; i++) {
       const { left, top } = spotOf(i);
-      let piece;
-      if (i === odd && !figureInTitle) {
-        piece = outlinePiece();
-      } else {
-        piece = document.createElement('div');
-        piece.className = 'person';
-      }
-      piece.style.left = left.toFixed(1) + 'px';
-      piece.style.top = top.toFixed(1) + 'px';
-      piece.dataset.left = left;
-      piece.dataset.top = top;
-      pieces.push(piece);
+      const figure = piece(i === odd && !figureInTitle ? 'outline' : 'filled');
+      figure.style.left = left.toFixed(1) + 'px';
+      figure.style.top = top.toFixed(1) + 'px';
+      figure.style.width = width.toFixed(1) + 'px';
+      figure.style.height = HEIGHT + 'px';
+      figure.dataset.left = left;
+      figure.dataset.top = top;
+      pieces.push(figure);
     }
     layer.replaceChildren(...pieces);
     keepClearOfWords();
@@ -256,6 +229,19 @@ window.settingsLoaded.then(() => {
     }
   }
 
+  // The words arrive after the page does — the text is fetched, and the
+  // fonts after that — and each time they do they take up a different amount
+  // of room. The figures are worked out again whenever that happens, so none
+  // of them is ever left sitting on top of the words.
+  const main = document.querySelector('main');
+  if (main && window.ResizeObserver) {
+    let settling = 0;
+    new ResizeObserver(() => {
+      clearTimeout(settling);
+      settling = setTimeout(fillField, 100);
+    }).observe(main);
+  }
+
   let waiting = false;
   window.addEventListener('scroll', () => {
     if (waiting) return;
@@ -263,15 +249,7 @@ window.settingsLoaded.then(() => {
     requestAnimationFrame(() => { waiting = false; keepClearOfWords(); });
   }, { passive: true });
 
-  outlineReady.then(() => {
-    if (outlineSvg) {
-      const box = outlineSvg.getAttribute('viewBox');
-      const parts = box ? box.trim().split(/[\s,]+/).map(Number) : null;
-      if (parts && parts.length === 4 && parts[3]) {
-        ratio = parts[2] / parts[3];
-        sourceViewBox = parts.join(' ');
-      }
-    }
+  drawingReady.then(() => {
     buildTitle();
     fillField();
   });
