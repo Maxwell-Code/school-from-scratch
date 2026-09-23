@@ -280,18 +280,19 @@ between them, in pixels.
 
 ```js
 PLAY_BACKGROUND_ICON = "assets/person_icon.svg"
-PLAY_ICON_HEIGHT = 84
-PLAY_ICON_GAP = 56
+PLAY_ICON_HEIGHT = 120
+PLAY_ICON_GAP = 24
 ```
 
 Their color.
 
 ```js
-PLAY_ICON_COLOR = "#dfeac0"
+PLAY_ICON_COLOR = "#000000"
 ```
 
-One of them is only an outline. How thick that line is, in pixels, and
-which one it is:
+One of them is drawn as an outline: the whole figure's edge, not the edge of
+each piece it's drawn from. How thick that edge is, in pixels, and which one
+it is:
 
 - "random" picks a different one each visit, away from the very edges.
 - "middle" is the one in the middle of the page, which on a short page sits
@@ -300,7 +301,7 @@ which one it is:
 
 ```js
 PLAY_OUTLINE_THICKNESS = 3
-PLAY_OUTLINE_WHICH = "random"
+PLAY_OUTLINE_WHICH = "middle"
 ```
 
 Fonts for this page alone, from Google Fonts (fonts.google.com), written
@@ -488,7 +489,7 @@ says something without leading anywhere.
 
 ```js
 HOME_NOTICE = "The School From Scratch is producing the play *Is Nirmal Normal?* Click to learn more!"
-HOME_NOTICE_LINK = "is_nirmal_normal.html.404"
+HOME_NOTICE_LINK = "is_nirmal_normal.html"
 ```
 
 The size of its words, in pixels, and the space between the line above it

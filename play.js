@@ -38,11 +38,11 @@ window.settingsLoaded.then(() => {
   const file = String(setting('PLAY_BACKGROUND_ICON', 'assets/person_icon.svg')).trim();
   if (!file) return;
 
-  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 84));   // how tall each icon is
-  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 56));         // space left between them
-  const COLOR = String(setting('PLAY_ICON_COLOR', '#dfeac0')).trim();
+  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 120));  // how tall each icon is
+  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 24));         // space left between them
+  const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
-  const WHICH = setting('PLAY_OUTLINE_WHICH', 'random'); // 'middle', 'random', or a number
+  const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
 
   root.setProperty('--icon-height', HEIGHT + 'px');
@@ -51,8 +51,33 @@ window.settingsLoaded.then(() => {
   root.setProperty('--icon-outline', THICKNESS + 'px');
   root.setProperty('--icon-file', `url("${file}")`);
 
-  // The outlined one is the same drawing with nothing filled in, so it's
-  // fetched and put straight into the page, where its lines can be styled.
+  // The outlined one is the same drawing with only its edge drawn. The
+  // drawing is made of separate pieces (head, arms, body, legs) which
+  // overlap, so drawing the edge of each piece would leave lines criss-
+  // crossing inside it. Instead the whole silhouette is taken as one shape:
+  // a copy of it is shrunk from every side and cut out of the original,
+  // which leaves just the band around the outside, however the pieces
+  // happen to be arranged.
+  const NS = 'http://www.w3.org/2000/svg';
+  function outlinePiece() {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'person outline');
+    svg.setAttribute('viewBox', '0 0 ' + Math.round(100 * ratio) + ' 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const id = 'edge-only';
+    svg.innerHTML =
+      '<filter id="' + id + '" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">' +
+        '<feMorphology in="SourceAlpha" operator="erode" radius="' + THICKNESS + '" result="smaller"/>' +
+        '<feComposite in="SourceAlpha" in2="smaller" operator="out" result="edge"/>' +
+        '<feFlood flood-color="' + COLOR + '" result="paint"/>' +
+        '<feComposite in="paint" in2="edge" operator="in"/>' +
+      '</filter>' +
+      '<image href="' + file + '" x="0" y="0" width="100%" height="100%"' +
+      ' preserveAspectRatio="none" filter="url(#' + id + ')"></image>';
+    return svg;
+  }
+
+  // The drawing's own proportions, read once from the file.
   let outlineSvg = null;
   const outlineReady = fetch(file, { cache: 'force-cache' })
     .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
@@ -60,9 +85,8 @@ window.settingsLoaded.then(() => {
       const holder = document.createElement('div');
       holder.innerHTML = text;
       outlineSvg = holder.querySelector('svg');
-      if (outlineSvg) outlineSvg.classList.add('person', 'outline');
     })
-    .catch((err) => console.warn(file + ' could not be read for the outline (' + err.message + ').'));
+    .catch((err) => console.warn(file + ' could not be read (' + err.message + ').'));
 
   // The icon's own proportions, so a row of them is spaced evenly across.
   let ratio = 340 / 621; // the drawing's width against its height
@@ -70,15 +94,21 @@ window.settingsLoaded.then(() => {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
     const across = width + GAP;
-    const cols = Math.ceil(window.innerWidth / across) + 1;
-    const rows = Math.ceil(window.innerHeight / step) + 1;
-    // Middled, so the grid doesn't start hard against a corner.
-    const startX = (window.innerWidth - (cols * across - GAP)) / 2;
-    const startY = (window.innerHeight - (rows * step - GAP)) / 2;
+    // The grid is lined up so that one icon sits exactly in the middle of
+    // the screen, and then reaches out from there in every direction.
+    const middleX = window.innerWidth / 2 - width / 2;
+    const middleY = window.innerHeight / 2 - HEIGHT / 2;
+    const toLeft = Math.ceil(middleX / across);
+    const above = Math.ceil(middleY / step);
+    const startX = middleX - toLeft * across;
+    const startY = middleY - above * step;
+    const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 1;
+    const rows = above + Math.ceil((window.innerHeight - middleY) / step) + 1;
 
     const total = cols * rows;
     // Which one is the odd one out.
-    let odd = Math.floor(rows / 2) * cols + Math.floor(cols / 2); // the middle of the grid
+    // The one in the middle of the screen.
+    let odd = above * cols + toLeft;
     if (typeof WHICH === 'number') {
       odd = ((Math.round(WHICH) % total) + total) % total;
     } else if (String(WHICH).toLowerCase() === 'random') {
@@ -95,8 +125,8 @@ window.settingsLoaded.then(() => {
       const left = startX + col * across;
       const top = startY + row * step;
       let piece;
-      if (i === odd && outlineSvg) {
-        piece = outlineSvg.cloneNode(true);
+      if (i === odd) {
+        piece = outlinePiece();
       } else {
         piece = document.createElement('div');
         piece.className = 'person';

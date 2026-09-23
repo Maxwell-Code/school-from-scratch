@@ -327,20 +327,9 @@ main.payments {
   -webkit-mask-size: contain;
   mask-size: contain;
 }
-/* The odd one out: the same drawing, but only its edge. */
-#icon-field svg.person.outline {
-  fill: none;
-  stroke: var(--icon-color, #dfeac0);
-  stroke-width: var(--icon-outline, 3px);
-  vector-effect: non-scaling-stroke;
-  stroke-linejoin: round;
-}
-#icon-field svg.person.outline * {
-  fill: none;
-  stroke: inherit;
-  stroke-width: inherit;
-  vector-effect: non-scaling-stroke;
-}
+/* The odd one out: the same drawing with only the band around its outside
+   left, which play.js works out from the whole silhouette. */
+#icon-field svg.person.outline { overflow: visible; }
 /* The words sit above the icons. */
 body.play main,
 body.play #quick-nav { position: relative; z-index: 1; }
