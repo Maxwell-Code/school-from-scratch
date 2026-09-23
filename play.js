@@ -38,8 +38,8 @@ window.settingsLoaded.then(() => {
   const file = String(setting('PLAY_BACKGROUND_ICON', 'assets/person_icon.svg')).trim();
   if (!file) return;
 
-  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 260));  // how tall each icon is
-  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 28));         // space left between them
+  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 200));  // how tall each icon is
+  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 20));         // space left between them
   const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
   const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
@@ -117,7 +117,11 @@ window.settingsLoaded.then(() => {
     const above = Math.ceil(middleY / step);
     const startX = middleX - toLeft * across;
     const startY = middleY - above * step;
-    const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 1;
+    // Every other row is stepped half a place across, so each figure stands
+    // between the two in the row below. The rows either side of the middle
+    // one are the stepped ones, which keeps the middle figure where it is.
+    const shiftOf = (row) => ((row - above) % 2 === 0 ? 0 : across / 2);
+    const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 2;
     const rows = above + Math.ceil((window.innerHeight - middleY) / step) + 1;
 
     const total = cols * rows;
@@ -127,7 +131,7 @@ window.settingsLoaded.then(() => {
       left < w.right + TEXT_CLEARANCE && left + width > w.left - TEXT_CLEARANCE &&
       top < w.bottom + TEXT_CLEARANCE && top + HEIGHT > w.top - TEXT_CLEARANCE);
     const spotOf = (i) => ({
-      left: startX + (i % cols) * across,
+      left: startX + (i % cols) * across - shiftOf(Math.floor(i / cols)),
       top: startY + Math.floor(i / cols) * step,
     });
     // Which one is the odd one out.
@@ -159,9 +163,7 @@ window.settingsLoaded.then(() => {
 
     const pieces = [];
     for (let i = 0; i < total; i++) {
-      const col = i % cols, row = Math.floor(i / cols);
-      const left = startX + col * across;
-      const top = startY + row * step;
+      const { left, top } = spotOf(i);
       let piece;
       if (i === odd) {
         piece = outlinePiece();

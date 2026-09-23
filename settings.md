@@ -276,12 +276,13 @@ grid, with one of them drawn as an outline instead of filled in. Its words
 are in sections/is_nirmal_normal/is_nirmal_normal.md, like the other pages.
 
 The drawing that's repeated, how tall each one is, and the space left
-between them, in pixels.
+between them, in pixels. Every other row is stepped half a place across, so
+each figure stands between the two in the row below.
 
 ```js
 PLAY_BACKGROUND_ICON = "assets/person_icon.svg"
-PLAY_ICON_HEIGHT = 260
-PLAY_ICON_GAP = 28
+PLAY_ICON_HEIGHT = 200
+PLAY_ICON_GAP = 20
 ```
 
 Their color.
