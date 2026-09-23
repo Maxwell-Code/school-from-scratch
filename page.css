@@ -303,9 +303,14 @@ main.payments {
    The person icon repeated in an even grid behind the words, with one of
    them drawn as an outline instead of filled in. play.js works out the grid
    and sets the sizes. */
+/* The figures belong to the page, not to the window: they sit at a place on
+   the page and scroll away with the words. play.js gives this its height,
+   which is as far down as the figures reach. */
 #icon-field {
-  position: fixed;
-  inset: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;

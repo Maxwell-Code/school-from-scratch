@@ -136,24 +136,39 @@ window.settingsLoaded.then(() => {
     hidden.remove();
   }
 
+  // Where the top row begins: just under the menu bar, so the first figures
+  // stand whole on the page instead of being cut off by it.
+  function below(el) {
+    if (!el || !el.offsetHeight) return 0;
+    return getComputedStyle(el).position === 'fixed'
+      ? el.getBoundingClientRect().height       // it hangs over the page
+      : el.offsetTop + el.offsetHeight;         // it takes up room of its own
+  }
+
   function fillField() {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
     const across = width + GAP;
-    // The grid is lined up so that one icon sits exactly in the middle of
-    // the screen, and then reaches out from there in every direction.
+    // How long the page is with no figures on it at all, which is what the
+    // words alone come to. (Measured with the field emptied out, or it would
+    // be measuring itself.)
+    layer.style.height = '0px';
+    const startY = below(document.getElementById('quick-nav'));
+    const pageLength = Math.max(window.innerHeight, document.documentElement.scrollHeight) - startY;
+    // Across, the grid is lined up so one figure sits in the middle of the
+    // screen; down, it begins at the top and carries on to the end.
     const middleX = window.innerWidth / 2 - width / 2;
-    const middleY = window.innerHeight / 2 - HEIGHT / 2;
     const toLeft = Math.ceil(middleX / across);
-    const above = Math.ceil(middleY / step);
     const startX = middleX - toLeft * across;
-    const startY = middleY - above * step;
+    const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 2;
+    const rows = Math.max(1, Math.ceil((pageLength + GAP) / step));
+    // The page ends where the last row does, so the bottom row is whole too.
+    layer.style.height = (startY + rows * step - GAP) + 'px';
     // Every other row is stepped half a place across, so each figure stands
     // between the two in the row below. The rows either side of the middle
-    // one are the stepped ones, which keeps the middle figure where it is.
-    const shiftOf = (row) => ((row - above) % 2 === 0 ? 0 : across / 2);
-    const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 2;
-    const rows = above + Math.ceil((window.innerHeight - middleY) / step) + 1;
+    // one are the stepped ones, which keeps that figure where it is.
+    const middleRow = Math.max(0, Math.round((window.innerHeight / 2 - HEIGHT / 2 - startY) / step));
+    const shiftOf = (row) => ((row - middleRow) % 2 === 0 ? 0 : across / 2);
 
     const total = cols * rows;
     // Where the words are, so no figure is put under them.
@@ -166,8 +181,8 @@ window.settingsLoaded.then(() => {
       top: startY + Math.floor(i / cols) * step,
     });
     // Which one is the odd one out.
-    // The one in the middle of the screen.
-    let odd = above * cols + toLeft;
+    // The one in the middle of the first screenful.
+    let odd = middleRow * cols + toLeft;
     if (typeof WHICH === 'number') {
       odd = ((Math.round(WHICH) % total) + total) % total;
     } else if (String(WHICH).toLowerCase() === 'random') {
@@ -181,7 +196,8 @@ window.settingsLoaded.then(() => {
     // If the words cover the one that would be outlined, the nearest clear
     // figure to the middle of the screen takes its place.
     if (clashes(spotOf(odd).left, spotOf(odd).top)) {
-      const midX = window.innerWidth / 2, midY = window.innerHeight / 2;
+      const midX = window.innerWidth / 2;
+      const midY = startY + middleRow * step + HEIGHT / 2;
       let best = -1, nearest = Infinity;
       for (let i = 0; i < total; i++) {
         const spot = spotOf(i);
@@ -208,15 +224,21 @@ window.settingsLoaded.then(() => {
     keepClearOfWords();
   }
 
-  // Where the words are on the screen at the moment.
+  // Where the words sit on the page. Measured from the top of the page
+  // rather than the top of the window, like the figures themselves, so how
+  // far the page has been scrolled makes no difference.
   function wordsOnScreen() {
+    const downBy = window.scrollY, alongBy = window.scrollX;
     return [...document.querySelectorAll('main h1, main .pay-content > *')]
       .filter((el) => el.offsetWidth && el.offsetHeight && el.textContent.trim())
-      .map((el) => el.getBoundingClientRect());
+      .map((el) => {
+        const box = el.getBoundingClientRect();
+        return { left: box.left + alongBy, right: box.right + alongBy,
+          top: box.top + downBy, bottom: box.bottom + downBy };
+      });
   }
 
   // The words come first: any figure that would sit under them steps aside.
-  // (The page can be scrolled, so this is worked out again as it moves.)
   function keepClearOfWords() {
     const wordBoxes = wordsOnScreen();
     const width = HEIGHT * ratio;
@@ -241,13 +263,6 @@ window.settingsLoaded.then(() => {
       settling = setTimeout(fillField, 100);
     }).observe(main);
   }
-
-  let waiting = false;
-  window.addEventListener('scroll', () => {
-    if (waiting) return;
-    waiting = true;
-    requestAnimationFrame(() => { waiting = false; keepClearOfWords(); });
-  }, { passive: true });
 
   drawingReady.then(() => {
     buildTitle();
