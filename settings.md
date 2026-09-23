@@ -313,7 +313,7 @@ Where the figure stands:
 - `"below"` = under the whole heading, with the lines one above the other.
 
 ```js
-PLAY_TITLE_FIGURE_PLACE = "between"
+PLAY_TITLE_FIGURE_PLACE = "below"
 ```
 
 Whether whole rows of figures stand above the heading, and how many. The
@@ -749,6 +749,7 @@ The files are Markdown, like this one:
 - An empty line between list items is fine: the list carries on (numbers keep counting) and its items sit a little further apart.
 - A line starting with `#` is a small heading: `# Our questions`
 - A line starting with `##` is a centered name: `## Dr. Gopal Krishnamurthy`. The lines right under it (before the next blank line) are centered too, for a picture and a title.
+- To center part of a page, put `->` on a line of its own where it should start and `<-` on a line of its own where it should stop. Everything between them is centered, however many paragraphs, headings and lists that is. For a single line, write `-> the line <-` on its own instead.
 - A picture: `![Headshot of Gopal](assets/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in assets/.
 - Lines starting with `-` (or `1.` `2.` `3.`) make a list.
 - `**bold**`, `*italic*`, `***bold and italic***`

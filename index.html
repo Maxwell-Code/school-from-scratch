@@ -122,7 +122,12 @@
     font-size: 1.15em;
     text-align: center;
   }
-  .section p.centered { text-align: center; }
+  /* Words pushed into the middle of the page, between -> and <- in the file. */
+  .section .centered { text-align: center; }
+  /* A centered list has no room down the left for its bullets, so they go in
+     front of the words instead. */
+  .section ul.centered,
+  .section ol.centered { list-style-position: inside; padding-left: 0; }
   /* Pictures in a section (a headshot, for example). */
   .section p.picture { margin: 0.8em 0 0.9em; text-align: center; line-height: 0; }
   .section .md-image {

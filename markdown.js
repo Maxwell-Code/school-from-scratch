@@ -3,6 +3,8 @@
 // blank line), headings (# ...), centered names (## ..., with the lines
 // right under it centered too), lists (- ... or 1. ...), **bold**,
 // *italic*, ***both***, [links](https://... or page.html), pictures (![words](assets/x.jpg)),
+// words pushed into the middle of the page (-> on its own line to start,
+// <- to end, or -> one line <- on its own),
 // and \ before a character to show it as it is. Everything else is shown
 // as plain text (no HTML). An empty line starts a new paragraph, and each
 // further empty line adds a blank line's worth of space.
@@ -34,6 +36,11 @@ function markdownToHtml(md) {
   const out = [];
   let para = [], list = null;
   let centered = false; // under a ## name, until the next blank line
+  let centering = false; // between -> and <-, however many paragraphs that is
+  const middle = (extra) => {
+    const names = [extra, (centered || centering) ? 'centered' : ''].filter(Boolean).join(' ');
+    return names ? ' class="' + names + '"' : '';
+  };
   // Empty lines. One ends a paragraph, as usual; each further one adds a
   // blank line's worth of space, so pressing Enter a few times spaces
   // things out the way it looks in the file. They're only added once
@@ -44,13 +51,13 @@ function markdownToHtml(md) {
     blanks = 0;
   };
   const flushPara = () => {
-    if (para.length) out.push((centered ? '<p class="centered">' : '<p>') + inline(para.join('\n').replace(/ {2,}\n/g, BREAK).replace(/\n/g, ' ')) + '</p>');
+    if (para.length) out.push('<p' + middle() + '>' + inline(para.join('\n').replace(/ {2,}\n/g, BREAK).replace(/\n/g, ' ')) + '</p>');
     para = [];
   };
   const flushList = () => {
     if (list) {
-      const open = list.loose ? `<${list.tag} class="spaced">` : `<${list.tag}>`;
-      out.push(open + list.items.map((li) => '<li>' + inline(li) + '</li>').join('') + `</${list.tag}>`);
+      out.push(`<${list.tag}` + middle(list.loose ? 'spaced' : '') + '>' +
+        list.items.map((li) => '<li>' + inline(li) + '</li>').join('') + `</${list.tag}>`);
     }
     list = null;
   };
@@ -58,6 +65,20 @@ function markdownToHtml(md) {
     const line = raw.trim();
     let m;
     if (!line) { flushPara(); centered = false; blanks++; continue; }
+    // Words pushed into the middle of the page: -> on its own line starts,
+    // <- ends it, and anything between them is centered, however many
+    // paragraphs, headings or lists that is. One line on its own can be
+    // written -> like this <- instead.
+    if ((m = line.match(/^->\s+(.*?)\s+<-$/))) {
+      flushPara(); flushList(); spaceOut(); centered = false;
+      out.push('<p class="centered">' + inline(m[1]) + '</p>');
+      continue;
+    }
+    if (line === '->' || line === '<-') {
+      flushPara(); flushList(); centered = false;
+      centering = line === '->';
+      continue;
+    }
     if (/^([-*_])( ?\1){2,}$/.test(line)) { flushPara(); flushList(); spaceOut(); centered = false; continue; }
     if ((m = line.match(/^##\s+(.*?)\s*#*$/))) {
       flushPara(); flushList(); spaceOut();
@@ -65,7 +86,7 @@ function markdownToHtml(md) {
       centered = true;
       continue;
     }
-    if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); spaceOut(); centered = false; out.push('<h3>' + inline(m[1]) + '</h3>'); continue; }
+    if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); spaceOut(); centered = false; out.push('<h3' + middle() + '>' + inline(m[1]) + '</h3>'); continue; }
     // A picture on a line of its own sits on its own, centered.
     if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line)) { flushPara(); flushList(); spaceOut(); out.push('<p class="picture">' + inline(line) + '</p>'); continue; }
     // Something built separately, named between exclamation marks on a line

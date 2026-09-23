@@ -127,7 +127,12 @@ main.payments {
 .pay-content .md-space { height: 1em; margin: 0; }
 /* A list with empty lines between its items sits a little further apart. */
 .pay-content ul.spaced li { margin-bottom: 1em; }
-.pay-content p.centered { text-align: center; }
+/* Words pushed into the middle of the page, between -> and <- in the file. */
+.pay-content .centered { text-align: center; }
+/* A centered list has no room down the left for its bullets, so they go in
+   front of the words instead. */
+.pay-content ul.centered,
+.pay-content ol.centered { list-style-position: inside; padding-left: 0; }
 .pay-content a { color: inherit; text-underline-offset: 3px; }
 .pay-content .md-image { display: block; max-width: 100%; height: auto; margin: 0 auto 1em; border-radius: var(--zelle-logo-radius, 15px); }
 .pay-content ul { margin: 0 0 1em; padding-left: 1.3em; }
