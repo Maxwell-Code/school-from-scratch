@@ -128,6 +128,26 @@
      front of the words instead. */
   .section ul.centered,
   .section ol.centered { list-style-position: inside; padding-left: 0; }
+  /* Two columns either side of a gutter down the middle, for a cast list:
+     Role — Name in the file. Each side is set against the gutter, so the two
+     read as one list however long the words on either side are. */
+  .section .pairs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 1.1em;
+    margin: 0 auto 1em;
+    max-width: var(--paragraph-width, none);
+  }
+  .section .pairs p { margin: 0; }
+  .section .pairs .pair-left { text-align: right; }
+  .section .pairs .pair-right { text-align: left; }
+  /* Side by side there is no room on a narrow screen, so they stack instead,
+     each pair kept together and set in the middle. */
+  @media (max-width: 480px) {
+    .section .pairs { grid-template-columns: 1fr; column-gap: 0; }
+    .section .pairs .pair-left { text-align: center; margin-top: 0.5em; }
+    .section .pairs .pair-right { text-align: center; }
+  }
   /* Pictures in a section (a headshot, for example). */
   .section p.picture { margin: 0.8em 0 0.9em; text-align: center; line-height: 0; }
   .section .md-image {

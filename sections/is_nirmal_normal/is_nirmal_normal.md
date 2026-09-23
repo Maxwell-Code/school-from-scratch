@@ -2,4 +2,18 @@
 
 ### Cast
 
-In order of appearance:
+*In order of appearance*
+
+**The Writer** — Gopal Krishnamurthy
+
+**Auntie** — Teena Adityan
+
+**Manasi** — Natasha Heyres
+
+**Amal** — Kai Maal-King
+
+**Vimal** — Izes I
+
+**Kamal** — Finn Porter
+
+**Indrajit** — Maxwell Lommel

@@ -133,6 +133,26 @@ main.payments {
    front of the words instead. */
 .pay-content ul.centered,
 .pay-content ol.centered { list-style-position: inside; padding-left: 0; }
+/* Two columns either side of a gutter down the middle, for a cast list:
+   Role — Name in the file. Each side is set against the gutter, so the two
+   read as one list however long the words on either side are. */
+.pay-content .pairs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 1.1em;
+  margin: 0 auto 1em;
+  max-width: var(--paragraph-width, none);
+}
+.pay-content .pairs p { margin: 0; }
+.pay-content .pairs .pair-left { text-align: right; }
+.pay-content .pairs .pair-right { text-align: left; }
+/* Side by side there is no room on a narrow screen, so they stack instead,
+   each pair kept together and set in the middle. */
+@media (max-width: 480px) {
+  .pay-content .pairs { grid-template-columns: 1fr; column-gap: 0; }
+  .pay-content .pairs .pair-left { text-align: center; margin-top: 0.5em; }
+  .pay-content .pairs .pair-right { text-align: center; }
+}
 .pay-content a { color: inherit; text-underline-offset: 3px; }
 .pay-content .md-image { display: block; max-width: 100%; height: auto; margin: 0 auto 1em; border-radius: var(--zelle-logo-radius, 15px); }
 .pay-content ul { margin: 0 0 1em; padding-left: 1.3em; }

@@ -5,6 +5,7 @@
 // *italic*, ***both***, [links](https://... or page.html), pictures (![words](assets/x.jpg)),
 // words pushed into the middle of the page (-> on its own line to start,
 // <- to end, or -> one line <- on its own),
+// two columns either side of a gutter (Role — Name, for a cast list),
 // and \ before a character to show it as it is. Everything else is shown
 // as plain text (no HTML). An empty line starts a new paragraph, and each
 // further empty line adds a blank line's worth of space.
@@ -34,7 +35,7 @@ function markdownToHtml(md) {
     return t.replace(/\u0000(\d+)\u0000/g, (_, i) => esc(kept[i])).split(BREAK).join('<br>');
   }
   const out = [];
-  let para = [], list = null;
+  let para = [], list = null, pairs = null;
   let centered = false; // under a ## name, until the next blank line
   let centering = false; // between -> and <-, however many paragraphs that is
   const middle = (extra) => {
@@ -61,6 +62,20 @@ function markdownToHtml(md) {
     }
     list = null;
   };
+  // Lines set in two columns either side of a gutter, for a cast list.
+  const flushPairs = () => {
+    if (pairs && pairs.length > 1) {
+      out.push('<div' + middle('pairs') + '>' + pairs.map((two) =>
+        '<p class="pair-left">' + inline(two[0]) + '</p>' +
+        '<p class="pair-right">' + inline(two[1]) + '</p>').join('') + '</div>');
+    } else if (pairs) {
+      // A single one is a line of words that happens to hold a dash.
+      out.push('<p' + middle() + '>' + inline(pairs[0][0] + ' \u2014 ' + pairs[0][1]) + '</p>');
+    }
+    pairs = null;
+  };
+  // Whatever block is open, closed, so another can start.
+  const flushAll = () => { flushPara(); flushList(); flushPairs(); };
   for (const raw of md.replace(/\r\n?/g, '\n').split('\n')) {
     const line = raw.trim();
     let m;
@@ -70,32 +85,32 @@ function markdownToHtml(md) {
     // paragraphs, headings or lists that is. One line on its own can be
     // written -> like this <- instead.
     if ((m = line.match(/^->\s+(.*?)\s+<-$/))) {
-      flushPara(); flushList(); spaceOut(); centered = false;
+      flushAll(); spaceOut(); centered = false;
       out.push('<p class="centered">' + inline(m[1]) + '</p>');
       continue;
     }
     if (line === '->' || line === '<-') {
-      flushPara(); flushList(); centered = false;
+      flushAll(); centered = false;
       centering = line === '->';
       continue;
     }
-    if (/^([-*_])( ?\1){2,}$/.test(line)) { flushPara(); flushList(); spaceOut(); centered = false; continue; }
+    if (/^([-*_])( ?\1){2,}$/.test(line)) { flushAll(); spaceOut(); centered = false; continue; }
     if ((m = line.match(/^##\s+(.*?)\s*#*$/))) {
-      flushPara(); flushList(); spaceOut();
+      flushAll(); spaceOut();
       out.push('<h3 class="name">' + inline(m[1]) + '</h3>');
       centered = true;
       continue;
     }
-    if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); spaceOut(); centered = false; out.push('<h3' + middle() + '>' + inline(m[1]) + '</h3>'); continue; }
+    if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushAll(); spaceOut(); centered = false; out.push('<h3' + middle() + '>' + inline(m[1]) + '</h3>'); continue; }
     // A picture on a line of its own sits on its own, centered.
-    if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line)) { flushPara(); flushList(); spaceOut(); out.push('<p class="picture">' + inline(line) + '</p>'); continue; }
+    if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line)) { flushAll(); spaceOut(); out.push('<p class="picture">' + inline(line) + '</p>'); continue; }
     // Something built separately, named between exclamation marks on a line
     // of its own (!map!). It stands apart from the words around it whether
     // or not a blank line was left before it. A name nothing is listed
     // under is left as the words it is.
-    if (/^![A-Za-z0-9_-]+!$/.test(line)) { flushPara(); flushList(); spaceOut(); out.push('<p>' + esc(line) + '</p>'); continue; }
+    if (/^![A-Za-z0-9_-]+!$/.test(line)) { flushAll(); spaceOut(); out.push('<p>' + esc(line) + '</p>'); continue; }
     if ((m = line.match(/^([-*+]|\d+[.)])\s+(.*)$/))) {
-      flushPara();
+      flushPara(); flushPairs();
       const tag = /\d/.test(m[1]) ? 'ol' : 'ul';
       if (list && list.tag !== tag) flushList();
       if (list && blanks) list.loose = true; // empty line between items
@@ -106,12 +121,24 @@ function markdownToHtml(md) {
       continue;
     }
     if (list && !blanks && /^\s/.test(raw)) { list.items[list.items.length - 1] += ' ' + line; continue; }
-    flushList();
+    // Two columns with a gutter down the middle, for a cast list: what comes
+    // before the em dash is set against the gutter, what comes after runs on
+    // from it. The dash marks the split and isn't shown.
+    //
+    // It takes two such lines to make a list, with or without empty lines
+    // between them, and they have to start one: a dash in the middle of a
+    // sentence, or partway through a paragraph, is only ever a dash.
+    if (!para.length && (m = line.match(/^(\S.*?) +\u2014 +(\S.*)$/))) {
+      if (!pairs) { flushList(); spaceOut(); pairs = []; }
+      blanks = 0;
+      pairs.push([m[1], m[2]]);
+      continue;
+    }
+    flushList(); flushPairs();
     if (!para.length) spaceOut();
     para.push(raw.replace(/^\s+/, ''));
   }
-  flushPara();
-  flushList();
+  flushAll();
   return out.join('\n');
 }
 

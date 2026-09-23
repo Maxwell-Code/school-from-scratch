@@ -750,6 +750,7 @@ The files are Markdown, like this one:
 - A line starting with `#` is a small heading: `# Our questions`
 - A line starting with `##` is a centered name: `## Dr. Gopal Krishnamurthy`. The lines right under it (before the next blank line) are centered too, for a picture and a title.
 - To center part of a page, put `->` on a line of its own where it should start and `<-` on a line of its own where it should stop. Everything between them is centered, however many paragraphs, headings and lists that is. For a single line, write `-> the line <-` on its own instead.
+- Two columns with a gutter down the middle, for a cast list: `**The Writer** — Gopal Krishnamurthy`. What's before the em dash (—) is set against the gutter on the left, what's after it runs on from the gutter on the right, and the dash itself doesn't show. It takes two such lines to make a list, with or without empty lines between them, and each has to start on a line of its own — so an em dash in the middle of a sentence stays an em dash. On a narrow screen the two sides stack, one above the other.
 - A picture: `![Headshot of Gopal](assets/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in assets/.
 - Lines starting with `-` (or `1.` `2.` `3.`) make a list.
 - `**bold**`, `*italic*`, `***bold and italic***`
