@@ -43,6 +43,10 @@ window.settingsLoaded.then(() => {
   const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
   const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
+  // The title can be broken into two lines with the outlined figure standing
+  // between them. An empty list leaves the title in one piece.
+  const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
+  const TITLE_FIGURE = Math.max(0, setting('PLAY_TITLE_FIGURE_HEIGHT', 200));
   const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
 
@@ -90,6 +94,28 @@ window.settingsLoaded.then(() => {
       '<image href="' + file + '" x="0" y="0" width="100%" height="100%"' +
       ' preserveAspectRatio="none" filter="url(#' + id + ')"></image>';
     return svg;
+  }
+
+  // The title, broken in two with the outlined figure standing between the
+  // lines, front and centre.
+  let figureInTitle = false;
+  function buildTitle() {
+    const heading = document.getElementById('title');
+    if (!heading || TITLE_LINES.length < 2 || !TITLE_FIGURE) return;
+    heading.textContent = '';
+    heading.classList.add('split-by-figure');
+    const first = document.createElement('span');
+    first.className = 'title-line';
+    first.textContent = TITLE_LINES[0];
+    const last = document.createElement('span');
+    last.className = 'title-line';
+    last.textContent = TITLE_LINES.slice(1).join(' ');
+    const figure = outlinePiece();
+    figure.classList.add('in-title');
+    figure.style.height = TITLE_FIGURE + 'px';
+    figure.style.width = (TITLE_FIGURE * ratio).toFixed(1) + 'px';
+    heading.append(first, figure, last);
+    figureInTitle = true;
   }
 
   // The drawing's own proportions, read once from the file.
@@ -165,7 +191,7 @@ window.settingsLoaded.then(() => {
     for (let i = 0; i < total; i++) {
       const { left, top } = spotOf(i);
       let piece;
-      if (i === odd) {
+      if (i === odd && !figureInTitle) {
         piece = outlinePiece();
       } else {
         piece = document.createElement('div');
@@ -215,6 +241,7 @@ window.settingsLoaded.then(() => {
       const parts = box ? box.split(/[\s,]+/).map(Number) : null;
       if (parts && parts.length === 4 && parts[3]) ratio = parts[2] / parts[3];
     }
+    buildTitle();
     fillField();
   });
 

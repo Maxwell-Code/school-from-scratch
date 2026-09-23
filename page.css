@@ -330,6 +330,19 @@ main.payments {
 /* The odd one out: the same drawing with only the band around its outside
    left, which play.js works out from the whole silhouette. */
 #icon-field svg.person.outline { overflow: visible; }
+/* The title in two lines, with the outlined figure standing between them. */
+h1.split-by-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+h1.split-by-figure .title-line { display: block; }
+h1.split-by-figure svg.person.in-title {
+  display: block;
+  overflow: visible;
+  margin: 6px 0;
+}
 /* The words sit above the icons. */
 body.play main,
 body.play #quick-nav { position: relative; z-index: 1; }

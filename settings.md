@@ -291,6 +291,19 @@ Their color.
 PLAY_ICON_COLOR = "#000000"
 ```
 
+The title can be broken into two lines with the outlined figure standing
+between them, front and centre, and this is how those lines read. Leave the
+list empty to keep the title in one piece, in which case the outlined figure
+takes its place among the others instead. The figure's height is in pixels.
+
+```js
+PLAY_TITLE_LINES = [
+  "Is Nirmal",
+  "Normal?",
+]
+PLAY_TITLE_FIGURE_HEIGHT = 200
+```
+
 The words come first: any figure that would sit under the heading or the
 text steps aside, leaving this much space around them, in pixels.
 
