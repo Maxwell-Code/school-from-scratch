@@ -42,6 +42,7 @@ window.settingsLoaded.then(() => {
   const GAP = Math.max(0, setting('PLAY_ICON_GAP', 24));         // space left between them
   const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
+  const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
   const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
 
@@ -106,6 +107,15 @@ window.settingsLoaded.then(() => {
     const rows = above + Math.ceil((window.innerHeight - middleY) / step) + 1;
 
     const total = cols * rows;
+    // Where the words are, so no figure is put under them.
+    const wordBoxes = wordsOnScreen();
+    const clashes = (left, top) => wordBoxes.some((w) =>
+      left < w.right + TEXT_CLEARANCE && left + width > w.left - TEXT_CLEARANCE &&
+      top < w.bottom + TEXT_CLEARANCE && top + HEIGHT > w.top - TEXT_CLEARANCE);
+    const spotOf = (i) => ({
+      left: startX + (i % cols) * across,
+      top: startY + Math.floor(i / cols) * step,
+    });
     // Which one is the odd one out.
     // The one in the middle of the screen.
     let odd = above * cols + toLeft;
@@ -117,6 +127,20 @@ window.settingsLoaded.then(() => {
       const col = Math.min(cols - 1, Math.floor(chosenSpot.acrossPart * cols));
       const row = Math.min(rows - 1, Math.floor(chosenSpot.downPart * rows));
       odd = row * cols + col;
+    }
+
+    // If the words cover the one that would be outlined, the nearest clear
+    // figure to the middle of the screen takes its place.
+    if (clashes(spotOf(odd).left, spotOf(odd).top)) {
+      const midX = window.innerWidth / 2, midY = window.innerHeight / 2;
+      let best = -1, nearest = Infinity;
+      for (let i = 0; i < total; i++) {
+        const spot = spotOf(i);
+        if (clashes(spot.left, spot.top)) continue;
+        const away = Math.hypot(spot.left + width / 2 - midX, spot.top + HEIGHT / 2 - midY);
+        if (away < nearest) { nearest = away; best = i; }
+      }
+      if (best >= 0) odd = best;
     }
 
     const pieces = [];
@@ -133,10 +157,41 @@ window.settingsLoaded.then(() => {
       }
       piece.style.left = left.toFixed(1) + 'px';
       piece.style.top = top.toFixed(1) + 'px';
+      piece.dataset.left = left;
+      piece.dataset.top = top;
       pieces.push(piece);
     }
     layer.replaceChildren(...pieces);
+    keepClearOfWords();
   }
+
+  // Where the words are on the screen at the moment.
+  function wordsOnScreen() {
+    return [...document.querySelectorAll('main h1, main .pay-content > *')]
+      .filter((el) => el.offsetWidth && el.offsetHeight && el.textContent.trim())
+      .map((el) => el.getBoundingClientRect());
+  }
+
+  // The words come first: any figure that would sit under them steps aside.
+  // (The page can be scrolled, so this is worked out again as it moves.)
+  function keepClearOfWords() {
+    const wordBoxes = wordsOnScreen();
+    const width = HEIGHT * ratio;
+    for (const piece of layer.children) {
+      const left = Number(piece.dataset.left), top = Number(piece.dataset.top);
+      const clash = wordBoxes.some((w) =>
+        left < w.right + TEXT_CLEARANCE && left + width > w.left - TEXT_CLEARANCE &&
+        top < w.bottom + TEXT_CLEARANCE && top + HEIGHT > w.top - TEXT_CLEARANCE);
+      piece.style.visibility = clash ? 'hidden' : '';
+    }
+  }
+
+  let waiting = false;
+  window.addEventListener('scroll', () => {
+    if (waiting) return;
+    waiting = true;
+    requestAnimationFrame(() => { waiting = false; keepClearOfWords(); });
+  }, { passive: true });
 
   outlineReady.then(() => {
     if (outlineSvg) {

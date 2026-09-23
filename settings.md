@@ -290,6 +290,13 @@ Their color.
 PLAY_ICON_COLOR = "#000000"
 ```
 
+The words come first: any figure that would sit under the heading or the
+text steps aside, leaving this much space around them, in pixels.
+
+```js
+PLAY_TEXT_CLEARANCE = 24
+```
+
 One of them is drawn as an outline: the whole figure's edge, not the edge of
 each piece it's drawn from. How thick that edge is, in pixels, and which one
 it is:
