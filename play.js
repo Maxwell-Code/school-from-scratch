@@ -64,35 +64,62 @@ window.settingsLoaded.then(() => {
   // which leaves just the band around the outside, however the pieces
   // happen to be arranged.
   const NS = 'http://www.w3.org/2000/svg';
+  let outlineCount = 0;
   function outlinePiece() {
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('class', 'person outline');
-    svg.setAttribute('viewBox', '0 0 ' + Math.round(100 * ratio) + ' 100');
-    svg.setAttribute('preserveAspectRatio', 'none');
-    const id = 'edge-only';
-    // The drawing is 100 tall in its own terms, so the thickness asked for
-    // in pixels is turned into that scale.
-    const radius = (THICKNESS * 100 / HEIGHT).toFixed(3);
-    // Every step is made all-or-nothing (a part-way shade is pushed to one
-    // side or the other), otherwise the thinnest part of the figure - the
-    // shoulders - comes out as a half-faded grey patch instead of a line.
-    const solid = '<feComponentTransfer><feFuncA type="linear" slope="255" intercept="-0.5"/></feComponentTransfer>';
-    svg.innerHTML =
-      '<filter id="' + id + '" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">' +
-        '<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="shape"/>' +
-        '<feComponentTransfer in="shape" result="whole">' +
-          '<feFuncA type="linear" slope="255" intercept="-0.5"/>' +
-        '</feComponentTransfer>' +
-        '<feMorphology in="whole" operator="erode" radius="' + radius + '" result="eroded"/>' +
-        '<feComponentTransfer in="eroded" result="inside">' +
-          '<feFuncA type="linear" slope="255" intercept="-0.5"/>' +
-        '</feComponentTransfer>' +
-        '<feComposite in="whole" in2="inside" operator="out" result="edge"/>' +
-        '<feFlood flood-color="' + COLOR + '" result="paint"/>' +
-        '<feComposite in="paint" in2="edge" operator="in"/>' +
-      '</filter>' +
-      '<image href="' + file + '" x="0" y="0" width="100%" height="100%"' +
-      ' preserveAspectRatio="none" filter="url(#' + id + ')"></image>';
+    svg.setAttribute('viewBox', sourceViewBox);
+    if (!outlineSvg) return svg; // the drawing hasn't arrived
+
+    // The outline is drawn from the shapes themselves rather than from a
+    // picture of them, so its line is even all the way round and stays
+    // sharp however large the figure is.
+    //
+    // Two copies of the figure make the line: the first is drawn with a
+    // thick pen, which puts a band of colour around the whole outside; the
+    // second is the figure as it is, which hides everything inside that
+    // band. What's left is the outline.
+    const id = 'nirmal-edge-' + (++outlineCount);
+    const shapes = () => {
+      const group = document.createElementNS(NS, 'g');
+      for (const child of outlineSvg.children) {
+        if (child.tagName.toLowerCase() === 'defs') continue;
+        group.appendChild(child.cloneNode(true));
+      }
+      // Whatever colours the drawing carries are dropped: the mask only
+      // cares about what is covered and what isn't.
+      group.querySelectorAll('[fill], [stroke]').forEach((el) => {
+        el.removeAttribute('fill');
+        el.removeAttribute('stroke');
+      });
+      return group;
+    };
+
+    const mask = document.createElementNS(NS, 'mask');
+    mask.setAttribute('id', id);
+    const outer = shapes();                       // the figure, drawn with a thick pen
+    outer.setAttribute('fill', '#fff');
+    outer.setAttribute('stroke', '#fff');
+    outer.setAttribute('stroke-width', THICKNESS * 2);
+    outer.setAttribute('stroke-linejoin', 'round');
+    outer.setAttribute('stroke-linecap', 'round');
+    outer.setAttribute('vector-effect', 'non-scaling-stroke');
+    const inner = shapes();                       // the figure as it is
+    inner.setAttribute('fill', '#000');
+    inner.setAttribute('stroke', 'none');
+    mask.append(outer, inner);
+
+    const paint = document.createElementNS(NS, 'rect');
+    paint.setAttribute('x', '-50%');
+    paint.setAttribute('y', '-50%');
+    paint.setAttribute('width', '200%');
+    paint.setAttribute('height', '200%');
+    paint.setAttribute('fill', COLOR);
+    paint.setAttribute('mask', 'url(#' + id + ')');
+
+    const defs = document.createElementNS(NS, 'defs');
+    defs.appendChild(mask);
+    svg.append(defs, paint);
     return svg;
   }
 
@@ -129,8 +156,9 @@ window.settingsLoaded.then(() => {
     })
     .catch((err) => console.warn(file + ' could not be read (' + err.message + ').'));
 
-  // The icon's own proportions, so a row of them is spaced evenly across.
+  // The drawing's own proportions and coordinates, read once from the file.
   let ratio = 340 / 621; // the drawing's width against its height
+  let sourceViewBox = '0 0 340 621';
   function fillField() {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
@@ -238,8 +266,11 @@ window.settingsLoaded.then(() => {
   outlineReady.then(() => {
     if (outlineSvg) {
       const box = outlineSvg.getAttribute('viewBox');
-      const parts = box ? box.split(/[\s,]+/).map(Number) : null;
-      if (parts && parts.length === 4 && parts[3]) ratio = parts[2] / parts[3];
+      const parts = box ? box.trim().split(/[\s,]+/).map(Number) : null;
+      if (parts && parts.length === 4 && parts[3]) {
+        ratio = parts[2] / parts[3];
+        sourceViewBox = parts.join(' ');
+      }
     }
     buildTitle();
     fillField();
