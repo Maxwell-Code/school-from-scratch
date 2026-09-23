@@ -298,3 +298,49 @@ main.payments {
   pointer-events: auto;
   will-change: transform;
 }
+
+/* ---- The play's page (is_nirmal_normal.html) ------------------------------
+   The person icon repeated in an even grid behind the words, with one of
+   them drawn as an outline instead of filled in. play.js works out the grid
+   and sets the sizes. */
+#icon-field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+#icon-field .person {
+  position: absolute;
+  height: var(--icon-height, 84px);
+  width: auto;
+  aspect-ratio: 340 / 621;
+}
+/* The filled ones: the drawing used as a stencil, so they take their color
+   from the setting. */
+#icon-field div.person {
+  background: var(--icon-color, #dfeac0);
+  -webkit-mask-image: var(--icon-file);
+  mask-image: var(--icon-file);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+/* The odd one out: the same drawing, but only its edge. */
+#icon-field svg.person.outline {
+  fill: none;
+  stroke: var(--icon-color, #dfeac0);
+  stroke-width: var(--icon-outline, 3px);
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+}
+#icon-field svg.person.outline * {
+  fill: none;
+  stroke: inherit;
+  stroke-width: inherit;
+  vector-effect: non-scaling-stroke;
+}
+/* The words sit above the icons. */
+body.play main,
+body.play #quick-nav { position: relative; z-index: 1; }

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="621" viewBox="0 0 340 621">
+  <g fill="#000000">
+    <!-- Head -->
+    <circle cx="171.5" cy="90.1" r="44"/>
+
+    <!-- Shoulders / upper body cap -->
+    <path d="M108 145
+             H233
+             A40 40 0 0 1 273 185
+             H68
+             A40 40 0 0 1 108 145
+             Z"/>
+
+    <!-- Left arm -->
+    <path d="M68 184
+             H108
+             V336
+             A20 20 0 0 1 68 336
+             Z"/>
+
+    <!-- Right arm: adjusted 1px so it is flush with shoulder edge -->
+    <path d="M233 184
+             H273
+             V336
+             A20 20 0 0 1 233 336
+             Z"/>
+
+    <!-- Torso -->
+    <rect x="118" y="184" width="108" height="147"/>
+
+    <!-- Legs -->
+    <path d="M117.5 330
+             H167
+             V566
+             A24.75 24.75 0 0 1 117.5 566
+             Z"/>
+    <path d="M176.5 330
+             H226
+             V566
+             A24.75 24.75 0 0 1 176.5 566
+             Z"/>
+  </g>
+</svg>

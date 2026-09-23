@@ -68,8 +68,8 @@ Folder holding every image the site uses: the gallery photos and the
 Venmo logo (relative to index.html).
 
 ```js
-PHOTO_FOLDER = "images/"
-PHOTO_SMALL_FOLDER = "images/small/"
+PHOTO_FOLDER = "assets/"
+PHOTO_SMALL_FOLDER = "assets/small/"
 ```
 
 Every photo to show. Browsers can't look inside a folder on their own,
@@ -79,7 +79,7 @@ Photos are shown small (a few hundred pixels across), so the site loads
 small copies of them from the folder below instead of the originals: on a
 first visit that's about 1.4 MB instead of 20 MB. Each small copy has the
 same name with .jpg on the end. A photo with no small copy still shows,
-using its original file, so after adding photos to the images folder ask
+using its original file, so after adding photos to the assets folder ask
 Claude to make the small copies (or delete the folder's contents to go back
 to the originals). Leave the folder name empty ("") to always use the
 originals.
@@ -267,6 +267,51 @@ in milliseconds.
 
 ```js
 HOME_TRAVEL_MS = 800
+```
+
+## The play's page (is_nirmal_normal.html)
+
+Behind the words on the play's page, the person icon is repeated in an even
+grid, with one of them drawn as an outline instead of filled in. Its words
+are in sections/is_nirmal_normal/is_nirmal_normal.md, like the other pages.
+
+The drawing that's repeated, how tall each one is, and the space left
+between them, in pixels.
+
+```js
+PLAY_BACKGROUND_ICON = "assets/person_icon.svg"
+PLAY_ICON_HEIGHT = 84
+PLAY_ICON_GAP = 56
+```
+
+Their color.
+
+```js
+PLAY_ICON_COLOR = "#dfeac0"
+```
+
+One of them is only an outline. How thick that line is, in pixels, and
+which one it is:
+
+- "random" picks a different one each visit, away from the very edges.
+- "middle" is the one in the middle of the page, which on a short page sits
+  behind the heading.
+- A number counts across the rows from the top left, 0 being the first.
+
+```js
+PLAY_OUTLINE_THICKNESS = 3
+PLAY_OUTLINE_WHICH = "random"
+```
+
+Fonts for this page alone, from Google Fonts (fonts.google.com), written
+exactly as they appear there. Leave either empty ("") to use the same font
+as the rest of the site.
+
+```js
+PLAY_HEADING_FONT = ""
+PLAY_BODY_FONT = ""
+PLAY_HEADING_FONT_WEIGHT = 600
+PLAY_BODY_FONT_WEIGHT = 500
 ```
 
 ## Things built separately
@@ -639,7 +684,7 @@ The files are Markdown, like this one:
 - An empty line between list items is fine: the list carries on (numbers keep counting) and its items sit a little further apart.
 - A line starting with `#` is a small heading: `# Our questions`
 - A line starting with `##` is a centered name: `## Dr. Gopal Krishnamurthy`. The lines right under it (before the next blank line) are centered too, for a picture and a title.
-- A picture: `![Headshot of Gopal](images/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in images/.
+- A picture: `![Headshot of Gopal](assets/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in assets/.
 - Lines starting with `-` (or `1.` `2.` `3.`) make a list.
 - `**bold**`, `*italic*`, `***bold and italic***`
 - A link: `[the words to click](https://example.com)`, or to a page on this site: `[Make a payment](payments.html)`
@@ -802,12 +847,12 @@ SHOW_ZELLE_LOGO = false
 The Zelle logo file, and how wide it's shown, in pixels. Its corners are
 rounded like the gallery photos' (PHOTO_CORNER_RADIUS). Download the
 official logo from Zelle's brand page (zellepay.com has a "Brand guidelines"
-section), save it in the images folder, and put its file name here, for
-example "images/zelle_logo.svg". While this is empty, the page shows the
+section), save it in the assets folder, and put its file name here, for
+example "assets/zelle_logo.svg". While this is empty, the page shows the
 word "Zelle" instead.
 
 ```js
-ZELLE_LOGO = "images/Zelle_logo.svg"
+ZELLE_LOGO = "assets/Zelle_logo.svg"
 ZELLE_LOGO_WIDTH = 240
 ```
 

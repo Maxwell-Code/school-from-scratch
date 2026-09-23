@@ -691,7 +691,7 @@ function startGallery() {
   // size of a postcard on screen doesn't need a 10 MB camera file. Each is
   // the photo's name with .jpg on the end. A photo with no small copy falls
   // back to the original, so a new photo still shows up straight away.
-  const SMALL_DIR = String(setting('PHOTO_SMALL_FOLDER', 'images/small/')).trim();
+  const SMALL_DIR = String(setting('PHOTO_SMALL_FOLDER', 'assets/small/')).trim();
   const photoSrc = (file) => (SMALL_DIR ? SMALL_DIR + file.replace(/\.[^.]+$/, '.jpg') : IMAGE_DIR + file);
   const IMAGES = setting('PHOTOS', []);
   const SIZE_MIN = setting('PHOTO_SIZE_SMALLEST', 110);
@@ -2024,7 +2024,7 @@ function startGallery() {
       const img = new Image();
       img.className = 'venmo';
       img.alt = 'Venmo';
-      img.src = 'images/venmo_logo.svg';
+      img.src = 'assets/venmo_logo.svg';
       a.appendChild(img);
       box.appendChild(a);
     }

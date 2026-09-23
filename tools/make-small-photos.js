@@ -1,5 +1,5 @@
 // Makes the small copies of the gallery photos that the site loads
-// (images/small/). Photos come off a camera at several megabytes each, but
+// (assets/small/). Photos come off a camera at several megabytes each, but
 // they're only ever shown a few hundred pixels across, so the site loads
 // these instead: about 1.4 MB for the whole gallery instead of 20 MB.
 //
@@ -39,8 +39,8 @@ const smallName = (file) => file.replace(/\.[^.]+$/, '.jpg');
 (async () => {
   const settings = readSettings();
   const photos = (settings.PHOTOS || []).map(String);
-  const fromDir = path.join(SITE, settings.PHOTO_FOLDER || 'images/');
-  const outDir = path.join(SITE, settings.PHOTO_SMALL_FOLDER || 'images/small/');
+  const fromDir = path.join(SITE, settings.PHOTO_FOLDER || 'assets/');
+  const outDir = path.join(SITE, settings.PHOTO_SMALL_FOLDER || 'assets/small/');
   if (!settings.PHOTO_SMALL_FOLDER) {
     console.log('PHOTO_SMALL_FOLDER is empty in settings.md: nothing to do.');
     return;
@@ -56,7 +56,7 @@ const smallName = (file) => file.replace(/\.[^.]+$/, '.jpg');
   for (const file of photos) {
     const src = path.join(fromDir, file);
     if (!fs.existsSync(src)) {
-      console.warn(`! ${file} is listed in PHOTOS but isn't in the images folder`);
+      console.warn(`! ${file} is listed in PHOTOS but isn't in the assets folder`);
       continue;
     }
     const out = path.join(outDir, smallName(file));

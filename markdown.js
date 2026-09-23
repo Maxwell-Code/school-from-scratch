@@ -2,7 +2,7 @@
 // A small Markdown reader for the section files: paragraphs (separated by a
 // blank line), headings (# ...), centered names (## ..., with the lines
 // right under it centered too), lists (- ... or 1. ...), **bold**,
-// *italic*, ***both***, [links](https://... or page.html), pictures (![words](images/x.jpg)),
+// *italic*, ***both***, [links](https://... or page.html), pictures (![words](assets/x.jpg)),
 // and \ before a character to show it as it is. Everything else is shown
 // as plain text (no HTML). An empty line starts a new paragraph, and each
 // further empty line adds a blank line's worth of space.
@@ -13,7 +13,7 @@ function markdownToHtml(md) {
     const kept = [];
     let t = text.replace(/\\([!-\/:-@\[-`{-~])/g, (_, c) => '\u0000' + (kept.push(c) - 1) + '\u0000');
     t = esc(t);
-    // Pictures: a file on this site (images/...) or an https:// address.
+    // Pictures: a file on this site (assets/...) or an https:// address.
     t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (all, alt, src) => {
       if (/^[a-z][\w+.-]*:/i.test(src) && !/^https:/i.test(src)) return alt;
       return '<img class="md-image" src="' + src + '" alt="' + alt + '" loading="lazy">';

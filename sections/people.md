@@ -1,5 +1,5 @@
 ## Gopal Krishnamurthy, PhD
-![Headshot of Gopal Krishnamurthy](images/gopal_headshot.jpeg)
+![Headshot of Gopal Krishnamurthy](assets/gopal_headshot.jpeg)
 Founding Director/Teacher, TEC, and Director/Teacher, The School From Scratch.
 
 Gopal brings decades of experience in schools, universities, teacher education, and education in India, the UK, and the US. He has a PhD in education, and served as university Dept. Chair \& faculty, school director, and teacher. He sees Ojai as a crucible for wonder, not knowing, and deep inquiry.
