@@ -313,6 +313,13 @@ text steps aside, leaving this much space around them, in pixels.
 PLAY_TEXT_CLEARANCE = 24
 ```
 
+How many rows of figures carry on below the last line of words, so the page
+doesn't stop the moment the words do. The page ends where the last row ends.
+
+```js
+PLAY_ROWS_AFTER_TEXT = 3
+```
+
 One of them is drawn as an outline: the same figure traced with a pen
 instead of filled in. How thick that line is, in pixels, and which one it
 is:

@@ -43,6 +43,7 @@ window.settingsLoaded.then(() => {
   const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
   const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
+  const ROWS_AFTER_TEXT = Math.max(0, setting('PLAY_ROWS_AFTER_TEXT', 3)); // rows left under the last line
   // The title can be broken into two lines with the outlined figure standing
   // between them. An empty list leaves the title in one piece.
   const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
@@ -149,19 +150,27 @@ window.settingsLoaded.then(() => {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
     const across = width + GAP;
-    // How long the page is with no figures on it at all, which is what the
-    // words alone come to. (Measured with the field emptied out, or it would
-    // be measuring itself.)
+    // Everything below is measured with the field emptied out, or the page
+    // would be measuring its own figures rather than the words on it.
     layer.style.height = '0px';
-    const startY = below(document.getElementById('quick-nav'));
-    const pageLength = Math.max(window.innerHeight, document.documentElement.scrollHeight) - startY;
+    // The top row stands clear of the menu bar by the same space that is
+    // left between one row and the next.
+    const startY = below(document.getElementById('quick-nav')) + GAP;
+    // Where the words are, so no figure is put under them, and where the
+    // last of them ends.
+    const wordBoxes = wordsOnScreen();
+    const wordsEnd = wordBoxes.reduce((lowest, w) => Math.max(lowest, w.bottom), 0);
+    // How far down the figures have to reach: past the end of the page, and
+    // far enough past the last line of words to leave a few rows under it.
+    const reach = Math.max(window.innerHeight, document.documentElement.scrollHeight,
+      wordsEnd + ROWS_AFTER_TEXT * step);
     // Across, the grid is lined up so one figure sits in the middle of the
     // screen; down, it begins at the top and carries on to the end.
     const middleX = window.innerWidth / 2 - width / 2;
     const toLeft = Math.ceil(middleX / across);
     const startX = middleX - toLeft * across;
     const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 2;
-    const rows = Math.max(1, Math.ceil((pageLength + GAP) / step));
+    const rows = Math.max(1, Math.ceil((reach - startY + GAP) / step));
     // The page ends where the last row does, so the bottom row is whole too.
     layer.style.height = (startY + rows * step - GAP) + 'px';
     // Every other row is stepped half a place across, so each figure stands
@@ -171,8 +180,6 @@ window.settingsLoaded.then(() => {
     const shiftOf = (row) => ((row - middleRow) % 2 === 0 ? 0 : across / 2);
 
     const total = cols * rows;
-    // Where the words are, so no figure is put under them.
-    const wordBoxes = wordsOnScreen();
     const clashes = (left, top) => wordBoxes.some((w) =>
       left < w.right + TEXT_CLEARANCE && left + width > w.left - TEXT_CLEARANCE &&
       top < w.bottom + TEXT_CLEARANCE && top + HEIGHT > w.top - TEXT_CLEARANCE);
