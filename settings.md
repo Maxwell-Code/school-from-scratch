@@ -54,7 +54,7 @@ It's written like the section files, so the wording is yours to shape:
 *italic*, **bold**, ***both***. Its size is in pixels, and so is how far
 above the bottom of the page it sits.
 
-//I removed the quote but if anyone wants to add it back this is the one I chose: '*There is no end to education. It isn’t that you read a book and pass an examination, and then finish with education. You think you have finished with it. You have not. The whole of life—from now, from the moment you are born till the moment you die, it’s a process of learning.*' —Jiddu Krishnamurti, Rishi Valley, 1 February 1966
+// Maxwell // I removed the quote but if anyone wants to add it back this is the one I chose: '*There is no end to education. It isn’t that you read a book and pass an examination, and then finish with education. You think you have finished with it. You have not. The whole of life—from now, from the moment you are born till the moment you die, it’s a process of learning.*' —Jiddu Krishnamurti, Rishi Valley, 1 February 1966
 
 ```js
 END_QUOTE = ""
@@ -356,6 +356,18 @@ EMBEDS = {
   "wheel": "embeds/explorations_wheel.html",
   "map": "embeds/regen_tropics_map.html",
 }
+```
+
+Anything shown this way is normally there to look at, not to touch: the
+pointer goes straight through it, so rolling the wheel over it scrolls the
+page rather than turning the wheel drawing or zooming the map. Name an embed
+here to let people use it instead. It waits under a word, and once that word
+is clicked it works like anything else until the pointer moves off it, at
+which point it steps out of the way again.
+
+```js
+EMBEDS_YOU_CAN_TOUCH = ["map"]
+EMBED_WAKE_LABEL = "Click to use the map"
 ```
 
 How tall the frame is, in pixels. It is always as wide as the words around

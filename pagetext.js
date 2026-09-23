@@ -16,7 +16,8 @@ window.settingsLoaded.then(() => {
     .then((r) => (r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status))))
     .then((text) => {
       box.innerHTML = withEmbeds(markdownToHtml(fillIn(text)),
-        setting('EMBEDS', {}), setting('EMBED_HEIGHT', 420));
+        setting('EMBEDS', {}), setting('EMBED_HEIGHT', 420),
+        setting('EMBEDS_YOU_CAN_TOUCH', []), setting('EMBED_WAKE_LABEL', 'Click to use'));
     })
     .catch((err) => {
       console.warn(file + ' could not be loaded (' + err.message + ').');

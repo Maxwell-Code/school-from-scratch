@@ -160,6 +160,40 @@
        scrolls the page as anywhere else. */
     pointer-events: none;
   }
+  /* An embed named in EMBEDS_YOU_CAN_TOUCH is different: it waits under a
+     word, and once that word is clicked it can be used like anything else
+     until the pointer leaves it again. Scrolling past it is never caught. */
+  .embed-holder {
+    display: block;
+    position: relative;
+  }
+  .embed-holder.awake > .embed { pointer-events: auto; }
+  .embed-holder.awake > .embed-wake { display: none; }
+  .embed-wake {
+    position: absolute;
+    top: 1.2em;
+    right: 0;
+    bottom: 1.2em;
+    left: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 0 14px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+  .embed-wake span {
+    padding: 7px 16px;
+    border-radius: 999px;
+    background: var(--accent, #e8f0d4);
+    color: var(--text, #2f3a22);
+    font-size: 15px;
+    line-height: 1;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+  }
+  .embed-wake:hover span { filter: brightness(0.96); }
   .end-quote p { margin: 0; }
   .end-quote p + p { margin-top: 0.8em; }
   /* The quote at the end of the page (END_QUOTE). */
@@ -1949,6 +1983,8 @@ function startGallery() {
   // Things built separately that a section can drop in by name (!wheel!).
   const EMBEDS = setting('EMBEDS', {});
   const EMBED_HEIGHT = Math.max(40, setting('EMBED_HEIGHT', 420));
+  const EMBEDS_TOUCHABLE = setting('EMBEDS_YOU_CAN_TOUCH', []);
+  const EMBED_WAKE = setting('EMBED_WAKE_LABEL', 'Click to use');
   const sectionsLayer = document.createElement('div');
   sectionsLayer.id = 'sections';
   let sectionEls = [];
@@ -1958,7 +1994,7 @@ function startGallery() {
       fetch(SECTION_DIR + slug + '.md', { cache: 'no-cache' })
         .then((r) => (r.ok ? r.text() : ''))
         .catch(() => '')
-        .then((text) => [slug, text.trim() ? withEmbeds(markdownToHtml(text), EMBEDS, EMBED_HEIGHT) : ''])))
+        .then((text) => [slug, text.trim() ? withEmbeds(markdownToHtml(text), EMBEDS, EMBED_HEIGHT, EMBEDS_TOUCHABLE, EMBED_WAKE) : ''])))
       .then((pairs) => new Map(pairs));
   }
 

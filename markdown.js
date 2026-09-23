@@ -98,12 +98,41 @@ function markdownToHtml(md) {
 // something built separately: a drawing, a wheel, a map. The name is looked
 // up in the EMBEDS setting, and what comes back is shown in a frame of its
 // own, so whatever styling it carries can't reach the rest of the page.
-function withEmbeds(html, embeds, height) {
+function withEmbeds(html, embeds, height, canTouch, wakeLabel) {
+  const touchable = new Set((canTouch || []).map((name) => String(name)));
+  const label = String(wakeLabel == null ? 'Click to use' : wakeLabel);
+  const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   return html.replace(/<p>!([A-Za-z0-9_-]+)!<\/p>/g, (all, name) => {
     const file = embeds && embeds[name];
     if (!file) return all; // no such name: leave the words as they are
-    return '<iframe class="embed" src="' + String(file).replace(/"/g, '&quot;') +
-      '" title="' + name + '" loading="lazy" scrolling="no" sandbox="allow-scripts"' +
+    const touch = touchable.has(name);
+    // Something you can use may need to open a map or a page of its own;
+    // something only to look at is given no way out of its frame.
+    const sandbox = touch ? 'allow-scripts allow-popups allow-popups-to-escape-sandbox' : 'allow-scripts';
+    const frame = '<iframe class="embed" src="' + esc(file) +
+      '" title="' + esc(name) + '" loading="lazy" scrolling="no" sandbox="' + sandbox + '"' +
       ' style="height: ' + Number(height || 420) + 'px"></iframe>';
+    if (!touch) return frame;
+    return '<span class="embed-holder">' + frame +
+      '<button type="button" class="embed-wake"><span>' + esc(label) + '</span></button></span>';
   });
 }
+
+// An embed you can use stays out of the way until it's clicked, and steps
+// back out of the way once the pointer leaves it. That way the page scrolls
+// past it as it would past anything else, and a stray roll of the wheel is
+// never taken by the thing in the frame instead.
+document.addEventListener('click', (event) => {
+  const wake = event.target.closest && event.target.closest('.embed-wake');
+  if (wake) wake.parentElement.classList.add('awake');
+});
+document.addEventListener('pointerout', (event) => {
+  const holder = event.target.closest && event.target.closest('.embed-holder.awake');
+  if (holder && !holder.contains(event.relatedTarget)) holder.classList.remove('awake');
+});
+// On a phone the pointer never leaves anything, so moving the page along is
+// taken as being done with it.
+window.addEventListener('scroll', () => {
+  for (const holder of document.querySelectorAll('.embed-holder.awake')) holder.classList.remove('awake');
+}, { passive: true });
