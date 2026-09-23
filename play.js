@@ -38,8 +38,8 @@ window.settingsLoaded.then(() => {
   const file = String(setting('PLAY_BACKGROUND_ICON', 'assets/person_icon.svg')).trim();
   if (!file) return;
 
-  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 120));  // how tall each icon is
-  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 24));         // space left between them
+  const HEIGHT = Math.max(8, setting('PLAY_ICON_HEIGHT', 260));  // how tall each icon is
+  const GAP = Math.max(0, setting('PLAY_ICON_GAP', 28));         // space left between them
   const COLOR = String(setting('PLAY_ICON_COLOR', '#000000')).trim();
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
   const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
@@ -66,10 +66,24 @@ window.settingsLoaded.then(() => {
     svg.setAttribute('viewBox', '0 0 ' + Math.round(100 * ratio) + ' 100');
     svg.setAttribute('preserveAspectRatio', 'none');
     const id = 'edge-only';
+    // The drawing is 100 tall in its own terms, so the thickness asked for
+    // in pixels is turned into that scale.
+    const radius = (THICKNESS * 100 / HEIGHT).toFixed(3);
+    // Every step is made all-or-nothing (a part-way shade is pushed to one
+    // side or the other), otherwise the thinnest part of the figure - the
+    // shoulders - comes out as a half-faded grey patch instead of a line.
+    const solid = '<feComponentTransfer><feFuncA type="linear" slope="255" intercept="-0.5"/></feComponentTransfer>';
     svg.innerHTML =
       '<filter id="' + id + '" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">' +
-        '<feMorphology in="SourceAlpha" operator="erode" radius="' + THICKNESS + '" result="smaller"/>' +
-        '<feComposite in="SourceAlpha" in2="smaller" operator="out" result="edge"/>' +
+        '<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0" result="shape"/>' +
+        '<feComponentTransfer in="shape" result="whole">' +
+          '<feFuncA type="linear" slope="255" intercept="-0.5"/>' +
+        '</feComponentTransfer>' +
+        '<feMorphology in="whole" operator="erode" radius="' + radius + '" result="eroded"/>' +
+        '<feComponentTransfer in="eroded" result="inside">' +
+          '<feFuncA type="linear" slope="255" intercept="-0.5"/>' +
+        '</feComponentTransfer>' +
+        '<feComposite in="whole" in2="inside" operator="out" result="edge"/>' +
         '<feFlood flood-color="' + COLOR + '" result="paint"/>' +
         '<feComposite in="paint" in2="edge" operator="in"/>' +
       '</filter>' +

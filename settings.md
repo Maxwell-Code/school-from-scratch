@@ -280,8 +280,8 @@ between them, in pixels.
 
 ```js
 PLAY_BACKGROUND_ICON = "assets/person_icon.svg"
-PLAY_ICON_HEIGHT = 120
-PLAY_ICON_GAP = 24
+PLAY_ICON_HEIGHT = 260
+PLAY_ICON_GAP = 28
 ```
 
 Their color.
