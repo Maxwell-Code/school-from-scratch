@@ -759,6 +759,16 @@ The files are Markdown, like this one:
 
 (The text files only load when the site is served, e.g. on localhost or online, not when index.html is opened straight from the folder.)
 
+For the two-column lists above (`Role — Name`): how far apart the two sides
+sit, in pixels, and whether the em dash between them shows on the page or
+only marks the split in the file. With the dash shown it stands in the
+middle of that space, so the two sides sit just as far apart either way.
+
+```js
+TWO_COLUMN_GAP = 64
+TWO_COLUMN_DASH = false
+```
+
 In explore mode, or with the gallery off, each option opens its own page
 instead (people.html, cost.html, ...), showing its name and
 "Under Development".

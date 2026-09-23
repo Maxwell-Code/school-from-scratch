@@ -65,8 +65,12 @@ function markdownToHtml(md) {
   // Lines set in two columns either side of a gutter, for a cast list.
   const flushPairs = () => {
     if (pairs && pairs.length > 1) {
+      // The dash stands in the gutter between the two, and is only shown if
+      // TWO_COLUMN_DASH says so. It's kept from being read aloud either way:
+      // it's a mark between two columns, not a word in the list.
       out.push('<div' + middle('pairs') + '>' + pairs.map((two) =>
         '<p class="pair-left">' + inline(two[0]) + '</p>' +
+        '<p class="pair-dash" aria-hidden="true">—</p>' +
         '<p class="pair-right">' + inline(two[1]) + '</p>').join('') + '</div>');
     } else if (pairs) {
       // A single one is a line of words that happens to hold a dash.

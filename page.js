@@ -61,6 +61,10 @@ window.settingsLoaded.then(() => {
   root.setProperty('--body-weight', BODY_WEIGHT);
   root.setProperty('--heading-size', Math.max(8, setting('HEADING_FONT_SIZE', 64)) + 'px');
   root.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
+  // Two columns in a text file (Role — Name): how far apart they sit, and
+  // whether the dash between them shows.
+  root.setProperty('--pair-gap', Math.max(0, setting('TWO_COLUMN_GAP', 64)) + 'px');
+  document.documentElement.classList.toggle('two-column-dash', setting('TWO_COLUMN_DASH', false) === true);
 
   // The menu bar across the top, on pages that have one (payments.html).
   // Its options lead to their section on the home page.
