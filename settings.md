@@ -306,6 +306,24 @@ PLAY_TITLE_LINES = [
 PLAY_TITLE_FIGURE_HEIGHT = 200
 ```
 
+Where the figure stands:
+
+- `"between"` = between the first line and the rest, so the title reads
+  around it. This needs at least two lines above.
+- `"below"` = under the whole heading, with the lines one above the other.
+
+```js
+PLAY_TITLE_FIGURE_PLACE = "between"
+```
+
+How many whole rows of figures stand above the heading. The heading is
+pushed down the page far enough to leave room for them, each spaced from the
+next as everywhere else. 0 leaves the heading where the page puts it.
+
+```js
+PLAY_ROWS_ABOVE_HEADING = 1
+```
+
 The words come first: any figure that would sit under the heading or the
 text steps aside, leaving this much space around them, in pixels.
 

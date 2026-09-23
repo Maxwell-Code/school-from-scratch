@@ -34,6 +34,7 @@ window.settingsLoaded.then(() => {
 
   // ---- The icons behind the words -------------------------------------------
   const layer = document.getElementById('icon-field');
+  const main = document.querySelector('main');
   if (!layer) return;
   const file = String(setting('PLAY_BACKGROUND_ICON', 'assets/person_icon.svg')).trim();
   if (!file) return;
@@ -48,6 +49,8 @@ window.settingsLoaded.then(() => {
   // between them. An empty list leaves the title in one piece.
   const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
   const TITLE_FIGURE = Math.max(0, setting('PLAY_TITLE_FIGURE_HEIGHT', 200));
+  const TITLE_FIGURE_PLACE = String(setting('PLAY_TITLE_FIGURE_PLACE', 'between')).trim().toLowerCase();
+  const ROWS_ABOVE_HEADING = Math.max(0, setting('PLAY_ROWS_ABOVE_HEADING', 1)); // rows left above the heading
   const WHICH = setting('PLAY_OUTLINE_WHICH', 'middle'); // 'middle', 'random', or a number
   let chosenSpot = null; // for 'random': where it landed, kept through a resize
 
@@ -75,20 +78,31 @@ window.settingsLoaded.then(() => {
   let figureInTitle = false;
   function buildTitle() {
     const heading = document.getElementById('title');
-    if (!heading || TITLE_LINES.length < 2 || !TITLE_FIGURE) return;
-    heading.textContent = '';
-    heading.classList.add('split-by-figure');
-    const first = document.createElement('span');
-    first.className = 'title-line';
-    first.textContent = TITLE_LINES[0];
-    const last = document.createElement('span');
-    last.className = 'title-line';
-    last.textContent = TITLE_LINES.slice(1).join(' ');
+    if (!heading || !TITLE_LINES.length || !TITLE_FIGURE) return;
+    // Standing between the lines takes two lines to stand between; with only
+    // one, there is nowhere to stand and the title is left alone.
+    const between = TITLE_FIGURE_PLACE !== 'below';
+    if (between && TITLE_LINES.length < 2) return;
+    const lineOf = (words) => {
+      const line = document.createElement('span');
+      line.className = 'title-line';
+      line.textContent = words;
+      return line;
+    };
     const figure = piece('outline');
     figure.classList.add('in-title');
+    figure.setAttribute('aria-hidden', 'true');
     figure.style.height = TITLE_FIGURE + 'px';
     figure.style.width = (TITLE_FIGURE * ratio).toFixed(1) + 'px';
-    heading.append(first, figure, last);
+
+    heading.textContent = '';
+    heading.classList.add('split-by-figure');
+    if (between) {
+      heading.append(lineOf(TITLE_LINES[0]), figure, lineOf(TITLE_LINES.slice(1).join(' ')));
+    } else {
+      for (const words of TITLE_LINES) heading.append(lineOf(words));
+      heading.append(figure);
+    }
     figureInTitle = true;
   }
 
@@ -146,6 +160,19 @@ window.settingsLoaded.then(() => {
       : el.offsetTop + el.offsetHeight;         // it takes up room of its own
   }
 
+  // The heading is pushed far enough down the page for whole rows of figures
+  // to stand above it, each row spaced from the one before it as everywhere
+  // else. 0 rows leaves the heading where the page puts it.
+  function spaceAboveHeading(startY, step) {
+    const heading = document.getElementById('title');
+    if (!heading || !main || !ROWS_ABOVE_HEADING) return;
+    const padding = parseFloat(getComputedStyle(main).paddingTop) || 0;
+    const now = heading.getBoundingClientRect().top + window.scrollY;
+    const wanted = startY + ROWS_ABOVE_HEADING * step;
+    const next = Math.max(0, padding + (wanted - now));
+    if (Math.abs(next - padding) > 0.5) main.style.paddingTop = next.toFixed(1) + 'px';
+  }
+
   function fillField() {
     const step = HEIGHT + GAP;                  // from one icon to the next, down the page
     const width = HEIGHT * ratio;
@@ -156,6 +183,7 @@ window.settingsLoaded.then(() => {
     // The top row stands clear of the menu bar by the same space that is
     // left between one row and the next.
     const startY = below(document.getElementById('quick-nav')) + GAP;
+    spaceAboveHeading(startY, step);
     // Where the words are, so no figure is put under them, and where the
     // last of them ends.
     const wordBoxes = wordsOnScreen();
@@ -262,7 +290,6 @@ window.settingsLoaded.then(() => {
   // fonts after that — and each time they do they take up a different amount
   // of room. The figures are worked out again whenever that happens, so none
   // of them is ever left sitting on top of the words.
-  const main = document.querySelector('main');
   if (main && window.ResizeObserver) {
     let settling = 0;
     new ResizeObserver(() => {
