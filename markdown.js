@@ -68,6 +68,11 @@ function markdownToHtml(md) {
     if ((m = line.match(/^#{1,6}\s+(.*?)\s*#*$/))) { flushPara(); flushList(); spaceOut(); centered = false; out.push('<h3>' + inline(m[1]) + '</h3>'); continue; }
     // A picture on a line of its own sits on its own, centered.
     if (/^!\[[^\]]*\]\([^)\s]+\)$/.test(line)) { flushPara(); flushList(); spaceOut(); out.push('<p class="picture">' + inline(line) + '</p>'); continue; }
+    // Something built separately, named between exclamation marks on a line
+    // of its own (!map!). It stands apart from the words around it whether
+    // or not a blank line was left before it. A name nothing is listed
+    // under is left as the words it is.
+    if (/^![A-Za-z0-9_-]+!$/.test(line)) { flushPara(); flushList(); spaceOut(); out.push('<p>' + esc(line) + '</p>'); continue; }
     if ((m = line.match(/^([-*+]|\d+[.)])\s+(.*)$/))) {
       flushPara();
       const tag = /\d/.test(m[1]) ? 'ol' : 'ul';

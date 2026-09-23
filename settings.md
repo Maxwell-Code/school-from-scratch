@@ -354,6 +354,7 @@ listed here is left alone as ordinary words.
 ```js
 EMBEDS = {
   "wheel": "embeds/explorations_wheel.html",
+  "map": "embeds/regen_tropics_map.html",
 }
 ```
 
