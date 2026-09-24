@@ -17,6 +17,17 @@ html, body {
   font-family: var(--body-font);
   font-weight: var(--body-weight);
 }
+/* The scrollbar down the side is hidden unless SHOW_SCROLLBAR turns it on.
+   Hidden is the way round that needs no waiting: the page starts this way
+   and the class is added only if the setting asks for it, so the bar never
+   shows for a moment and disappears. Scrolling itself is untouched — wheel,
+   keys, swipe and the page-down key all work as they always did. */
+html { scrollbar-width: none; -ms-overflow-style: none; }
+html::-webkit-scrollbar,
+body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+html.show-scrollbar { scrollbar-width: auto; -ms-overflow-style: auto; }
+html.show-scrollbar::-webkit-scrollbar,
+html.show-scrollbar body::-webkit-scrollbar { width: auto; height: auto; display: block; }
 main {
   display: flex;
   flex-direction: column;

@@ -131,6 +131,8 @@ window.settingsLoaded.then(() => {
   root.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
   // Two columns in a text file (Role — Name): how far apart they sit, and
   // whether the dash between them shows.
+  // The scrollbar down the side of the window.
+  document.documentElement.classList.toggle('show-scrollbar', setting('SHOW_SCROLLBAR', false) === true);
   root.setProperty('--pair-gap', Math.max(0, setting('TWO_COLUMN_GAP', 64)) + 'px');
   // The mark that stands in the gutter: false or "" for none, true for an em
   // dash, or any characters of your own. This one is read straight from the

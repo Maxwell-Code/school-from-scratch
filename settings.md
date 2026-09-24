@@ -32,6 +32,16 @@ How visitors move around the photo landscape:
 GALLERY_MODE = "read"
 ```
 
+Whether the browser's scrollbar shows down the side of the window, on every
+page of the site. `false` hides it; the page still scrolls exactly as it
+did, by wheel, trackpad, arrow keys, Page Down, Home and End, and by swiping
+on a phone. (Phones and newer Macs hide it until you scroll anyway, so this
+mostly shows up on Windows.)
+
+```js
+SHOW_SCROLLBAR = false
+```
+
 Read mode: how far above the Home position you can scroll, in pixels.
 0 = the top of the page is where Home takes you.
 
@@ -194,7 +204,7 @@ What sits in the middle of the screen when the page opens:
   together — which leaves the options themselves below the middle.
 
 ```js
-MENU_CENTER_ON = "options"
+MENU_CENTER_ON = "everything"
 ```
 
 Change this to any other whole number for a completely different
@@ -695,7 +705,7 @@ Space between the title (or the line under it) and the menu options below,
 in pixels. Bigger = the title sits higher, more like a heading on its own.
 
 ```js
-TITLE_GAP = 96
+TITLE_GAP = 50
 ```
 
 Menu options start with their letters spread apart and draw together when

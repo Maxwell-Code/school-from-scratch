@@ -32,6 +32,16 @@
     font-family: var(--body-font);
     font-weight: var(--body-weight);
   }
+  /* The scrollbar down the side is hidden unless SHOW_SCROLLBAR turns it on.
+     Hidden is the way round that needs no waiting: the page starts this way
+     and the class is added only if the setting asks for it, so the bar never
+     shows for a moment and disappears. Scrolling itself is untouched. */
+  html { scrollbar-width: none; -ms-overflow-style: none; }
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar { width: 0; height: 0; display: none; }
+  html.show-scrollbar { scrollbar-width: auto; -ms-overflow-style: auto; }
+  html.show-scrollbar::-webkit-scrollbar,
+  html.show-scrollbar body::-webkit-scrollbar { width: auto; height: auto; display: block; }
 
   /* The pannable / zoomable landscape */
   #viewport {
@@ -903,6 +913,8 @@ function startGallery() {
   rootStyle.setProperty('--body-size', Math.max(8, setting('BODY_FONT_SIZE', 24)) + 'px');
   // Two columns in a section file (Role — Name): how far apart they sit, and
   // whether the dash between them shows.
+  // The scrollbar down the side of the window.
+  document.documentElement.classList.toggle('show-scrollbar', setting('SHOW_SCROLLBAR', false) === true);
   rootStyle.setProperty('--pair-gap', Math.max(0, setting('TWO_COLUMN_GAP', 64)) + 'px');
   // The mark that stands in the gutter: false or "" for none, true for an em
   // dash, or any characters of your own. This one is read straight from the
