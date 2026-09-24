@@ -16,21 +16,17 @@ window.settingsLoaded.then(() => {
   const bodyWeight = setting('PLAY_BODY_FONT_WEIGHT', 500);
   const families = [];
   if (headingFont) {
-    families.push(encodeURIComponent(headingFont) + ':wght@' + headingWeight);
+    families.push({ family: headingFont, weights: [headingWeight] });
     root.setProperty('--heading-font', `'${headingFont}', Georgia, serif`);
     root.setProperty('--heading-weight', headingWeight);
   }
   if (bodyFont) {
-    families.push(encodeURIComponent(bodyFont) + ':wght@' + [...new Set([bodyWeight, 700])].sort((a, b) => a - b).join(';'));
+    // Bold (700) as well, for the **bold** words in the page's text.
+    families.push({ family: bodyFont, weights: [...new Set([bodyWeight, 700])].sort((a, b) => a - b) });
     root.setProperty('--body-font', `'${bodyFont}', 'Segoe UI', sans-serif`);
     root.setProperty('--body-weight', bodyWeight);
   }
-  if (families.length) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://fonts.googleapis.com/css2?family=' + families.join('&family=') + '&display=swap';
-    document.head.appendChild(link);
-  }
+  loadGoogleFonts(families);
 
   // ---- The icons behind the words -------------------------------------------
   const layer = document.getElementById('icon-field');

@@ -24,6 +24,43 @@ function loadSettings() {
     .catch((err) => console.warn('settings.md could not be loaded (' + err.message + '); using the built-in defaults.'));
 }
 
+// Fonts are fetched from Google Fonts by name. Asking for a weight a family
+// doesn't have gets the whole family turned down — Archivo Black, say, comes
+// in one weight only — and the words then fall back to Georgia or Segoe UI
+// with nothing said about it. So each family is checked once the sheet has
+// arrived, and any that didn't turn up is asked for again without naming a
+// weight, which every family on Google Fonts can answer.
+//
+// Each one is { family: "Jost", weights: [600] }; an empty family is skipped.
+function loadGoogleFonts(wanted) {
+  const listed = wanted.filter((f) => f && f.family);
+  if (!listed.length) return;
+  const address = (parts) => 'https://fonts.googleapis.com/css2?' + parts.map((p) =>
+    'family=' + encodeURIComponent(p.family) +
+    (p.weights && p.weights.length ? ':wght@' + p.weights.join(';') : '')).join('&') + '&display=swap';
+  const add = (url) => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = url;
+    document.head.appendChild(link);
+    return link;
+  };
+  const first = add(address(listed));
+  const checkUp = () => {
+    if (!document.fonts) return;
+    const arrived = new Set([...document.fonts].map((f) => String(f.family).replace(/^["']|["']$/g, '')));
+    const missing = listed.filter((p) => !arrived.has(p.family));
+    if (!missing.length) return;
+    for (const p of missing) {
+      console.warn('The font "' + p.family + '" has no weight ' + (p.weights || []).join(' or ') +
+        ' on Google Fonts, so it was asked for again at the weight it does have.');
+    }
+    add(address(missing.map((p) => ({ family: p.family }))));
+  };
+  first.addEventListener('load', checkUp);
+  first.addEventListener('error', checkUp); // turned down outright
+}
+
 function setting(name, fallback) {
   const value = window[name];
   if (value === undefined || typeof value !== typeof fallback) return fallback;
@@ -49,12 +86,10 @@ window.settingsLoaded.then(() => {
   const HEADING_WEIGHT = setting('HEADING_FONT_WEIGHT', 600);
   const BODY_FONT = setting('BODY_FONT', 'Quicksand');
   const BODY_WEIGHT = setting('BODY_FONT_WEIGHT', 500);
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=' +
-    encodeURIComponent(HEADING_FONT) + ':wght@' + HEADING_WEIGHT +
-    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + BODY_WEIGHT + '&display=swap';
-  document.head.appendChild(fontLink);
+  loadGoogleFonts([
+    { family: HEADING_FONT, weights: [HEADING_WEIGHT] },
+    { family: BODY_FONT, weights: [BODY_WEIGHT] },
+  ]);
   root.setProperty('--heading-font', `'${HEADING_FONT}', Georgia, serif`);
   root.setProperty('--heading-weight', HEADING_WEIGHT);
   root.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);

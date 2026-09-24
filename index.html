@@ -834,13 +834,44 @@ function startGallery() {
   const HEADING_WEIGHT = setting('HEADING_FONT_WEIGHT', 600);
   const BODY_FONT = setting('BODY_FONT', 'Quicksand');
   const BODY_WEIGHT = setting('BODY_FONT_WEIGHT', 500);
-  const fontLink = document.createElement('link');
-  fontLink.rel = 'stylesheet';
-  fontLink.href = 'https://fonts.googleapis.com/css2?family=' +
-    encodeURIComponent(HEADING_FONT) + ':wght@' + HEADING_WEIGHT +
+  // Asking Google Fonts for a weight a family doesn't have gets the whole
+  // family turned down, and the words then fall back to Georgia or Segoe UI
+  // with nothing said about it. So each family is checked once the sheet has
+  // arrived, and any that didn't turn up is asked for again without naming a
+  // weight. (Same as loadGoogleFonts in page.js, which this page doesn't load.)
+  const askForFonts = (wanted) => {
+    const listed = wanted.filter((f) => f && f.family);
+    if (!listed.length) return;
+    const address = (parts) => 'https://fonts.googleapis.com/css2?' + parts.map((p) =>
+      'family=' + encodeURIComponent(p.family) +
+      (p.weights && p.weights.length ? ':wght@' + p.weights.join(';') : '')).join('&') + '&display=swap';
+    const add = (url) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = url;
+      document.head.appendChild(link);
+      return link;
+    };
+    const first = add(address(listed));
+    const checkUp = () => {
+      if (!document.fonts) return;
+      const arrived = new Set([...document.fonts].map((f) => String(f.family).replace(/^["']|["']$/g, '')));
+      const missing = listed.filter((p) => !arrived.has(p.family));
+      if (!missing.length) return;
+      for (const p of missing) {
+        console.warn('The font "' + p.family + '" has no weight ' + (p.weights || []).join(' or ') +
+          ' on Google Fonts, so it was asked for again at the weight it does have.');
+      }
+      add(address(missing.map((p) => ({ family: p.family }))));
+    };
+    first.addEventListener('load', checkUp);
+    first.addEventListener('error', checkUp);
+  };
+  askForFonts([
+    { family: HEADING_FONT, weights: [HEADING_WEIGHT] },
     // Bold (700) is also loaded for the bold words in the sections' text.
-    '&family=' + encodeURIComponent(BODY_FONT) + ':wght@' + [...new Set([BODY_WEIGHT, 700])].sort((a, b) => a - b).join(';') + '&display=swap';
-  document.head.appendChild(fontLink);
+    { family: BODY_FONT, weights: [...new Set([BODY_WEIGHT, 700])].sort((a, b) => a - b) },
+  ]);
   rootStyle.setProperty('--heading-font', `'${HEADING_FONT}', Georgia, serif`);
   rootStyle.setProperty('--heading-weight', HEADING_WEIGHT);
   rootStyle.setProperty('--body-font', `'${BODY_FONT}', 'Segoe UI', sans-serif`);

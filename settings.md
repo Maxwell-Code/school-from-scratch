@@ -338,7 +338,7 @@ How many rows of figures carry on below the last line of words, so the page
 doesn't stop the moment the words do. The page ends where the last row ends.
 
 ```js
-PLAY_ROWS_AFTER_TEXT = 3
+PLAY_ROWS_AFTER_TEXT = 1
 ```
 
 One of them is drawn as an outline: the same figure traced with a pen
@@ -369,8 +369,8 @@ exactly as they appear there. Leave either empty ("") to use the same font
 as the rest of the site.
 
 ```js
-PLAY_HEADING_FONT = ""
-PLAY_BODY_FONT = ""
+PLAY_HEADING_FONT = "Jost"
+PLAY_BODY_FONT = "Archivo Black"
 PLAY_HEADING_FONT_WEIGHT = 600
 PLAY_BODY_FONT_WEIGHT = 500
 ```
@@ -787,7 +787,7 @@ Whatever it is, it stands in the middle of the space set above, so the two
 sides sit just as far apart whether it's there or not.
 
 ```js
-TWO_COLUMN_DASH = false
+TWO_COLUMN_DASH = true
 ```
 
 In explore mode, or with the gallery off, each option opens its own page
