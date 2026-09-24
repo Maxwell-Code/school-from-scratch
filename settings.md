@@ -349,6 +349,18 @@ the same distance off the bottom of the page as off the menu bar.
 PLAY_BOTTOM_PADDING = 20
 ```
 
+Whether the outlined figure carries a question mark, set in this page's
+heading font (PLAY_HEADING_FONT). Its size and how far down it stands are
+percentages of the figure's own height, so they hold whatever size the
+figure is: 40 is a mark two fifths as tall as the whole figure, and 36 puts
+its middle a little over a third of the way down, in the chest.
+
+```js
+PLAY_QUESTION_MARK = true
+PLAY_QUESTION_MARK_SIZE = 40
+PLAY_QUESTION_MARK_FROM_TOP = 36
+```
+
 One of them is drawn as an outline: the same figure traced with a pen
 instead of filled in. How thick that line is, in pixels, and which one it
 is:

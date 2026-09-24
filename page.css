@@ -375,6 +375,14 @@ svg.person.outline * {
   stroke-linejoin: round;
   stroke-linecap: round;
 }
+/* The question mark standing inside the outlined figure is filled in rather
+   than drawn as a line, and set in the page's heading font. */
+svg.person.outline .question {
+  fill: var(--icon-color, #000);
+  stroke: none;
+  font-family: var(--heading-font);
+  font-weight: var(--heading-weight);
+}
 /* The title in two lines, with the outlined figure standing between them. */
 h1.split-by-figure {
   display: flex;

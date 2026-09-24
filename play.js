@@ -44,6 +44,12 @@ window.settingsLoaded.then(() => {
   // Space under the last row, before the page ends. The space above the top
   // row is the gap between rows, so leaving this unset matches it.
   const BOTTOM_PADDING = Math.max(0, setting('PLAY_BOTTOM_PADDING', GAP));
+  // A question mark standing inside the outlined figure, in the page's
+  // heading font. Its size and how far down it sits are given as a part of
+  // the figure's own height, so they hold however big the figure is.
+  const QUESTION_MARK = setting('PLAY_QUESTION_MARK', true) !== false;
+  const QUESTION_SIZE = Math.max(0, setting('PLAY_QUESTION_MARK_SIZE', 40)) / 100;
+  const QUESTION_FROM_TOP = setting('PLAY_QUESTION_MARK_FROM_TOP', 36) / 100;
   // The title can be broken into two lines with the outlined figure standing
   // between them. An empty list leaves the title in one piece.
   const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
@@ -74,6 +80,21 @@ window.settingsLoaded.then(() => {
     svg.setAttribute('viewBox', sourceViewBox);
     if (sourceSvg) {
       for (const child of sourceSvg.children) svg.appendChild(child.cloneNode(true));
+    }
+    // The odd one out can carry a question mark. It's drawn in the drawing's
+    // own coordinates, so it grows and shrinks with the figure around it.
+    if (kind === 'outline' && QUESTION_MARK && QUESTION_SIZE > 0) {
+      const box = sourceViewBox.split(/[\s,]+/).map(Number);
+      const mark = document.createElementNS(NS, 'text');
+      mark.setAttribute('class', 'question');
+      mark.setAttribute('x', box[0] + box[2] / 2);
+      mark.setAttribute('y', box[1] + box[3] * QUESTION_FROM_TOP);
+      mark.setAttribute('font-size', box[3] * QUESTION_SIZE);
+      mark.setAttribute('text-anchor', 'middle');
+      mark.setAttribute('dominant-baseline', 'central');
+      mark.setAttribute('aria-hidden', 'true');
+      mark.textContent = '?';
+      svg.appendChild(mark);
     }
     return svg;
   }
