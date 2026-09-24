@@ -369,8 +369,8 @@ exactly as they appear there. Leave either empty ("") to use the same font
 as the rest of the site.
 
 ```js
-PLAY_HEADING_FONT = "Jost"
-PLAY_BODY_FONT = "Archivo Black"
+PLAY_HEADING_FONT = "Lexend"
+PLAY_BODY_FONT = "Crimson Text"
 PLAY_HEADING_FONT_WEIGHT = 600
 PLAY_BODY_FONT_WEIGHT = 500
 ```

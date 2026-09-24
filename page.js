@@ -45,17 +45,50 @@ function loadGoogleFonts(wanted) {
     document.head.appendChild(link);
     return link;
   };
+  // Which faces of a family turned up. A variable font answers with a range
+  // ("100 900") rather than a single weight.
+  const facesOf = (family) => [...(document.fonts || [])]
+    .filter((f) => String(f.family).replace(/^["']|["']$/g, '') === family);
+  const hasWeight = (faces, want) => faces.some((f) => {
+    const ends = String(f.weight).split(/\s+/).map(Number);
+    return ends.length > 1 ? want >= ends[0] && want <= ends[1] : ends[0] === want;
+  });
+
   const first = add(address(listed));
   const checkUp = () => {
     if (!document.fonts) return;
-    const arrived = new Set([...document.fonts].map((f) => String(f.family).replace(/^["']|["']$/g, '')));
-    const missing = listed.filter((p) => !arrived.has(p.family));
-    if (!missing.length) return;
-    for (const p of missing) {
-      console.warn('The font "' + p.family + '" has no weight ' + (p.weights || []).join(' or ') +
-        ' on Google Fonts, so it was asked for again at the weight it does have.');
+    // Trouble is a family that didn't turn up at all, or turned up without
+    // some weight that was asked for — in which case the browser is left
+    // choosing among the ones it did get, which can be a good deal heavier
+    // or lighter than intended.
+    const trouble = [];
+    for (const p of listed) {
+      const faces = facesOf(p.family);
+      const absent = faces.length
+        ? (p.weights || []).filter((w) => !hasWeight(faces, Number(w)))
+        : (p.weights || []);
+      if (!faces.length || absent.length) trouble.push({ family: p.family, absent, came: faces.length > 0 });
     }
-    add(address(missing.map((p) => ({ family: p.family }))));
+    if (!trouble.length) return;
+    // Asked for plainly, any family Google Fonts has will answer, with the
+    // weights it actually keeps. One that still doesn't answer isn't there
+    // at all — nearly always a misspelling.
+    const again = add(address(trouble.map((p) => ({ family: p.family }))));
+    const lastWord = () => {
+      for (const p of trouble) {
+        const faces = facesOf(p.family);
+        if (!faces.length) {
+          console.warn('There is no font called "' + p.family + '" on Google Fonts, so the page fell ' +
+            'back to its ordinary font. Check the spelling against fonts.google.com — it has to match exactly.');
+        } else {
+          const have = [...new Set(faces.map((f) => String(f.weight)))].join(', ');
+          console.warn('The font "' + p.family + '" hasn\'t got weight ' + p.absent.join(' or ') +
+            ' on Google Fonts. It has ' + have + ', and the nearest of those is being used instead.');
+        }
+      }
+    };
+    again.addEventListener('load', lastWord);
+    again.addEventListener('error', lastWord);
   };
   first.addEventListener('load', checkUp);
   first.addEventListener('error', checkUp); // turned down outright
