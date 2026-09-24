@@ -64,7 +64,15 @@ window.settingsLoaded.then(() => {
   // Two columns in a text file (Role — Name): how far apart they sit, and
   // whether the dash between them shows.
   root.setProperty('--pair-gap', Math.max(0, setting('TWO_COLUMN_GAP', 64)) + 'px');
-  document.documentElement.classList.toggle('two-column-dash', setting('TWO_COLUMN_DASH', false) === true);
+  // The mark that stands in the gutter: false or "" for none, true for an em
+  // dash, or any characters of your own. This one is read straight from the
+  // settings rather than through setting(), which keeps a value only when it
+  // is the same kind of thing as the fallback — and this one is deliberately
+  // either a yes/no or some words.
+  const gutterMark = window.TWO_COLUMN_DASH;
+  const markText = gutterMark === true ? '—' : (typeof gutterMark === 'string' ? gutterMark : '');
+  document.documentElement.classList.toggle('two-column-dash', markText !== '');
+  if (markText) root.setProperty('--pair-dash-char', JSON.stringify(markText));
 
   // The menu bar across the top, on pages that have one (payments.html).
   // Its options lead to their section on the home page.

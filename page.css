@@ -154,6 +154,7 @@ main.payments {
   column-gap: 0;
 }
 .two-column-dash .pay-content .pairs .pair-dash { display: block; text-align: center; }
+.pay-content .pairs .pair-dash::before { content: var(--pair-dash-char, "\2014"); }
 /* Side by side there is no room on a narrow screen, so they stack instead,
    each pair kept together and set in the middle. */
 @media (max-width: 480px) {
@@ -388,5 +389,13 @@ h1.split-by-figure svg.person.in-title {
   margin: 6px 0;
 }
 /* The words sit above the icons. */
-body.play main,
-body.play #quick-nav { position: relative; z-index: 1; }
+body.play main { position: relative; z-index: 1; }
+/* The play's page has a menu bar of its own: it sits in the page rather than
+   hanging over it, and takes its own colours (PLAY_MENU_* in settings.md). */
+body.play #quick-nav {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  background: var(--play-menu-bg, #ffffff);
+  border: var(--play-menu-outline-thickness, 2px) solid var(--play-menu-outline, #000000);
+}

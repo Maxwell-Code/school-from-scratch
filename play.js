@@ -58,6 +58,11 @@ window.settingsLoaded.then(() => {
   root.setProperty('--icon-color', COLOR);
   root.setProperty('--icon-outline', THICKNESS + 'px');
 
+  // ---- A menu bar of its own --------------------------------------------------
+  root.setProperty('--play-menu-bg', String(setting('PLAY_MENU_BACKGROUND', '#ffffff')).trim());
+  root.setProperty('--play-menu-outline', String(setting('PLAY_MENU_OUTLINE_COLOR', '#000000')).trim());
+  root.setProperty('--play-menu-outline-thickness', Math.max(0, setting('PLAY_MENU_OUTLINE_THICKNESS', 2)) + 'px');
+
   // Every figure on the page, filled or outlined, is a copy of the drawing's
   // own shapes. The outlined one is simply that shape drawn with a pen
   // instead of filled in, so its line is even the whole way round and stays

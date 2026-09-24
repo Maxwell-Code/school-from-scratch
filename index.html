@@ -149,6 +149,7 @@
     column-gap: 0;
   }
   .two-column-dash .section .pairs .pair-dash { display: block; text-align: center; }
+  .section .pairs .pair-dash::before { content: var(--pair-dash-char, "\2014"); }
   /* Side by side there is no room on a narrow screen, so they stack instead,
      each pair kept together and set in the middle. */
   @media (max-width: 480px) {
@@ -849,7 +850,15 @@ function startGallery() {
   // Two columns in a section file (Role — Name): how far apart they sit, and
   // whether the dash between them shows.
   rootStyle.setProperty('--pair-gap', Math.max(0, setting('TWO_COLUMN_GAP', 64)) + 'px');
-  document.documentElement.classList.toggle('two-column-dash', setting('TWO_COLUMN_DASH', false) === true);
+  // The mark that stands in the gutter: false or "" for none, true for an em
+  // dash, or any characters of your own. This one is read straight from the
+  // settings rather than through setting(), which keeps a value only when it
+  // is the same kind of thing as the fallback — and this one is deliberately
+  // either a yes/no or some words.
+  const gutterMark = window.TWO_COLUMN_DASH;
+  const markText = gutterMark === true ? '—' : (typeof gutterMark === 'string' ? gutterMark : '');
+  document.documentElement.classList.toggle('two-column-dash', markText !== '');
+  if (markText) rootStyle.setProperty('--pair-dash-char', JSON.stringify(markText));
   rootStyle.setProperty('--section-width', Math.max(200, setting('SECTION_TEXT_WIDTH', 720)) + 'px');
   rootStyle.setProperty('--section-heading-size', Math.max(8, setting('SECTION_HEADING_SIZE', 44)) + 'px');
   rootStyle.setProperty('--section-text-size', Math.max(8, setting('SECTION_TEXT_SIZE', 19)) + 'px');

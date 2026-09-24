@@ -21,7 +21,7 @@ Founding Director/Teacher, The School From Scratch.
 Twelve years of expertise in natural learning, ecological restoration, organic farming, alternative architecture, and traditional craftsmanship, have cultivated Amol's diverse and impactful career. His commitment to sustainability and community-focused initiatives continues to drive his work in these interconnected domains. He holds a Bachelors in Engineering. Amol brings years of experience in educational leadership, and the observation and education of children.
 
 ## Dharmakaruna Santhi Edara
-MD, Internist, Dignity health--St. John Regional medical center, Oxnard CA. Founding Parent, The School From Scratch.
+MD, Internist, Dignity health—St. John Regional medical center, Oxnard CA. Founding Parent, The School From Scratch.
 
 Being a mother of two young children and working as a physician, I have often questioned the learning I experienced in my own childhood. Modern education systems seem to be successful at dumping knowledge into children, rather than helping with knowledge creation.
 

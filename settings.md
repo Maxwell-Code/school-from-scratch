@@ -355,6 +355,15 @@ PLAY_OUTLINE_THICKNESS = 3
 PLAY_OUTLINE_WHICH = "middle"
 ```
 
+The menu bar on this page alone: its color, and the color and thickness of
+the outline drawn around it. A thickness of 0 leaves no outline.
+
+```js
+PLAY_MENU_BACKGROUND = "#ffffff"
+PLAY_MENU_OUTLINE_COLOR = "#000000"
+PLAY_MENU_OUTLINE_THICKNESS = 2
+```
+
 Fonts for this page alone, from Google Fonts (fonts.google.com), written
 exactly as they appear there. Leave either empty ("") to use the same font
 as the rest of the site.
@@ -760,12 +769,24 @@ The files are Markdown, like this one:
 (The text files only load when the site is served, e.g. on localhost or online, not when index.html is opened straight from the folder.)
 
 For the two-column lists above (`Role — Name`): how far apart the two sides
-sit, in pixels, and whether the em dash between them shows on the page or
-only marks the split in the file. With the dash shown it stands in the
-middle of that space, so the two sides sit just as far apart either way.
+sit, in pixels. Raise it to push the two columns further apart.
 
 ```js
 TWO_COLUMN_GAP = 64
+```
+
+What stands in the gutter between the two columns. The em dash you write in
+the file always marks the split; this is only about what shows on the page:
+
+- `false` (or `""`) = nothing, just the space. This is how a theatre
+  programme sets a cast list.
+- `true` = an em dash (—).
+- Any characters of your own, in quotes: `"–"`, `"·"`, `"~"`, `"as"`, `":"`.
+
+Whatever it is, it stands in the middle of the space set above, so the two
+sides sit just as far apart whether it's there or not.
+
+```js
 TWO_COLUMN_DASH = false
 ```
 

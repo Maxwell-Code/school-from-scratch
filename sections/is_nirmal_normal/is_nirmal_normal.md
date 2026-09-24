@@ -1,9 +1,9 @@
-*Is Nirmal normal?*, a play about education and the significance of life, is based on *Evam Indrajit* by Badal Sircar. Written and enacted in the 1960s, the play was originally written in Bengali and later translated into English.
+*Is Nirmal normal?* is based on the play *Evam Indrajit* by Badal Sircar. Written and enacted in the 1960s, *Evam Indrajit* was originally written in Bengali and later translated into English renamed as *Is Nirmal Normal?*.
 
 ### Cast
-
+->
 *In order of appearance*
-
+<-
 **The Writer** — Gopal Krishnamurthy
 
 **Auntie** — Teena Adityan
@@ -17,3 +17,10 @@
 **Kamal** — Finn Porter
 
 **Indrajit** — Maxwell Lommel
+
+
+
+### Direction
+->
+Gopal Krishnamurthy
+<-
