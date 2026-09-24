@@ -1088,9 +1088,37 @@ function startGallery() {
     farthestTravel = Math.max(1, letterTravel(longest, LETTER_SPREAD * size, LETTER_OFFSET * size));
     links.forEach((link, i) => layOutLetters(link, i + seedOffset));
   }
+  // What sits in the middle of the screen at Home. The whole block — title,
+  // tagline, notice and options together — is centered on the world's
+  // origin, which leaves the options themselves low, since everything above
+  // them is taller than the options are. Centering on the options instead
+  // means lifting the block by however far the options sit below its middle.
+  //
+  // The lift is made of empty space added under the options rather than a
+  // nudge upward, so the block's box still holds everything in it: photos go
+  // on keeping away from the whole of it, the way they always have.
+  const CENTER_ON = String(setting('MENU_CENTER_ON', 'options')).trim().toLowerCase();
+  let menuLift = 0;
+  // Worked out from the block's own layout rather than from where it happens
+  // to be on screen, so it doesn't depend on the page having settled or on
+  // how far it is scrolled. The block is centered on its box, so with space
+  // P added underneath, the options end up at the middle when
+  // P = 2 x (how far the options' middle is from the top) - the height
+  // without that space.
+  function liftMenu() {
+    menuEl.style.paddingBottom = '';
+    menuLift = 0;
+    const nav = menuEl.querySelector('nav');
+    if (CENTER_ON !== 'options' || !nav || !nav.offsetHeight) return;
+    const fromTop = nav.offsetTop + nav.offsetHeight / 2;
+    menuLift = Math.max(0, Math.round(fromTop - menuEl.offsetHeight / 2));
+    if (menuLift) menuEl.style.paddingBottom = menuLift * 2 + 'px';
+  }
+
   const layOutMenu = () => {
     layOutGroup(menuLinks, 0);
     centerLetters(menuLinks);
+    liftMenu();
   };
   layOutMenu();
   // Letter widths change once the real font arrives.
@@ -2181,7 +2209,10 @@ function startGallery() {
   let pageEnd = 0; // how far down the page goes, in landscape units
 
   function layOutSections(g) {
-    let y = menuHalfH + SECTION_SPACE;
+    // The empty space the lift adds under the options belongs to the menu's
+    // box, so it is taken off again here: the gap before the first section
+    // is measured from the options, not from the bottom of that space.
+    let y = menuHalfH - menuLift + SECTION_SPACE;
     const bands = [];
     contentBottom = 0;
     for (const el of sectionEls) {
@@ -2563,7 +2594,7 @@ function startGallery() {
     let resizeTimer = 0;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => { measureMenu(); buildReadPage(); }, 150);
+      resizeTimer = setTimeout(() => { liftMenu(); measureMenu(); buildReadPage(); }, 150);
     });
     buildReadPage();
     scrollToHash();
@@ -2598,7 +2629,7 @@ function startGallery() {
     });
     loadPhotos().then((list) => { photos = list; buildReadPage(); });
   } else {
-    window.addEventListener('resize', () => { measureMenu(); requestRender(); });
+    window.addEventListener('resize', () => { liftMenu(); measureMenu(); requestRender(); });
     if (document.fonts) document.fonts.ready.then(() => { measureMenu(); requestRender(); });
     cam.s = homeScale();
     render();

@@ -185,6 +185,18 @@ Empty space kept between the menu and the nearest photos.
 MENU_CLEARANCE = 40
 ```
 
+What sits in the middle of the screen when the page opens:
+
+- `"options"` = the menu options themselves. The title, tagline and notice
+  above them are taller than the options are, so the whole block is lifted
+  by however far the options sit below its middle.
+- `"everything"` = the block as a whole — title, tagline, notice and options
+  together — which leaves the options themselves below the middle.
+
+```js
+MENU_CENTER_ON = "options"
+```
+
 Change this to any other whole number for a completely different
 (but still consistent) arrangement of photos. Or write
 `LAYOUT_SEED = random`
