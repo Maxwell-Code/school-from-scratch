@@ -335,10 +335,18 @@ PLAY_TEXT_CLEARANCE = 24
 ```
 
 How many rows of figures carry on below the last line of words, so the page
-doesn't stop the moment the words do. The page ends where the last row ends.
+doesn't stop the moment the words do.
 
 ```js
 PLAY_ROWS_AFTER_TEXT = 1
+```
+
+Space left under the last row before the page ends, in pixels. The space
+above the top row is PLAY_ICON_GAP, so the same number here sets the figures
+the same distance off the bottom of the page as off the menu bar.
+
+```js
+PLAY_BOTTOM_PADDING = 20
 ```
 
 One of them is drawn as an outline: the same figure traced with a pen

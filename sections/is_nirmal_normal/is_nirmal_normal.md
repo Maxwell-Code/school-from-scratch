@@ -33,5 +33,5 @@
 
 ### Performances
 ->
-Show dates are coming soon! If you wish to be notified when tickets become available add your email to our mailing list.
+Show dates are coming soon! If you wish to be notified when tickets become available please add your email to our mailing list.
 <-

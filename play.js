@@ -41,6 +41,9 @@ window.settingsLoaded.then(() => {
   const THICKNESS = Math.max(0.5, setting('PLAY_OUTLINE_THICKNESS', 3));
   const TEXT_CLEARANCE = Math.max(0, setting('PLAY_TEXT_CLEARANCE', 24)); // space kept around the words
   const ROWS_AFTER_TEXT = Math.max(0, setting('PLAY_ROWS_AFTER_TEXT', 3)); // rows left under the last line
+  // Space under the last row, before the page ends. The space above the top
+  // row is the gap between rows, so leaving this unset matches it.
+  const BOTTOM_PADDING = Math.max(0, setting('PLAY_BOTTOM_PADDING', GAP));
   // The title can be broken into two lines with the outlined figure standing
   // between them. An empty list leaves the title in one piece.
   const TITLE_LINES = setting('PLAY_TITLE_LINES', []).map((line) => String(line).trim()).filter(Boolean);
@@ -206,8 +209,9 @@ window.settingsLoaded.then(() => {
     const startX = middleX - toLeft * across;
     const cols = toLeft + Math.ceil((window.innerWidth - middleX) / across) + 2;
     const rows = Math.max(1, Math.ceil((reach - startY + GAP) / step));
-    // The page ends where the last row does, so the bottom row is whole too.
-    layer.style.height = (startY + rows * step - GAP) + 'px';
+    // The page ends a set space below the last row, so the bottom row is
+    // whole and stands clear of the bottom as the top row does of the bar.
+    layer.style.height = (startY + rows * step - GAP + BOTTOM_PADDING) + 'px';
     // Every other row is stepped half a place across, so each figure stands
     // between the two in the row below. The rows either side of the middle
     // one are the stepped ones, which keeps that figure where it is.
