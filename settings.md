@@ -356,8 +356,8 @@ figure is: 40 is a mark two fifths as tall as the whole figure, and 36 puts
 its middle a little over a third of the way down, in the chest.
 
 ```js
-PLAY_QUESTION_MARK = true
-PLAY_QUESTION_MARK_SIZE = 40
+PLAY_QUESTION_MARK = false
+PLAY_QUESTION_MARK_SIZE = 30
 PLAY_QUESTION_MARK_FROM_TOP = 36
 ```
 
