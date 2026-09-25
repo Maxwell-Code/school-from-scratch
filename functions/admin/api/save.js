@@ -1,6 +1,6 @@
 export async function onRequestPost(context) {
-  const OWNER = "univyrsal";   // CHANGE ME
-  const REPO  = "school-from-scratch";         // CHANGE ME
+  const OWNER = "univyrsal";
+  const REPO  = "school-from-scratch";
   const PATH  = "cms-test.txt";           // throwaway test file
 
   const url = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
