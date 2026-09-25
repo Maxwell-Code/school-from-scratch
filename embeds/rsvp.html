@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Keep me posted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap">
+<style>
+  /* This is built on its own and shown in a frame of its own, so it carries
+     its own colors and font rather than taking the page's. They are the
+     site's, written out here: change them if the site's change.
+       background  #fffef7    text  #0b1105    accent  #dfeac0          */
+  :root {
+    --bg: #fffef7;
+    --fg: #0b1105;
+    --accent: #dfeac0;
+    --line: #0b110533;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: 'Lexend', 'Segoe UI', sans-serif;
+    font-size: 17px;
+  }
+  form {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    width: 100%;
+    max-width: 460px;
+  }
+  input[type="email"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 15px; /* the site's corner rounding */
+    background: #fff;
+    color: inherit;
+    font: inherit;
+  }
+  input[type="email"]::placeholder { color: #0b110566; }
+  input[type="email"]:focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 1px;
+  }
+  button {
+    flex: none;
+    padding: 12px 22px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: var(--accent);
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 160ms ease;
+  }
+  button:hover { filter: brightness(0.96); }
+  button:active { filter: brightness(0.92); }
+  /* A word back, so a click doesn't just empty the box with nothing said. */
+  .said {
+    margin: 10px 0 0;
+    padding-left: 2px;
+    font-size: 15px;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+  .said.show { opacity: 1; }
+  .stack { width: 100%; max-width: 460px; }
+  @media (max-width: 460px) {
+    form { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <form id="rsvp" novalidate>
+      <label for="email" class="sr-only" hidden>Email address</label>
+      <input id="email" name="email" type="email" inputmode="email" autocomplete="email"
+             placeholder="you@example.com" aria-label="Email address" required>
+      <button type="submit">Keep me posted</button>
+    </form>
+    <p class="said" id="said" role="status" aria-live="polite">Thank you — we'll be in touch.</p>
+  </div>
+<script>
+  // Nothing is sent anywhere yet: the address is cleared and a word of
+  // thanks is shown. When there is somewhere for it to go, that goes here.
+  const form = document.getElementById('rsvp');
+  const email = document.getElementById('email');
+  const said = document.getElementById('said');
+  let clearSaid = 0;
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!email.value.trim()) { email.focus(); return; }
+    email.value = '';
+    email.blur();
+    said.classList.add('show');
+    clearTimeout(clearSaid);
+    clearSaid = setTimeout(() => said.classList.remove('show'), 4000);
+  });
+  // Typing again puts the message away.
+  email.addEventListener('input', () => said.classList.remove('show'));
+</script>
+</body>
+</html>

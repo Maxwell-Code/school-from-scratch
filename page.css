@@ -138,6 +138,55 @@ main.payments {
 .pay-content .md-space { height: 1em; margin: 0; }
 /* A list with empty lines between its items sits a little further apart. */
 .pay-content ul.spaced li { margin-bottom: 1em; }
+/* Something built separately, dropped into a page by name (!rsvp!). It sits
+   in a frame of its own, so its own styling stays inside it. (The home page
+   keeps its own copy of these rules, in index.html.) */
+.pay-content .embed {
+  display: block;
+  width: 100%;
+  margin: 1.2em 0;
+  border: none;
+  background: transparent;
+  color-scheme: normal;
+  /* Something shown this way is to look at, not to touch: the pointer goes
+     straight through to the page, so scrolling over it scrolls the page. */
+  pointer-events: none;
+}
+/* An embed set to touch: "always" is one you fill in — a box for an address,
+   say. It has nothing to take a roll of the wheel with, so it needs no gate
+   in front of it. */
+.pay-content .embed.always-on { pointer-events: auto; }
+/* An embed set to touch: "wake" waits under a word until it is clicked. */
+.embed-holder {
+  display: block;
+  position: relative;
+}
+.embed-holder.awake > .embed { pointer-events: auto; }
+.embed-holder.awake > .embed-wake { display: none; }
+.embed-wake {
+  position: absolute;
+  top: 1.2em;
+  right: 0;
+  bottom: 1.2em;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.embed-wake span {
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--accent, #dfeac0);
+  color: var(--fg, #0b1105);
+  font-size: 15px;
+  line-height: 1;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+}
+.embed-wake:hover span { filter: brightness(0.96); }
 /* Words pushed into the middle of the page, between -> and <- in the file. */
 .pay-content .centered { text-align: center; }
 /* A centered list has no room down the left for its bullets, so they go in

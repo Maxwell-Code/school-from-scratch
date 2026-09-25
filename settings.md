@@ -434,8 +434,22 @@ listed here is left alone as ordinary words.
 EMBEDS = {
   "wheel": "embeds/explorations_wheel.html",
   "map": "embeds/regen_tropics_map.html",
+  "rsvp": { file: "embeds/rsvp.html", height: 150, touch: "always" },
 }
 ```
+
+A name can point straight at a file, as the first two do, or at a file with
+some things said about it, as the last one does:
+
+- `file` — the file it lives in. Always needed.
+- `height` — how tall its frame is, in pixels, instead of EMBED_HEIGHT below.
+- `touch` — `"always"` for something you fill in, like a box for an email
+  address: it can be used straight away, with no word in front of it, since
+  it has nothing to take a roll of the wheel with. `"wake"` for something
+  that does — a map, a spinning wheel — which waits under a word until it's
+  clicked. Left out, it's there to look at and not to touch.
+- `label` — the word it waits under, with `"wake"`, instead of
+  EMBED_WAKE_LABEL below.
 
 Anything shown this way is normally there to look at, not to touch: the
 pointer goes straight through it, so rolling the wheel over it scrolls the

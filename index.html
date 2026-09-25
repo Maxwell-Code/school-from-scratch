@@ -206,6 +206,11 @@
        scrolls the page as anywhere else. */
     pointer-events: none;
   }
+  /* An embed set to touch: "always" is one you fill in — a box for an
+     address, say. It has nothing to take a roll of the wheel with, so it
+     needs no gate in front of it. */
+  .section .embed.always-on,
+  .pay-content .embed.always-on { pointer-events: auto; }
   /* An embed named in EMBEDS_YOU_CAN_TOUCH is different: it waits under a
      word, and once that word is clicked it can be used like anything else
      until the pointer leaves it again. Scrolling past it is never caught. */

@@ -158,18 +158,32 @@ function withEmbeds(html, embeds, height, canTouch, wakeLabel) {
   const esc = (t) => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   return html.replace(/<p>!([A-Za-z0-9_-]+)!<\/p>/g, (all, name) => {
-    const file = embeds && embeds[name];
-    if (!file) return all; // no such name: leave the words as they are
-    const touch = touchable.has(name);
+    // A name points either straight at a file, or at a file with some things
+    // said about it: how tall its frame is, and whether it can be used.
+    const entry = embeds && embeds[name];
+    if (!entry) return all; // no such name: leave the words as they are
+    const spec = typeof entry === 'string' ? { file: entry } : entry;
+    const file = String(spec.file || '').trim();
+    if (!file) return all;
+
+    // "always" is for something you fill in, like a box for an address: a
+    // gate in front of it would only be in the way, and it has nothing to
+    // take a roll of the wheel with. "wake" is for something that does —
+    // a map, a wheel — and waits under a word until it's clicked.
+    const asked = spec.touch === true ? 'wake' : String(spec.touch || '').toLowerCase();
+    const touch = asked === 'always' ? 'always'
+      : (asked === 'wake' || touchable.has(name)) ? 'wake' : 'no';
+    const tall = Number(spec.height) > 0 ? Number(spec.height) : Number(height || 420);
     // Something you can use may need to open a map or a page of its own;
     // something only to look at is given no way out of its frame.
-    const sandbox = touch ? 'allow-scripts allow-popups allow-popups-to-escape-sandbox' : 'allow-scripts';
-    const frame = '<iframe class="embed" src="' + esc(file) +
+    const sandbox = touch === 'no' ? 'allow-scripts'
+      : 'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms';
+    const frame = '<iframe class="embed' + (touch === 'always' ? ' always-on' : '') + '" src="' + esc(file) +
       '" title="' + esc(name) + '" loading="lazy" scrolling="no" sandbox="' + sandbox + '"' +
-      ' style="height: ' + Number(height || 420) + 'px"></iframe>';
-    if (!touch) return frame;
+      ' style="height: ' + tall + 'px"></iframe>';
+    if (touch !== 'wake') return frame;
     return '<span class="embed-holder">' + frame +
-      '<button type="button" class="embed-wake"><span>' + esc(label) + '</span></button></span>';
+      '<button type="button" class="embed-wake"><span>' + esc(spec.label || label) + '</span></button></span>';
   });
 }
 
