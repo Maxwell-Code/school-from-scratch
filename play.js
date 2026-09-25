@@ -296,8 +296,15 @@ window.settingsLoaded.then(() => {
   // far the page has been scrolled makes no difference.
   function wordsOnScreen() {
     const downBy = window.scrollY, alongBy = window.scrollX;
+    // Anything that takes up room counts, not only words: a picture or
+    // something built separately (a box to fill in, a map) fills its place
+    // on the page just as a paragraph does, and the figures should keep off
+    // it the same way. Only the empty lines used for spacing are passed over.
+    const fillsItsPlace = (el) => el.textContent.trim()
+      || el.matches('iframe, img, .embed-holder')
+      || el.querySelector('iframe, img');
     return [...document.querySelectorAll('main h1, main .pay-content > *')]
-      .filter((el) => el.offsetWidth && el.offsetHeight && el.textContent.trim())
+      .filter((el) => el.offsetWidth && el.offsetHeight && fillsItsPlace(el))
       .map((el) => {
         const box = el.getBoundingClientRect();
         return { left: box.left + alongBy, right: box.right + alongBy,

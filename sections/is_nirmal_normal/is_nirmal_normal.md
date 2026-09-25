@@ -33,7 +33,7 @@
 
 ### Performances
 ->
-Show dates are coming soon! If you wish to be notified when tickets become available please add your email to our mailing list.
+Our introductory performance will be on **October 4th, 2pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
 <-
 
 !rsvp!
