@@ -16,17 +16,64 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - name: Prepare static site
         run: |
           mkdir _site
-          rsync -a --exclude='.*' --exclude='/tools/' --exclude='/functions/' --exclude='/README.md' --exclude='/_site/' ./ _site/
+          rsync -a \
+            --exclude='.*' \
+            --exclude='/tools/' \
+            --exclude='/functions/' \
+            --exclude='/README.md' \
+            --exclude='/_site/' \
+            ./ _site/
+
           test -f _site/index.html
+
+      - name: Verify Pages Function
+        run: |
+          echo "Current directory:"
+          pwd
+
+          echo ""
+          echo "Function files:"
+          find functions -maxdepth 5 -type f -print
+
+          echo ""
+          echo "Checking save.js exists:"
+          test -f functions/admin/api/save.js
+
+          echo ""
+          echo "Checking save.js syntax:"
+          node --check functions/admin/api/save.js
+
+          echo ""
+          echo "Checking for _worker.js:"
+          if [ -f _site/_worker.js ]; then
+            echo "ERROR: _site/_worker.js exists."
+            echo "Cloudflare will ignore the /functions directory when _worker.js is used."
+            exit 1
+          else
+            echo "No _worker.js found."
+          fi
+
+          echo ""
+          echo "Checking for _routes.json:"
+          if [ -f _site/_routes.json ]; then
+            echo "_routes.json exists:"
+            cat _site/_routes.json
+          else
+            echo "No custom _routes.json found."
+          fi
+
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: .
           command: pages deploy _site --project-name=the-school-from-scratch --branch=main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
