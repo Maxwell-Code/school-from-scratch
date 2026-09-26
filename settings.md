@@ -434,9 +434,36 @@ listed here is left alone as ordinary words.
 EMBEDS = {
   "wheel": "embeds/explorations_wheel.html",
   "map": "embeds/regen_tropics_map.html",
-  "rsvp": { file: "embeds/rsvp.html", height: 150, touch: "always" },
+  "rsvp": {
+    file: "embeds/rsvp.html",
+    height: 150,
+    touch: "always",
+    settings: {
+      confetti: true,
+      confettiPieces: 26,
+      confettiMs: 1400,
+      thankYou: "Thank you!",
+      thankYouMs: 2600,
+      dropMs: 320,
+    },
+  },
 }
 ```
+
+What the RSVP box does once an RSVP has gone through, under its `settings`:
+
+- `confetti` — `false` for none. The pieces are black and white, thrown up
+  out of the button. `confettiPieces` is how many, `confettiMs` how long
+  they last before they have faded away, in milliseconds. They are kept
+  inside the box's own frame, so a gentle handful reads better than a
+  shower.
+- `thankYou` — the words that roll down under the boxes. Leave it empty
+  ("") for none. `thankYouMs` is how long they stay before rolling back up;
+  0 leaves them up. `dropMs` is how long the rolling takes.
+
+Anything written under `settings` is handed to the embed on the end of its
+address, since a thing built separately is shown in a frame of its own and
+can't read this file.
 
 A name can point straight at a file, as the first two do, or at a file with
 some things said about it, as the last one does:

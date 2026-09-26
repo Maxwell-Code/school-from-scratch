@@ -174,11 +174,22 @@ function withEmbeds(html, embeds, height, canTouch, wakeLabel) {
     const touch = asked === 'always' ? 'always'
       : (asked === 'wake' || touchable.has(name)) ? 'wake' : 'no';
     const tall = Number(spec.height) > 0 ? Number(spec.height) : Number(height || 420);
+    // Something built separately is shown in a frame of its own and can't
+    // read settings.md — it isn't part of this page and isn't allowed to
+    // be. Anything written under `settings` for it is handed over on the
+    // end of its address instead, where it can read it for itself.
+    let src = file;
+    if (spec.settings && typeof spec.settings === 'object') {
+      const handed = Object.keys(spec.settings)
+        .filter((key) => spec.settings[key] !== undefined && spec.settings[key] !== null)
+        .map((key) => encodeURIComponent(key) + '=' + encodeURIComponent(String(spec.settings[key])));
+      if (handed.length) src += (src.indexOf('?') < 0 ? '?' : '&') + handed.join('&');
+    }
     // Something you can use may need to open a map or a page of its own;
     // something only to look at is given no way out of its frame.
     const sandbox = touch === 'no' ? 'allow-scripts'
       : 'allow-scripts allow-popups allow-popups-to-escape-sandbox allow-forms';
-    const frame = '<iframe class="embed' + (touch === 'always' ? ' always-on' : '') + '" src="' + esc(file) +
+    const frame = '<iframe class="embed' + (touch === 'always' ? ' always-on' : '') + '" src="' + esc(src) +
       '" title="' + esc(name) + '" loading="lazy" scrolling="no" sandbox="' + sandbox + '"' +
       ' style="height: ' + tall + 'px"></iframe>';
     if (touch !== 'wake') return frame;
@@ -213,13 +224,80 @@ window.addEventListener('scroll', () => {
 //
 // Only a frame belonging to this page is listened to, and only for a
 // number: whatever else arrives from wherever is ignored.
+// A handful of black and white pieces thrown up from a point on the screen
+// and falling back down, then taken away. This is drawn by the page rather
+// than inside the frame that asked for it, because a frame cuts off
+// anything that reaches its edge — and a frame the height of a row of boxes
+// has no room to throw anything at all.
+function throwConfetti(atX, atY, howMany, forMs) {
+  const layer = document.createElement('div');
+  layer.className = 'confetti-layer';
+  layer.setAttribute('aria-hidden', 'true');
+  layer.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9;overflow:hidden';
+  document.body.appendChild(layer);
+
+  const pieces = [];
+  for (let i = 0; i < howMany; i++) {
+    const bit = document.createElement('div');
+    const white = i % 2 === 1;
+    bit.style.cssText = 'position:absolute;width:6px;height:9px;will-change:transform,opacity;'
+      + 'left:' + atX + 'px;top:' + atY + 'px;'
+      + 'background:' + (white ? '#ffffff' : '#000000') + ';'
+      // White on pale paper needs an edge, or it isn't there at all.
+      + (white ? 'box-shadow:0 0 0 1px rgba(11,17,5,0.25);' : '');
+    layer.appendChild(bit);
+    const turn = (Math.random() - 0.5) * Math.PI * 0.9 - Math.PI / 2; // mostly upward
+    const speed = 170 + Math.random() * 220;
+    pieces.push({
+      bit,
+      vx: Math.cos(turn) * speed,
+      vy: Math.sin(turn) * speed,
+      spin: (Math.random() - 0.5) * 900,
+      angle: Math.random() * 360,
+    });
+  }
+
+  const began = performance.now();
+  const gravity = 900;
+  (function step(now) {
+    const gone = (now - began) / 1000;
+    const left = 1 - (now - began) / forMs;
+    for (const p of pieces) {
+      const x = p.vx * gone;
+      const y = p.vy * gone + 0.5 * gravity * gone * gone;
+      p.bit.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate('
+        + (p.angle + p.spin * gone).toFixed(0) + 'deg)';
+      p.bit.style.opacity = Math.max(0, left).toFixed(2);
+    }
+    if (left > 0) requestAnimationFrame(step);
+    else layer.remove();
+  })(began);
+}
+
 window.addEventListener('message', (event) => {
-  const asked = event.data && Number(event.data.embedHeight);
-  if (!Number.isFinite(asked) || asked <= 0) return;
+  // Only a frame belonging to this page is listened to, and only for the
+  // two things below: whatever else arrives from wherever is ignored.
+  let from = null;
   for (const frame of document.querySelectorAll('iframe.embed')) {
-    if (frame.contentWindow !== event.source) continue;
+    if (frame.contentWindow === event.source) { from = frame; break; }
+  }
+  if (!from) return;
+  const said = event.data || {};
+
+  const asked = Number(said.embedHeight);
+  if (Number.isFinite(asked) && asked > 0) {
     const tall = Math.min(2000, Math.max(40, Math.ceil(asked)));
-    if (frame.style.height !== tall + 'px') frame.style.height = tall + 'px';
+    if (from.style.height !== tall + 'px') from.style.height = tall + 'px';
     return;
+  }
+
+  const burst = said.embedConfetti;
+  if (burst) {
+    const where = from.getBoundingClientRect();
+    const x = Number(burst.x), y = Number(burst.y);
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    const howMany = Math.min(200, Math.max(1, Math.round(Number(burst.pieces) || 24)));
+    const forMs = Math.min(8000, Math.max(200, Number(burst.ms) || 1400));
+    throwConfetti(where.left + x, where.top + y, howMany, forMs);
   }
 });

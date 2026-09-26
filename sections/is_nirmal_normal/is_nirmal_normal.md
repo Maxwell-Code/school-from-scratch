@@ -1,6 +1,6 @@
 ->
 This avant-garde production comes to Ojai with a unique and  
-intentionally minimalist staging–a version presented before  
+intentionally minimalist staging—a version presented before  
 internationally and in Hawaii, Colorado, and UCSB.  
 This play is based on the 1960s Bengali play _Evam Indrajit_  
 by Badal Sircar.
@@ -9,9 +9,12 @@ by Badal Sircar.
 
 ### Performances
 ->
-Our introductory performance will be on **October 4th, 2pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
+Our introductory performance will be on **October 4th, 2-3:15pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
 <-
 !rsvp!
+
+### Payment
+This performance is completely **pay what you can**. We do not want this show to be inaccessible for anyone. For those who can pay the suggested donation is **$20** for general admission and **$10** for seniors and students. Our preferred payment method is Zelle
 
 
 ### Direction
