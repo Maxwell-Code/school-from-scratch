@@ -95,6 +95,13 @@ export async function onRequestPost({ request, env }) {
   const safeShow = escapeHtml(show);
   const safeEmail = escapeHtml(email);
 
+  // The two letters are not equal. The one to whoever is running the show
+  // carries the RSVP itself: if it doesn't go, the RSVP is lost and the
+  // person has to be told so. The one back to the person is a courtesy —
+  // if it doesn't go, the RSVP is still safely in hand, so it is not worth
+  // turning them away over. (Resend's shared sender only writes to the
+  // address that owns the account until a domain of your own is verified,
+  // so until then this second one is expected to fail.)
   try {
     // To whoever is running the show. Replying goes straight back to the
     // person who wrote in.
@@ -112,7 +119,14 @@ export async function onRequestPost({ request, env }) {
         + 'Seats: <strong>' + seats + '</strong></p>'
         + '<p>Reply to this message to answer them directly.</p>',
     });
+  } catch (err) {
+    console.error('RSVP could not be sent:', err && err.message);
+    return reply(502, { ok: false, error: 'We could not send that just now. Please try again in a moment.' });
+  }
 
+  // From here on the RSVP is in hand, so nothing below turns the person away.
+  let toldThem = true;
+  try {
     // And back to the person who wrote in, so they know it arrived.
     await send(env.RESEND_API_KEY, {
       from: env.RSVP_FROM,
@@ -130,9 +144,12 @@ export async function onRequestPost({ request, env }) {
         + '<p>The School From Scratch</p>',
     });
   } catch (err) {
-    console.error('RSVP could not be sent:', err && err.message);
-    return reply(502, { ok: false, error: 'We could not send that just now. Please try again in a moment.' });
+    // The RSVP arrived; only the courtesy didn't. Worth knowing about, not
+    // worth failing over — the page just doesn't promise an email.
+    toldThem = false;
+    console.error('The RSVP came through, but the note back to ' + email
+      + ' did not go:', err && err.message);
   }
 
-  return reply(200, { ok: true });
+  return reply(200, { ok: true, confirmed: toldThem });
 }

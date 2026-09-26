@@ -179,7 +179,10 @@
       email.value = '';
       seats.value = '1';
       email.blur();
-      say('Thank you — check your email for a note from us.');
+      // Only promise a note back if one actually went out.
+      say(back.confirmed === false
+        ? 'Thank you — your RSVP is in.'
+        : 'Thank you — check your email for a note from us.');
     } catch (err) {
       // Anything else — no connection, nothing at that address — comes out
       // of the browser in its own words ("Failed to fetch"), which say

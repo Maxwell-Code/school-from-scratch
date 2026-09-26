@@ -1,5 +1,22 @@
 ->
-*Is Nirmal normal?* is based on the play *Evam Indrajit* by Badal Sircar. Created and enacted in the 1960s, *Evam Indrajit* was originally written in Bengali and later translated into English and consequently renamed as *Is Nirmal Normal?*
+This avant-garde production comes to Ojai with a unique and  
+intentionally minimalist staging–a version presented before  
+internationally and in Hawaii, Colorado, and UCSB.  
+This play is based on the 1960s Bengali play _Evam Indrajit_  
+by Badal Sircar.
+<-
+
+
+### Performances
+->
+Our introductory performance will be on **October 4th, 2pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
+<-
+!rsvp!
+
+
+### Direction
+->
+**Gopal Krishnamurthy**
 <-
 
 
@@ -20,16 +37,3 @@
 **Kamal** — Finn Porter
 
 **Indrajit** — Maxwell Lommel
-
-
-### Direction
-->
-**Gopal Krishnamurthy**
-<-
-
-
-### Performances
-->
-Our introductory performance will be on **October 4th, 2pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
-<-
-!rsvp!
