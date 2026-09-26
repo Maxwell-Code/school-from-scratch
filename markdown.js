@@ -57,7 +57,8 @@ function markdownToHtml(md) {
   };
   const flushList = () => {
     if (list) {
-      out.push(`<${list.tag}` + middle(list.loose ? 'spaced' : '') + '>' +
+      out.push(`<${list.tag}` +
+        middle([list.loose ? 'spaced' : '', list.steps ? 'steps' : ''].filter(Boolean).join(' ')) + '>' +
         list.items.map((li) => '<li>' + inline(li) + '</li>').join('') + `</${list.tag}>`);
     }
     list = null;
@@ -118,11 +119,15 @@ function markdownToHtml(md) {
     if ((m = line.match(/^([-*+]|\d+[.)])\s+(.*)$/))) {
       flushPara(); flushPairs();
       const tag = /\d/.test(m[1]) ? 'ol' : 'ul';
-      if (list && list.tag !== tag) flushList();
+      // 1) 2) 3) sets each number in a filled circle, for steps to follow.
+      // 1. 2. 3. is an ordinary numbered list. A list written the one way
+      // doesn't carry on into a list written the other.
+      const steps = tag === 'ol' && m[1].slice(-1) === ')';
+      if (list && (list.tag !== tag || list.steps !== steps)) flushList();
       if (list && blanks) list.loose = true; // empty line between items
       if (!list) spaceOut();
       blanks = 0;
-      if (!list) list = { tag, items: [] };
+      if (!list) list = { tag, steps, items: [] };
       list.items.push(m[2]);
       continue;
     }

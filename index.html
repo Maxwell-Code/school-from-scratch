@@ -265,6 +265,38 @@
   .section ol.spaced li { margin-bottom: 1em; }
   .section ul,
   .section ol { margin: 0 auto 1em; padding-left: 1.3em; max-width: var(--paragraph-width, none); }
+  /* Written 1) 2) 3) rather than 1. 2. 3., a numbered list becomes the
+     steps: each number in a filled accent circle, with room between them.
+     (The payments page keeps its own copy of these, in page.css.) */
+  .section ol.steps {
+    counter-reset: step;
+    padding-left: 0;
+    list-style: none;
+  }
+  .section ol.steps li {
+    position: relative;
+    min-height: var(--step-circle, 36px);
+    padding-left: calc(var(--step-circle, 36px) + 18px);
+    margin-bottom: var(--step-gap, 28px);
+  }
+  .section ol.steps li:last-child { margin-bottom: 0; }
+  .section ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: calc((1.6em - var(--step-circle, 36px)) / 2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--step-circle, 36px);
+    height: var(--step-circle, 36px);
+    border-radius: 50%;
+    background: var(--accent, #e8f0d4);
+    color: var(--fg);
+    font-weight: 700;
+    font-size: 0.95em;
+  }
   .section li { margin-bottom: 0.35em; }
   .section strong { font-weight: 700; }
   .section a { color: inherit; text-underline-offset: 3px; }

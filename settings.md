@@ -844,7 +844,8 @@ The files are Markdown, like this one:
 - To center part of a page, put `->` on a line of its own where it should start and `<-` on a line of its own where it should stop. Everything between them is centered, however many paragraphs, headings and lists that is. For a single line, write `-> the line <-` on its own instead.
 - Two columns with a gutter down the middle, for a cast list: `**The Writer** — Gopal Krishnamurthy`. What's before the em dash (—) is set against the gutter on the left, what's after it runs on from the gutter on the right, and the dash itself doesn't show. It takes two such lines to make a list, with or without empty lines between them, and each has to start on a line of its own — so an em dash in the middle of a sentence stays an em dash. On a narrow screen the two sides stack, one above the other.
 - A picture: `![Headshot of Gopal](assets/gopal_headshot.jpeg)`. On a line of its own it sits centered. Put picture files in assets/.
-- Lines starting with `-` (or `1.` `2.` `3.`) make a list.
+- Lines starting with `-` make a list. Lines starting with `1.` `2.` `3.` make an ordinary numbered list.
+- Numbered `1)` `2)` `3)` instead — with a bracket rather than a dot — makes the steps: each number sits in a filled accent-color circle with room between them, the way the payments page sets out how to pay. Use it for something to follow in order; use `1.` for an ordinary list.
 - `**bold**`, `*italic*`, `***bold and italic***`
 - A link: `[the words to click](https://example.com)`, or to a page on this site: `[Make a payment](payments.html)`
 - Put `\` in front of a character to show it as it is: `\*not italic\*`

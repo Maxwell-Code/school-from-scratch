@@ -227,23 +227,25 @@ main.payments {
 .pay-content a { color: inherit; text-underline-offset: 3px; }
 .pay-content .md-image { display: block; max-width: 100%; height: auto; margin: 0 auto 1em; border-radius: var(--zelle-logo-radius, 15px); }
 .pay-content ul { margin: 0 0 1em; padding-left: 1.3em; }
-/* A numbered list becomes the steps: each number in a filled accent circle,
-   with room between them. */
-.pay-content ol {
+/* An ordinary numbered list, written 1. 2. 3. */
+.pay-content ol { margin: 0 0 1em; padding-left: 1.3em; }
+/* Written 1) 2) 3) instead, it becomes the steps: each number in a filled
+   accent circle, with room between them. */
+.pay-content ol.steps {
   counter-reset: step;
   width: 100%;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.pay-content ol li {
+.pay-content ol.steps li {
   position: relative;
   min-height: var(--step-circle, 36px);
   padding-left: calc(var(--step-circle, 36px) + 18px);
   margin-bottom: var(--step-gap, 28px);
 }
-.pay-content ol li:last-child { margin-bottom: 0; }
-.pay-content ol li::before {
+.pay-content ol.steps li:last-child { margin-bottom: 0; }
+.pay-content ol.steps li::before {
   counter-increment: step;
   content: counter(step);
   position: absolute;
