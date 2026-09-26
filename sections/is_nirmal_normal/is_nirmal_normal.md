@@ -3,7 +3,6 @@
 <-
 
 
-
 ### Cast
 ->
 *In order of appearance*
@@ -23,17 +22,14 @@
 **Indrajit** — Maxwell Lommel
 
 
-
 ### Direction
 ->
 **Gopal Krishnamurthy**
 <-
 
 
-
 ### Performances
 ->
 Our introductory performance will be on **October 4th, 2pm** at the **[Ojai Retreat](https://ojairetreat.com/)**! Seats are limited. Please RSVP below so we can save you a spot:
 <-
-
 !rsvp!

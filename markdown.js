@@ -204,3 +204,22 @@ document.addEventListener('pointerout', (event) => {
 window.addEventListener('scroll', () => {
   for (const holder of document.querySelectorAll('.embed-holder.awake')) holder.classList.remove('awake');
 }, { passive: true });
+
+// How tall something built separately needs to be can depend on how wide
+// the page is — a row of boxes may wrap onto two rows on a phone — so the
+// height set in settings.md can only ever be a guess. An embed that knows
+// its own height says so, and its frame is set to match; one that says
+// nothing keeps the height it was given.
+//
+// Only a frame belonging to this page is listened to, and only for a
+// number: whatever else arrives from wherever is ignored.
+window.addEventListener('message', (event) => {
+  const asked = event.data && Number(event.data.embedHeight);
+  if (!Number.isFinite(asked) || asked <= 0) return;
+  for (const frame of document.querySelectorAll('iframe.embed')) {
+    if (frame.contentWindow !== event.source) continue;
+    const tall = Math.min(2000, Math.max(40, Math.ceil(asked)));
+    if (frame.style.height !== tall + 'px') frame.style.height = tall + 'px';
+    return;
+  }
+});

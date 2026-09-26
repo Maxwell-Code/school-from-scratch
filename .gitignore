@@ -6,3 +6,9 @@ private/
 
 # Installed only to run tools/make-small-photos.js
 node_modules/
+
+# Keys for testing the RSVP function locally (wrangler reads this). Never pushed.
+.dev.vars
+
+# Cloudflare dev server cache, made when testing functions/ locally.
+.wrangler/
